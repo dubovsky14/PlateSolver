@@ -5,6 +5,7 @@
 #include <tuple>
 #include <map>
 #include <iostream>
+#include <algorithm>
 
 using namespace PlateSolver;
 using namespace std;
@@ -17,8 +18,17 @@ StarFinder::StarFinder(const std::vector<unsigned char> &pixels, unsigned int pi
 };
 
 // vector of tuples<x-position, y-position, intensity>
-std::vector<std::tuple<float, float, float> >   StarFinder::get_stars() {
+std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float threshold) {
+    std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > clusters = get_clusters(threshold);
+    sort(clusters.begin(), clusters.end(), [](const auto &a, const auto &b) {return a.size() > b.size();}  );
 
+    vector<std::tuple<float, float, float> > result;
+    for (const std::vector<std::tuple<unsigned int, unsigned int> > &cluster : clusters)    {
+        float x,y;
+        calculate_center_of_cluster(&x,&y,cluster);
+        result.push_back(tuple<float,float,float>(x,y,cluster.size()));
+    }
+    return result;
 };
 
 void StarFinder::reset_histogram()  {
@@ -82,4 +92,17 @@ void StarFinder::fill_cluster(  unsigned int x_pos, unsigned int y_pos,
             fill_cluster(x_pos_new, y_pos_new, current_cluster, threshold, visited_pixels);
         }
     }
+};
+
+void StarFinder::calculate_center_of_cluster(   float  *x_pos, float  *y_pos,
+                                                const std::vector<std::tuple<unsigned int, unsigned int> > &current_cluster)    {
+
+    *x_pos = 0;
+    *y_pos = 0;
+    for (const std::tuple<unsigned int, unsigned int> &point : current_cluster) {
+        *x_pos += get<0>(point);
+        *y_pos += get<1>(point);
+    }
+    *x_pos /= current_cluster.size();
+    *y_pos /= current_cluster.size();
 };

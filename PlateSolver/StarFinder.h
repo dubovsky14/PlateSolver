@@ -10,7 +10,7 @@ namespace PlateSolver   {
             StarFinder(const std::vector<unsigned char> &pixels, unsigned int pixels_per_line);
 
             // vector of tuples<x-position, y-position, intensity>
-            std::vector<std::tuple<float, float, float> >   get_stars();
+            std::vector<std::tuple<float, float, float> >   get_stars(float threshold);
 
             std::vector<unsigned int>   get_histogram() const {return m_histogram;};
 
@@ -34,6 +34,9 @@ namespace PlateSolver   {
             void fill_cluster(  unsigned int x_pos, unsigned int y_pos,
                                 std::vector<std::tuple<unsigned int, unsigned int> > *current_cluster,
                                 float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels);
+
+            void calculate_center_of_cluster(   float  *x_pos, float  *y_pos,
+                                                const std::vector<std::tuple<unsigned int, unsigned int> > &current_cluster);
 
 
     };

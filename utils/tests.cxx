@@ -21,16 +21,25 @@ int main(int argc, const char **argv)   {
     const float threshold = star_finder.get_threshold(0.002);
     cout << endl << "threshold(0.05%) = " << threshold << endl;
 
-    vector<unsigned char> stars(pixels.size());
+    vector<unsigned char> pixels_above_threshold(pixels.size());
     for (unsigned int i = 0; i < pixels.size(); i++)  {
-        stars[i] = 240*(pixels[i] > threshold);
+        pixels_above_threshold[i] = 240*(pixels[i] > threshold);
     }
-    dump_to_picture("stars.png", stars, pixels_per_line);
+    dump_to_picture("stars.png", pixels_above_threshold, pixels_per_line);
 
+    std::vector<std::tuple<float, float, float> > stars = star_finder.get_stars(threshold);
+
+    cout << "Number of found stars: " << stars.size() << endl;
+    for (const std::tuple<float, float, float> &star : stars)    {
+        const float x_pos       = get<0>(star);
+        const float y_pos       = get<1>(star);
+        const float brightness  = get<2>(star);
+        cout << x_pos << "\t" << y_pos << "\t" << brightness << endl;
+    }
+
+/*
     std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > clusters = star_finder.get_clusters(threshold);
     sort(clusters.begin(), clusters.end(), [](const auto &a, const auto &b) {return a.size() > b.size();}  );
-
-
 
     cout << "Number of found clusters: " << clusters.size() << endl;
     for (const std::vector<std::tuple<unsigned int, unsigned int> > &cluster : clusters)    {
@@ -39,7 +48,7 @@ int main(int argc, const char **argv)   {
         const unsigned int y_pos = get<1>(cluster[0]);
         cout << x_pos << "\t" << y_pos << "\t" << cluster_size << endl;
     }
-
+*/
 
 
 }
