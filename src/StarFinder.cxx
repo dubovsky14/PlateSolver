@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <tuple>
+#include <map>
+#include <iostream>
 
 using namespace PlateSolver;
 using namespace std;
@@ -10,6 +12,7 @@ using namespace std;
 StarFinder::StarFinder(const std::vector<unsigned char> &pixels, unsigned int pixels_per_line)  {
     m_histogram.resize(256);
     m_pixels = pixels;
+    m_pixels_per_line = pixels_per_line;
     fill_histogram();
 };
 
@@ -37,4 +40,46 @@ float   StarFinder::get_threshold(float part)   {
         if (current_pixels > n_birgther_pixels) return i_threshold;
     }
     return 0;
+};
+
+std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::get_clusters(float threshold)  {
+    vector< vector<tuple<unsigned int, unsigned int> > >  result;
+    map<tuple<unsigned int, unsigned int>, char> visited_pixels;
+
+    const unsigned int width(m_pixels_per_line), height(m_pixels.size()/m_pixels_per_line);
+    vector<tuple<unsigned int, unsigned int> >  this_cluster;
+    for (unsigned int x_pos = 0; x_pos < width; x_pos++)    {
+        for (unsigned int y_pos = 0; y_pos < height; y_pos++)    {
+            fill_cluster(x_pos, y_pos, &this_cluster, threshold, &visited_pixels);
+            if (this_cluster.size())    {
+                result.push_back(this_cluster);
+                this_cluster.clear();
+            }
+        }
+    }
+    return result;
+};
+
+void StarFinder::fill_cluster(  unsigned int x_pos, unsigned int y_pos,
+                    std::vector<std::tuple<unsigned int, unsigned int> > *current_cluster,
+                    float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels){
+    if (read_pixel(x_pos, y_pos) < threshold)   return;
+
+    tuple<unsigned int, unsigned int> this_pixel(x_pos,y_pos);
+    if (visited_pixels->find(this_pixel) != visited_pixels->end())    {
+        return;
+    }
+    (*visited_pixels)[this_pixel] = 0;
+    current_cluster->push_back(this_pixel);
+
+    for (int x_shift = -1; x_shift <= 1; x_shift++) {
+        int x_pos_new = x_pos + x_shift;
+        if (x_pos_new < 0) continue;
+        for (int y_shift = -1; y_shift <= 1; y_shift++) {
+            int y_pos_new = y_pos + y_shift;
+            if (y_pos_new < 0) continue;
+            if (x_shift == 0 && y_shift ==0)    continue;
+            fill_cluster(x_pos_new, y_pos_new, current_cluster, threshold, visited_pixels);
+        }
+    }
 };
