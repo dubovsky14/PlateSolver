@@ -19,7 +19,7 @@ StarFinder::StarFinder(const std::vector<unsigned char> &pixels, unsigned int pi
 };
 
 // vector of tuples<x-position, y-position, intensity>
-std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float threshold) {
+std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float threshold, bool invert_y_axis) {
     std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > clusters = get_clusters(threshold);
     sort(clusters.begin(), clusters.end(), [](const auto &a, const auto &b) {return a.size() > b.size();}  );
 
@@ -27,6 +27,9 @@ std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float thre
     for (const std::vector<std::tuple<unsigned int, unsigned int> > &cluster : clusters)    {
         float x,y;
         calculate_center_of_cluster(&x,&y,cluster);
+        if (invert_y_axis)  {
+            y = -y;
+        }
         result.push_back(tuple<float,float,float>(x,y,cluster.size()));
     }
     return result;
