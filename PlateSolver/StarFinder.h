@@ -22,9 +22,10 @@ namespace PlateSolver   {
 
         private:
             std::vector<unsigned char>  m_pixels;
-            unsigned int                m_pixels_per_line;
+            unsigned int                m_height;
+            unsigned int                m_width;
             inline unsigned char        read_pixel(unsigned int index_x, unsigned int index_y) const  {
-                return m_pixels[index_x + index_y*m_pixels_per_line];
+                return m_pixels[index_x + index_y*m_width];
             };
 
             void    reset_histogram();

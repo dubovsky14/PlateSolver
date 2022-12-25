@@ -1,5 +1,6 @@
 #include "../PlateSolver/ImageLoader.h"
 #include "../PlateSolver/StarFinder.h"
+#include "../PlateSolver/AsterismHasher.h"
 
 #include <vector>
 #include <iostream>
@@ -36,6 +37,39 @@ int main(int argc, const char **argv)   {
         const float brightness  = get<2>(star);
         cout << x_pos << "\t" << y_pos << "\t" << brightness << endl;
     }
+
+    const unsigned int NSTARS = 7;
+    for (unsigned int i_star1 = 0; i_star1 < NSTARS; i_star1++) {
+        for (unsigned int i_star2 = i_star1+1; i_star2 < NSTARS; i_star2++) {
+            for (unsigned int i_star3 = i_star2+1; i_star3 < NSTARS; i_star3++) {
+                for (unsigned int i_star4 = i_star3+1; i_star4 < NSTARS; i_star4++) {
+                    tuple<float,float,float,float> asterism_hash;
+                    vector<tuple<float, float> > stars_to_hash = {
+                        tuple(get<0>(stars[i_star1]), get<1>(stars[i_star1])),
+                        tuple(get<0>(stars[i_star2]), get<1>(stars[i_star2])),
+                        tuple(get<0>(stars[i_star3]), get<1>(stars[i_star3])),
+                        tuple(get<0>(stars[i_star4]), get<1>(stars[i_star4])),
+                    };
+                    const bool valid_hash = calculate_asterism_hash(stars_to_hash, &asterism_hash);
+                    cout << "\n\nStars to hash:\n";
+                    for (const tuple<float,float> &star : stars_to_hash)    {
+                        cout << get<0>(star) << "\t" << get<1>(star) << endl;
+                    }
+
+                    if (!valid_hash)    {
+                        cout << "Invalid hash\n";
+                        continue;
+                    }
+                    cout << "Hash:\t"   << get<0>(asterism_hash) << ", "
+                                        << get<1>(asterism_hash) << ", "
+                                        << get<2>(asterism_hash) << ", "
+                                        << get<3>(asterism_hash) << endl;
+
+                }
+            }
+        }
+    }
+
 
 /*
     std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > clusters = star_finder.get_clusters(threshold);
