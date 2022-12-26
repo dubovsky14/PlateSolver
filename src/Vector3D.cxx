@@ -1,8 +1,7 @@
 #include "../PlateSolver/Vector3D.h"
 
-#include <cmath>
-
 using namespace PlateSolver;
+using namespace std;
 
 Vector3D::Vector3D(float x, float y, float z, CoordinateSystem coordinate_system)    {
     if (coordinate_system == CoordinateSystem::enum_cartesian)  {

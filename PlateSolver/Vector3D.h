@@ -40,10 +40,10 @@ namespace PlateSolver   {
             inline float r2()       const {return m_x*m_x + m_y*m_y + m_z*m_z;};
             inline float r()        const {return sqrt(r2());};
             inline float theta()    const {return asin(m_z/r());};
-            inline float phi()      const {return acos(m_x/sqrt(m_x*m_x + m_x*m_x));};
+            inline float phi()      const {return acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
 
-            inline float get_ra()   const   {return (12/M_PI)*theta();};
-            inline float get_dec()  const   {return (180/M_PI)*phi();};
+            inline float get_ra()   const   {return (12/M_PI)*phi();};
+            inline float get_dec()  const   {return (180/M_PI)*theta();};
 
         private:
             float m_x = 0;
