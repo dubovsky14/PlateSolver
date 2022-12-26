@@ -12,7 +12,7 @@ namespace PlateSolver   {
 
             int get_number_of_stars()   const {return m_vector_RA.size();};
 
-            void get_star_info(unsigned int star_id, float *RA, float *dec, float *mag = nullptr, std::string *name = nullptr);
+            void get_star_info(unsigned int star_id, float *RA, float *dec, float *mag = nullptr, std::string *name = nullptr)  const;
 
         private:
             std::vector<float>          m_vector_RA;

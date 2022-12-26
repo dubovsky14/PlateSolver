@@ -2,8 +2,10 @@
 #include "../PlateSolver/StarFinder.h"
 #include "../PlateSolver/AsterismHasher.h"
 #include "../PlateSolver/StarDatabaseHandler.h"
+#include "../PlateSolver/StarPositionHandler.h"
 
 #include <vector>
+#include <tuple>
 #include <iostream>
 #include <algorithm>
 
@@ -16,8 +18,15 @@ int main(int argc, const char **argv)   {
     float RA,dec,mag;
     string name;
 
-    star_database_handler.get_star_info(24378, &RA, &dec, &mag, &name);
-    cout << RA << "\t" << dec << "\t" << "\t" << mag << "\t" << name << endl;
+    StarPositionHandler star_position_handler(star_database_handler);
+    std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler.get_stars_around_coordinates(5.698,1.92, 0.02);
+
+    for (const auto &star : stars_around)    {
+        const unsigned int id = get<2>(star);
+        star_database_handler.get_star_info(id, &RA, &dec, &mag, &name);
+        cout << RA << "\t" << dec << "\t" << "\t" << mag << "\t" << name << endl;
+    }
+
 
 
     return 0;

@@ -40,7 +40,7 @@ StarDatabaseHandler::StarDatabaseHandler(const std::string &csv_file_address)   
 };
 
 
-void StarDatabaseHandler::get_star_info(unsigned int star_id, float *RA, float *dec, float *mag, std::string *name) {
+void StarDatabaseHandler::get_star_info(unsigned int star_id, float *RA, float *dec, float *mag, std::string *name) const {
     if (star_id >= m_vector_dec.size()) {
         throw std::string("Requested star ID exceeds the number of stars in the database.");
     }
