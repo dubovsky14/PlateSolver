@@ -1,6 +1,7 @@
 #include "../PlateSolver/ImageLoader.h"
 #include "../PlateSolver/StarFinder.h"
 #include "../PlateSolver/AsterismHasher.h"
+#include "../PlateSolver/StarDatabaseHandler.h"
 
 #include <vector>
 #include <iostream>
@@ -10,6 +11,17 @@ using namespace std;
 using namespace PlateSolver;
 
 int main(int argc, const char **argv)   {
+
+    StarDatabaseHandler star_database_handler("../data/star_list.csv");
+    float RA,dec,mag;
+    string name;
+
+    star_database_handler.get_star_info(24378, &RA, &dec, &mag, &name);
+    cout << RA << "\t" << dec << "\t" << "\t" << mag << "\t" << name << endl;
+
+
+    return 0;
+
     unsigned int pixels_per_line;
     vector<unsigned char> pixels = load_bw_image_to_uchar(argv[1], &pixels_per_line);
     StarFinder star_finder(pixels, pixels_per_line);
