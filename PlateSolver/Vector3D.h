@@ -42,7 +42,7 @@ namespace PlateSolver   {
             inline float theta()    const {return asin(m_z/r());};
             inline float phi()      const {return acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
 
-            inline float get_ra()   const   {return (12/M_PI)*phi();};
+            inline float get_ra()   const   {return (-12/M_PI)*phi();}; // TODO
             inline float get_dec()  const   {return (180/M_PI)*theta();};
 
         private:

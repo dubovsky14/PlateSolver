@@ -21,7 +21,7 @@ StarPositionHandler::StarPositionHandler(const StarDatabaseHandler &star_databas
 };
 
 void StarPositionHandler::AddStar(float RA, float dec, float mag, unsigned int id)  {
-    const Vector3D star_vector(1, dec*(M_PI/180), RA*(M_PI/12), CoordinateSystem::enum_spherical);
+    const Vector3D star_vector(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical);
     m_star_positions.push_back(star_vector);
     m_star_IDs.push_back(id);
     m_star_magnitudes.push_back(mag);
@@ -32,7 +32,7 @@ std::vector<std::tuple<Vector3D, float, unsigned int> >  StarPositionHandler::ge
     const bool use_cosine = cos_angle < 0.9;    // for angles close to 0, the cos(x) is 1 considering floating point precision, so we have to use size of the vector product instead
     const float sin2_angle = sin(angle)*sin(angle);
 
-    const Vector3D selected_point(1, dec*(M_PI/180), RA*(M_PI/12), CoordinateSystem::enum_spherical);
+    const Vector3D selected_point(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical);
 
     std::vector<std::tuple<Vector3D, float, unsigned int> > result;
     for (unsigned int i_star = 0; i_star < m_star_positions.size(); i_star++)   {

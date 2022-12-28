@@ -54,3 +54,10 @@ void StarDatabaseHandler::get_star_info(unsigned int star_id, float *RA, float *
         *name = m_vector_name[star_id];
     }
 };
+
+std::string StarDatabaseHandler::get_star_name(unsigned int star_id) {
+    if (star_id >= m_vector_name.size()) {
+        throw std::string("Requested star ID exceeds the number of stars in the database.");
+    }
+    return m_vector_name[star_id];
+};

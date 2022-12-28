@@ -3,24 +3,27 @@
 #include "../PlateSolver/AsterismHasher.h"
 #include "../PlateSolver/StarDatabaseHandler.h"
 #include "../PlateSolver/StarPositionHandler.h"
+#include "../PlateSolver/NightSkyIndexer.h"
 
 #include <vector>
 #include <tuple>
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 using namespace PlateSolver;
 
 int main(int argc, const char **argv)   {
 
-    StarDatabaseHandler star_database_handler("../data/star_list.csv");
+    StarDatabaseHandler star_database_handler("../data/catalogue.csv");
     float RA,dec,mag;
     string name;
 
-    StarPositionHandler star_position_handler(star_database_handler);
-    std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler.get_stars_around_coordinates(5.698,-1.92, 0.0085); // Alnitak
-    //std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler.get_stars_around_coordinates(12.92,55.89, 0.01); // Allioth
+    shared_ptr<StarPositionHandler> star_position_handler = make_shared<StarPositionHandler>(star_database_handler);
+    //std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler->get_stars_around_coordinates(5.698,-1.92, 0.0085); // Alnitak
+    //std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler->get_stars_around_coordinates(12.92,55.89, 0.01); // Allioth
+    std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler->get_stars_around_coordinates(3.8172,68.1858, 0.025); // C5 galaxy
 
     const Vector3D reference_axis(1, -1.92*(M_PI/180), 5.698*(M_PI/12), CoordinateSystem::enum_spherical);
     cout << "Number of stars nearby: " << stars_around.size() << endl;
@@ -33,9 +36,26 @@ int main(int argc, const char **argv)   {
         //cout << star_position.x() << "  \t" << star_position.y() << "  \t" << star_position.z() << "  \t";
         //cout << star_position.get_ra() << "  \t" << star_position.get_dec() << "  \t" << (reference_axis*(get<0>(star))).r2() << "\t" << name << endl;
         //cout << star_position.x() << "  \t" << star_position.y() << "  \t" << star_position.z() << "\t" << name << endl;
-
     }
 
+    shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
+    std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
+    night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
+
+    for (const auto &hash_info : hash_vector)   {
+        const std::tuple<float,float,float,float> hash = get<0>(hash_info);
+        const float xc = get<0>(hash);
+        const float yc = get<1>(hash);
+        const float xd = get<2>(hash);
+        const float yd = get<3>(hash);
+
+        const std::string name1 = star_database_handler.get_star_name(get<1>(hash_info));
+        const std::string name2 = star_database_handler.get_star_name(get<2>(hash_info));
+        const std::string name3 = star_database_handler.get_star_name(get<3>(hash_info));
+        const std::string name4 = star_database_handler.get_star_name(get<4>(hash_info));
+
+        cout << "[" << xc << ", " << yc << ", " << xd << ", " << yd << "], " << name1 << "\t" << name2 << "\t" << name3 << "\t" << name4 << endl;
+    }
 
 
     return 0;
