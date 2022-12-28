@@ -6,6 +6,7 @@
 #include<map>
 #include<tuple>
 #include<memory>
+#include <fstream>
 
 namespace PlateSolver   {
     class NightSkyIndexer   {
@@ -23,9 +24,13 @@ namespace PlateSolver   {
             static std::vector<std::tuple<float, float> > convert_star_coordinates_to_pixels_positions(const std::vector<const Vector3D*> &stars, const Vector3D &reference_axis);
 
         private:
-            void loop_over_night_sky();
+            void loop_over_night_sky(float focal_length);
 
             std::shared_ptr<const StarPositionHandler> m_star_position_handler = nullptr;
+
+            std::shared_ptr<std::ofstream> m_output_hash_file = nullptr;
+
+            void dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector);
 
 
     };

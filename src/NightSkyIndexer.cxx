@@ -3,6 +3,7 @@
 
 
 #include<cmath>
+#include<iostream>
 
 using namespace std;
 using namespace PlateSolver;
@@ -12,12 +13,17 @@ NightSkyIndexer::NightSkyIndexer(shared_ptr<const StarPositionHandler> star_posi
 };
 
 void NightSkyIndexer::create_index_file(const string &index_file, float focal_length)  {
-    // TODO
+    m_output_hash_file = make_shared<ofstream>();
+    m_output_hash_file->open(index_file);
+
+    loop_over_night_sky(focal_length);
+
+    m_output_hash_file->close();
 };
 
 void NightSkyIndexer::focal_length_to_field_of_view(float focal_length_mm, float *width_radians, float *height_radians)    {
-    *width_radians = 2*atan(36/2*focal_length_mm);
-    *height_radians = 2*atan(24/2*focal_length_mm);
+    *width_radians = 2*atan(36/(2*focal_length_mm));
+    *height_radians = 2*atan(24/(2*focal_length_mm));
 };
 
 // result is vector of tuples, tuple consists of "asterism hash tuple" (tuple of 4 floats), followed by 4 unsigned ints, corresponding to indices of the 4 hashed stars
@@ -97,7 +103,40 @@ vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels
     return result;
 };
 
-void NightSkyIndexer::loop_over_night_sky() {
-    // TODO
+void NightSkyIndexer::loop_over_night_sky(float focal_length) {
+    vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > result;
+    float angle_width, angle_height;
+    focal_length_to_field_of_view(focal_length, &angle_width, &angle_height);
+    const float FOV_angle = (angle_width*0.5);
+    const float step_size_in_FOVs = 0.5;
 
+
+    index_sky_region(0,90,FOV_angle, &result);
+    const float dec_step = (180/M_PI)*FOV_angle*step_size_in_FOVs;
+    for (float declination = 90; declination > -90; declination -= dec_step)   {
+        const float circumference = 2*M_PI*cos(declination*(M_PI/180));
+        const int n_steps = circumference/(FOV_angle*step_size_in_FOVs);
+        if (n_steps == 0)   continue;
+        cout << "declination : " << declination << endl;
+        const float RA_step_size = 24./n_steps;
+        for (float right_ascension = 0; right_ascension < 24; right_ascension += RA_step_size)   {
+            index_sky_region(right_ascension, declination,FOV_angle, &result);
+            dump_hash_vector_to_outfile(result);
+            result.clear();
+        }
+    }
+
+};
+
+void NightSkyIndexer::dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector) {
+    for (const auto &x : hash_vector)   {
+        const std::tuple<float,float,float,float> hash = get<0>(x);
+        const unsigned int id_starA = get<1>(x);
+        const unsigned int id_starB = get<2>(x);
+        const unsigned int id_starC = get<3>(x);
+        const unsigned int id_starD = get<4>(x);
+
+        *m_output_hash_file << get<0>(hash) << "," << get<1>(hash) << ","  << get<2>(hash) << ","  << get<3>(hash) << ",";
+        *m_output_hash_file << id_starA << "," << id_starB << "," << id_starC << "," << id_starD << endl;
+    }
 };
