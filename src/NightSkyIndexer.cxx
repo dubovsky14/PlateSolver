@@ -39,14 +39,17 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 
     vector<vector<unsigned int> > combinations({
         {0,1,2,3},
-        {0,1,2,4},
-        {0,1,3,4},
-        {0,2,3,4},
-        {1,2,3,4},
-        {1,2,3,4},
-        {2,3,4,5},
-        {0,1,4,5},
-        {0,2,4,5},
+        //{0,1,2,4},
+        //{0,1,3,4},
+        //{0,2,3,4},
+        //{1,2,3,4},
+        //{1,2,3,4},
+        //{2,3,4,5},
+        //{0,1,4,5},
+        //{0,2,4,5},
+        {0,1,3,5},
+        {0,1,2,5},
+        {1,2,3,5},
     });
 
     for (const vector<unsigned int> &combination : combinations)    {
@@ -57,13 +60,15 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
             }
             if (stars_to_hash.size() == 4)  {
                 std::tuple<float,float,float,float> asterism_hash;
+                unsigned int starA,starB,starC,starD;
+                calculate_asterism_hash(stars_to_hash, &asterism_hash, &starA ,&starB ,&starC ,&starD);
                 calculate_asterism_hash(stars_to_hash, &asterism_hash);
                 result->push_back   (tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int>
                                         (asterism_hash,
-                                        get<2>(stars_around[ combination[0] ]),
-                                        get<2>(stars_around[ combination[1] ]),
-                                        get<2>(stars_around[ combination[2] ]),
-                                        get<2>(stars_around[ combination[3] ]))
+                                        get<2>(stars_around[ combination[starA] ]),
+                                        get<2>(stars_around[ combination[starB] ]),
+                                        get<2>(stars_around[ combination[starC] ]),
+                                        get<2>(stars_around[ combination[starD] ]))
                                     );
             }
         }
@@ -82,9 +87,11 @@ vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels
     const Vector3D rotated_z_axis = rotated_x_axis*rotated_y_axis;
 
     for (const Vector3D *star_3d_vector : stars)    {
-        const float x_pos = -star_3d_vector->scalar_product(rotated_y_axis);
-        const float y_pos = star_3d_vector->scalar_product(rotated_z_axis);
-        result.push_back(tuple<float,float>(-x_pos, y_pos));
+        const float x_pos = star_3d_vector->scalar_product(rotated_x_axis);
+        const float y_pos = star_3d_vector->scalar_product(rotated_y_axis);
+        const float z_pos = star_3d_vector->scalar_product(rotated_z_axis);
+        Vector3D rotated_vector(y_pos,z_pos,x_pos);
+        result.push_back(tuple<float,float>(-rotated_vector.theta(), rotated_vector.phi()));
     }
 
     return result;

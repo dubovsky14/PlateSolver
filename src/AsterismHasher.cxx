@@ -7,7 +7,9 @@ using namespace std;
 using namespace PlateSolver;
 
 // for more details see chapter 2.2 here: https://arxiv.org/pdf/0910.2233.pdf
-bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &stars, tuple<float,float,float,float> *result)   {
+bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &stars, tuple<float,float,float,float> *result,
+    unsigned int *index_star_A, unsigned int *index_star_B, unsigned int *index_star_C, unsigned int *index_star_D)   {
+
     if (stars.size() != 4)  {
         throw string("Cannot calculate hash of #stars != 4");
     }
@@ -24,6 +26,12 @@ bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &s
         starD = i_star;
         break;
     }
+
+    if (index_star_A != nullptr)    {*index_star_A = starA;}
+    if (index_star_B != nullptr)    {*index_star_B = starB;}
+    if (index_star_C != nullptr)    {*index_star_C = starC;}
+    if (index_star_D != nullptr)    {*index_star_D = starD;}
+
 
     // do C and D fit into the circle with diameter |AB| and center in the middle of A and B? if not, return false
     const float radius2 = 0.5*get_star_distance_squared(stars[starA], stars[starB]);
@@ -48,10 +56,12 @@ bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &s
 
     // breaking symmetry for A <-> B swapping
     if (Xc + Xd > 1)    {
-        Xc -= 1;
-        Yc -= 1;
-        Xd -= 1;
-        Yd -= 1;
+        Xc = 1-Xc;
+        Yc = 1-Yc;
+        Xd = 1-Xd;
+        Yd = 1-Yd;
+        if (index_star_A != nullptr)    {*index_star_A = starB;}
+        if (index_star_B != nullptr)    {*index_star_B = starA;}
     }
 
     // breaking symmetry for C <-> D swapping
@@ -66,6 +76,9 @@ bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &s
         get<1>(*result) = Yd;
         get<2>(*result) = Xc;
         get<3>(*result) = Yc;
+
+        if (index_star_C != nullptr)    {*index_star_C = starD;}
+        if (index_star_D != nullptr)    {*index_star_D = starC;}
     }
     return true;
 };

@@ -5,7 +5,11 @@
 #include <vector>
 
 namespace PlateSolver   {
-    bool calculate_asterism_hash(const std::vector<std::tuple<float, float > > &stars, std::tuple<float,float,float,float> *result);
+    bool calculate_asterism_hash(   const std::vector<std::tuple<float, float > > &stars, std::tuple<float,float,float,float> *result,
+                                    unsigned int *index_star_A = nullptr,
+                                    unsigned int *index_star_B = nullptr,
+                                    unsigned int *index_star_C = nullptr,
+                                    unsigned int *index_star_D = nullptr);
 
     void get_indices_of_most_distant_stars(const std::vector<std::tuple<float, float > > &stars, int *star1, int *star2);
 
