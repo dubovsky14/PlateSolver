@@ -30,3 +30,10 @@ Vector3D Vector3D::get_vector_unity_from_ra_dec(float RA, float dec)  {
 float Vector3D::get_angle(const Vector3D &v1, const Vector3D &v2)   {
     return acos( (v1.scalar_product(v2))/(v1.r()*v2.r()) );
 };
+
+void Vector3D::normalize(float vector_size) {
+    const float scale_factor = vector_size/r();
+    m_x *= scale_factor;
+    m_y *= scale_factor;
+    m_z *= scale_factor;
+};

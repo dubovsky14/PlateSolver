@@ -1,5 +1,6 @@
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/AsterismHasher.h"
+#include "../PlateSolver/GeometricTransformations.h"
 
 
 #include<cmath>
@@ -89,18 +90,18 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels_positions(const vector<Vector3D> &stars, const Vector3D &reference_axis)  {
     vector<tuple<float, float> > result;
 
-    const Vector3D rotated_x_axis = reference_axis;
-    const Vector3D rotated_y_axis = (reference_axis.x() == 0 && reference_axis.y() == 0) ?
-                                    Vector3D(1,0,0) :   // if reference axis is z-axis (it's arbitrary choice, so I took x-axis)
-                                    (Vector3D(0,0,1)*reference_axis);
-    const Vector3D rotated_z_axis = rotated_x_axis*rotated_y_axis;
+    const vector<Vector3D> rotated_axes = get_rotated_axes(reference_axis);
+    const Vector3D &rotated_x_axis = rotated_axes[0];
+    const Vector3D &rotated_y_axis = rotated_axes[1];
+    const Vector3D &rotated_z_axis = rotated_axes[2];
 
     for (const Vector3D &star_3d_vector : stars)    {
         const float x_pos = star_3d_vector.scalar_product(rotated_x_axis);
         const float y_pos = star_3d_vector.scalar_product(rotated_y_axis);
         const float z_pos = star_3d_vector.scalar_product(rotated_z_axis);
         Vector3D rotated_vector(y_pos,z_pos,x_pos);
-        //result.push_back(tuple<float,float>(-rotated_vector.theta(), rotated_vector.phi()));
+        // const float phi = rotated_vector.phi()
+        //result.push_back(tuple<float,float>(-rotated_vector.theta(), phi < M_PI ? phi : phi-(2*M_PI) ));
         result.push_back(tuple<float,float>(-z_pos, y_pos));
     }
 

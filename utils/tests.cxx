@@ -22,7 +22,7 @@ int main(int argc, const char **argv)   {
 
 
     // hash finder test
-    if (true)   {
+    if (false)   {
         const string jpg_address = argv[1];
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
 
@@ -47,7 +47,7 @@ int main(int argc, const char **argv)   {
         return 0;
     }
 
-    if (false)  {
+    if (true)  {
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
         float RA,dec,mag;
         string name;

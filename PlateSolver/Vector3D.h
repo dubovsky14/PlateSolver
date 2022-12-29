@@ -29,6 +29,14 @@ namespace PlateSolver   {
                 );
             };
 
+            inline Vector3D operator+(const Vector3D &b) const    {
+                return Vector3D (
+                    m_x*b.m_x,
+                    m_y*b.m_y,
+                    m_z*b.m_z
+                );
+            };
+
             inline float scalar_product(const Vector3D &b)  const    {
                 return m_x*b.m_x + m_y*b.m_y +  m_z*b.m_z;
             };
@@ -44,10 +52,12 @@ namespace PlateSolver   {
             inline float r2()       const {return m_x*m_x + m_y*m_y + m_z*m_z;};
             inline float r()        const {return sqrt(r2());};
             inline float theta()    const {return asin(m_z/r());};
-            inline float phi()      const {return acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
+            inline float phi()      const {return m_y > 0 ? acos(m_x/sqrt(m_x*m_x + m_y*m_y)) : (2*M_PI)-acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
 
-            inline float get_ra()   const   {return (-12/M_PI)*phi();}; // TODO
+            inline float get_ra()   const   {return (-12/M_PI)*phi();};
             inline float get_dec()  const   {return (180/M_PI)*theta();};
+
+            void normalize(float vector_size = 1);
 
         private:
             float m_x = 0;
