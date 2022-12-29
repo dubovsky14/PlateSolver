@@ -33,10 +33,10 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
     vector<tuple<Vector3D, float, unsigned int> >  stars_around = m_star_position_handler->get_stars_around_coordinates(RA, dec, angle, true);
 
     // these 5 lines would be one line in python :-(
-    vector<const Vector3D *> star_positions;
+    vector<Vector3D> star_positions;
     star_positions.reserve(stars_around.size());
     for (const tuple<Vector3D, float, unsigned int> &star : stars_around)   {
-        star_positions.push_back(&get<0>(star));
+        star_positions.push_back(get<0>(star));
     }
 
     // positions of the stars how camera sensor will see them (projection to a plane)
@@ -86,7 +86,7 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 };
 
 
-vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels_positions(const vector<const Vector3D*> &stars, const Vector3D &reference_axis)  {
+vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels_positions(const vector<Vector3D> &stars, const Vector3D &reference_axis)  {
     vector<tuple<float, float> > result;
 
     const Vector3D rotated_x_axis = reference_axis;
@@ -95,12 +95,13 @@ vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels
                                     (Vector3D(0,0,1)*reference_axis);
     const Vector3D rotated_z_axis = rotated_x_axis*rotated_y_axis;
 
-    for (const Vector3D *star_3d_vector : stars)    {
-        const float x_pos = star_3d_vector->scalar_product(rotated_x_axis);
-        const float y_pos = star_3d_vector->scalar_product(rotated_y_axis);
-        const float z_pos = star_3d_vector->scalar_product(rotated_z_axis);
+    for (const Vector3D &star_3d_vector : stars)    {
+        const float x_pos = star_3d_vector.scalar_product(rotated_x_axis);
+        const float y_pos = star_3d_vector.scalar_product(rotated_y_axis);
+        const float z_pos = star_3d_vector.scalar_product(rotated_z_axis);
         Vector3D rotated_vector(y_pos,z_pos,x_pos);
-        result.push_back(tuple<float,float>(-rotated_vector.theta(), rotated_vector.phi()));
+        //result.push_back(tuple<float,float>(-rotated_vector.theta(), rotated_vector.phi()));
+        result.push_back(tuple<float,float>(-z_pos, y_pos));
     }
 
     return result;

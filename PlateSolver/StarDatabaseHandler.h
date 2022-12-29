@@ -16,6 +16,11 @@ namespace PlateSolver   {
 
             std::string get_star_name(unsigned int star_id);
 
+            float get_star_ra(unsigned int star_id);
+
+            float get_star_dec(unsigned int star_id);
+
+
         private:
             std::vector<float>          m_vector_RA;
             std::vector<float>          m_vector_dec;

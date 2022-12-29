@@ -15,7 +15,5 @@ namespace PlateSolver   {
         private:
             std::string m_hash_file_address;
 
-            static float pow2(float x)  {return x*x;};
-
     };
 }

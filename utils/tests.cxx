@@ -6,6 +6,7 @@
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/HashFinder.h"
 #include "../PlateSolver/Common.h"
+#include "../PlateSolver/ImageHasher.h"
 
 #include <vector>
 #include <tuple>
@@ -20,32 +21,27 @@ int main(int argc, const char **argv)   {
     try {
 
 
-    // hsah finder test
+    // hash finder test
     if (true)   {
+        const string jpg_address = argv[1];
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
 
-        vector<tuple<float,float,float,float> > hashes_from_photo = {
-            //tuple<float,float,float,float>{-0.154158, 0.202885, 0.60778, 0.819311},
-            //tuple<float,float,float,float>{-0.60778, -0.819311, 0.0145202, -0.524102},
-            //tuple<float,float,float,float>{-0.0866194, -0.721664, 0.170161, -0.309556},
-            //tuple<float,float,float,float>{0.0145202, -0.524102, 0.154158, -0.202885},
+        vector<tuple<float,float,float,float> > hashes_from_photo = get_asterism_hashes_from_jpg(jpg_address, 8);
 
-            tuple<float,float,float,float>{-0.154064, 0.202574, -0.0158423, 0.523213},
-            tuple<float,float,float,float>{-0.154064, 0.202574, 0.60817, 0.819298},
-            tuple<float,float,float,float>{0.129112, -0.0305323, 0.806027, 1.14932},
-            tuple<float,float,float,float>{-0.154064, 0.202574, 1.03457, 0.552777},
-        };
-        HashFinder hash_finder("../data/index_file_840mm.txt");
+        HashFinder hash_finder("index_file_500mm_plane_approx.txt");
 
         const auto similar_hashes = hash_finder.get_similar_hashes(hashes_from_photo, 50);
 
         for (unsigned int i_input_hash = 0; i_input_hash < hashes_from_photo.size(); i_input_hash++)    {
             cout << "\n\nOriginal hash: " << hash_tuple_to_string(hashes_from_photo[i_input_hash]) << endl;
             for (const auto &similar_hash : similar_hashes[i_input_hash])    {
-                cout << hash_tuple_to_string(get<0>(similar_hash));
                 float RA, dec;
                 star_database_handler.get_star_info(get<1>(similar_hash), &RA, &dec);
-                cout << " RA = " << RA << "   \tdec = " << dec << endl;
+
+                if (RA < 5 && RA > 3 && dec > 62 && dec < 80)   {
+                    cout << hash_tuple_to_string(get<0>(similar_hash));
+                    cout << " RA = " << RA << "   \tdec = " << dec << endl;
+                }
             }
         }
         return 0;
@@ -66,7 +62,7 @@ int main(int argc, const char **argv)   {
         shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
         std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
         night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
-        night_sky_indexer->create_index_file("index_file_840mm.txt", 840);
+        night_sky_indexer->create_index_file("index_file_500mm_plane_approx.txt", 500);
 
 
 
@@ -83,14 +79,12 @@ int main(int argc, const char **argv)   {
             unsigned int i_starC = get<3>(hash_info);
             unsigned int i_starD = get<4>(hash_info);
 
-            vector<const Vector3D *> star_positions;
+            vector<Vector3D> star_positions;
             for (unsigned int i_star : vector<unsigned int>({i_starA,i_starB,i_starC,i_starD,}))    {
                 star_database_handler.get_star_info(i_star, &RA, &dec);
-                star_positions.push_back(new Vector3D(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical));
+                star_positions.push_back(Vector3D(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical));
             }
             vector<tuple<float,float> > star_positions_in_sensor_coordinates = NightSkyIndexer::convert_star_coordinates_to_pixels_positions(star_positions, reference_axis);
-
-            for (const auto x : star_positions) delete x;
 
             const std::string nameA = star_database_handler.get_star_name(i_starA);
             const std::string nameB = star_database_handler.get_star_name(i_starB);

@@ -33,6 +33,10 @@ namespace PlateSolver   {
                 return m_x*b.m_x + m_y*b.m_y +  m_z*b.m_z;
             };
 
+            static Vector3D get_vector_unity_from_ra_dec(float RA, float dec);
+
+            static float get_angle(const Vector3D &v1, const Vector3D &v2);
+
             inline float x()   const {return m_x;};
             inline float y()   const {return m_y;};
             inline float z()   const {return m_z;};

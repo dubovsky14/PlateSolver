@@ -1,6 +1,8 @@
 #include "../PlateSolver/HashFinder.h"
 #include "../PlateSolver/StringOperations.h"
 
+#include "../PlateSolver/Common.h"
+
 #include<string>
 #include<vector>
 #include<tuple>

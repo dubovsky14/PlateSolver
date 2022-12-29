@@ -22,3 +22,11 @@ Vector3D Vector3D::get_coordinates_in_rotated_system(const Vector3D &rotated_z_a
 
     return Vector3D(scalar_product(rotated_x_axis), scalar_product(rotated_y_axis), scalar_product(rotated_z_axis));
 };
+
+Vector3D Vector3D::get_vector_unity_from_ra_dec(float RA, float dec)  {
+    return Vector3D(1, dec*(M_PI/180), -RA*(M_PI/12), CoordinateSystem::enum_spherical);
+};
+
+float Vector3D::get_angle(const Vector3D &v1, const Vector3D &v2)   {
+    return acos( (v1.scalar_product(v2))/(v1.r()*v2.r()) );
+};
