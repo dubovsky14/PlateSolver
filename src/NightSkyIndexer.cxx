@@ -43,39 +43,42 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
     Vector3D reference_axis(1,dec, -RA*(M_PI/12), CoordinateSystem::enum_spherical);
     vector<tuple<float, float> > stars_sensor_based_coordinates = convert_star_coordinates_to_pixels_positions(star_positions, reference_axis);
 
-    vector<vector<unsigned int> > combinations({
-        {0,1,2,3},
-        //{0,1,2,4},
-        //{0,1,3,4},
-        //{0,2,3,4},
-        //{1,2,3,4},
-        //{1,2,3,4},
-        //{2,3,4,5},
-        //{0,1,4,5},
-        //{0,2,4,5},
-        {0,1,3,5},
-        {0,1,2,5},
-        {1,2,3,5},
-    });
 
-    for (const vector<unsigned int> &combination : combinations)    {
-        vector<tuple<float, float> > stars_to_hash;
-        for (unsigned int i_star : combination) {
-            if (i_star < stars_sensor_based_coordinates.size()) {
-                stars_to_hash.push_back(stars_sensor_based_coordinates[i_star]);
-            }
-            if (stars_to_hash.size() == 4)  {
-                std::tuple<float,float,float,float> asterism_hash;
-                unsigned int starA,starB,starC,starD;
-                calculate_asterism_hash(stars_to_hash, &asterism_hash, &starA ,&starB ,&starC ,&starD);
-                calculate_asterism_hash(stars_to_hash, &asterism_hash);
-                result->push_back   (tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int>
-                                        (asterism_hash,
-                                        get<2>(stars_around[ combination[starA] ]),
-                                        get<2>(stars_around[ combination[starB] ]),
-                                        get<2>(stars_around[ combination[starC] ]),
-                                        get<2>(stars_around[ combination[starD] ]))
-                                    );
+    const unsigned int NSTARS = 7;
+    unsigned int combination[4];
+    for (unsigned int i_star1 = 0; i_star1 < NSTARS; i_star1++) {
+        combination[0] = i_star1;
+        for (unsigned int i_star2 = i_star1+1; i_star2 < NSTARS; i_star2++) {
+            combination[1] = i_star2;
+            for (unsigned int i_star3 = i_star2+1; i_star3 < NSTARS; i_star3++) {
+                combination[2] = i_star3;
+                for (unsigned int i_star4 = i_star3+1; i_star4 < NSTARS; i_star4++) {
+                    combination[3] = i_star4;
+                    if (i_star4 >= stars_sensor_based_coordinates.size()) {
+                        break;
+                    }
+                    tuple<float,float,float,float> asterism_hash;
+                    vector<tuple<float, float> > stars_to_hash = {
+                        stars_sensor_based_coordinates[i_star1],
+                        stars_sensor_based_coordinates[i_star2],
+                        stars_sensor_based_coordinates[i_star3],
+                        stars_sensor_based_coordinates[i_star4],
+                    };
+                    unsigned int starA,starB,starC,starD;
+                    const bool valid_hash = calculate_asterism_hash(stars_to_hash, &asterism_hash,&starA,&starB,&starC,&starD);
+
+                    if (!valid_hash)    {
+                        continue;
+                    }
+                    result->push_back   (tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int>
+                                            (asterism_hash,
+                                            get<2>(stars_around[ combination[starA] ]),
+                                            get<2>(stars_around[ combination[starB] ]),
+                                            get<2>(stars_around[ combination[starC] ]),
+                                            get<2>(stars_around[ combination[starD] ]))
+                                        );
+
+                }
             }
         }
     }

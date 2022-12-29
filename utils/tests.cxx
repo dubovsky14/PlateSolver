@@ -4,6 +4,8 @@
 #include "../PlateSolver/StarDatabaseHandler.h"
 #include "../PlateSolver/StarPositionHandler.h"
 #include "../PlateSolver/NightSkyIndexer.h"
+#include "../PlateSolver/HashFinder.h"
+#include "../PlateSolver/Common.h"
 
 #include <vector>
 #include <tuple>
@@ -15,16 +17,41 @@ using namespace std;
 using namespace PlateSolver;
 
 int main(int argc, const char **argv)   {
-    auto convert_to_ged_min_sec = [] (float x)  {
-        string result = to_string(int(x)) + "°";
-        x -= int(x);
-        result = result + to_string(int(60*x)) + "\"";
-        x = 60*(x*60-int(x*60));
-        result = result + to_string(x) + "\'";
-        return result;
-    };
+    try {
 
-    if (true)  {
+
+    // hsah finder test
+    if (true)   {
+        StarDatabaseHandler star_database_handler("../data/catalogue.csv");
+
+        vector<tuple<float,float,float,float> > hashes_from_photo = {
+            //tuple<float,float,float,float>{-0.154158, 0.202885, 0.60778, 0.819311},
+            //tuple<float,float,float,float>{-0.60778, -0.819311, 0.0145202, -0.524102},
+            //tuple<float,float,float,float>{-0.0866194, -0.721664, 0.170161, -0.309556},
+            //tuple<float,float,float,float>{0.0145202, -0.524102, 0.154158, -0.202885},
+
+            tuple<float,float,float,float>{-0.154064, 0.202574, -0.0158423, 0.523213},
+            tuple<float,float,float,float>{-0.154064, 0.202574, 0.60817, 0.819298},
+            tuple<float,float,float,float>{0.129112, -0.0305323, 0.806027, 1.14932},
+            tuple<float,float,float,float>{-0.154064, 0.202574, 1.03457, 0.552777},
+        };
+        HashFinder hash_finder("../data/index_file_840mm.txt");
+
+        const auto similar_hashes = hash_finder.get_similar_hashes(hashes_from_photo, 50);
+
+        for (unsigned int i_input_hash = 0; i_input_hash < hashes_from_photo.size(); i_input_hash++)    {
+            cout << "\n\nOriginal hash: " << hash_tuple_to_string(hashes_from_photo[i_input_hash]) << endl;
+            for (const auto &similar_hash : similar_hashes[i_input_hash])    {
+                cout << hash_tuple_to_string(get<0>(similar_hash));
+                float RA, dec;
+                star_database_handler.get_star_info(get<1>(similar_hash), &RA, &dec);
+                cout << " RA = " << RA << "   \tdec = " << dec << endl;
+            }
+        }
+        return 0;
+    }
+
+    if (false)  {
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
         float RA,dec,mag;
         string name;
@@ -81,7 +108,7 @@ int main(int argc, const char **argv)   {
         return 0;
     }
 
-    if (false)   {
+    if (true)   {
         unsigned int pixels_per_line;
         vector<unsigned char> pixels = load_bw_image_to_uchar(argv[1], &pixels_per_line);
         StarFinder star_finder(pixels, pixels_per_line);
@@ -161,6 +188,12 @@ int main(int argc, const char **argv)   {
                 }
             }
         }
+    }
+
+    }
+    catch(const string &e)  {
+        cout << e << endl;
+        abort();
     }
 
 /*
