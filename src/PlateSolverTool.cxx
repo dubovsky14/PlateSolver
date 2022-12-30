@@ -13,6 +13,7 @@
 #include<string>
 #include<tuple>
 #include<cmath>
+#include<algorithm>
 
 using namespace PlateSolver;
 using namespace std;
@@ -55,12 +56,53 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     const float hypothesis_RA       = get<0>(hypothesis_coordinates);
     const float hypothesis_dec      = get<1>(hypothesis_coordinates);
     const float hypothesis_rot      = get<2>(hypothesis_coordinates);
-    const float hypothesis_im_width = get<3>(hypothesis_coordinates);
     const float hypothesis_im_height= get<4>(hypothesis_coordinates);
+    const float radians_per_pixel   = hypothesis_im_height/m_image_height_pixels;
+
+    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( hypothesis_RA, hypothesis_dec, hypothesis_rot,
+                                                                radians_per_pixel, m_image_width_pixels, m_image_height_pixels);
 
     // get the stars that we should see in circle around the center of the image, with the radius hypothesis_im_height/2
     const std::vector<std::tuple<Vector3D, float, unsigned int> > stars_from_database = m_star_position_handler->get_stars_around_coordinates(hypothesis_RA, hypothesis_dec, hypothesis_im_height/2);
 
+    const unsigned int n_stars_truth = min(int(stars_from_database.size()), 10);
+    vector<tuple<float,float,float> > brightest_stars_from_database_pixel_coordinates(n_stars_truth);
+    for (unsigned int i_star = 0; i_star < n_stars_truth; i_star++) {
+        const tuple<float,float> star_pixel_coordinates = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(get<0>(stars_from_database[i_star]), ZeroZeroPoint::upper_left);
+        const float magnitude = get<1>(stars_from_database[i_star]);
+        const float star_size = 600*pow(2.5,-magnitude);
+        brightest_stars_from_database_pixel_coordinates.push_back(tuple<float,float,float>(
+                get<0>(star_pixel_coordinates), get<1>(star_pixel_coordinates), star_size
+            )
+        );
+    }
+
+    vector<tuple<float,float,float> > brightest_stars_from_photo_pixel_coordinates = stars_around_center;
+    sort(   brightest_stars_from_photo_pixel_coordinates.begin(),
+            brightest_stars_from_photo_pixel_coordinates.end(),
+            [](const auto &a, const auto &b) {return get<2>(a) > get<2>(b);}  );
+
+    const unsigned int n_stars_reco = min(int(n_stars_truth*2), int(brightest_stars_from_photo_pixel_coordinates.size()));
+    brightest_stars_from_photo_pixel_coordinates.resize(n_stars_reco);
+
+    // Check how many bright stars from database has around a bright star from photo
+    unsigned int n_stars_truth_paired = 0;
+    const float maximal_allowed_deviation2 = pow2(m_image_height_pixels*0.02);
+    auto calculate_dist2 = [](const tuple<float,float,float> &star1, const tuple<float,float,float> &star2) {
+        return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
+    };
+
+    for (const auto &star_truth : brightest_stars_from_database_pixel_coordinates)  {
+        bool paired_to_stars_from_photo = false;
+        for (const auto &star_photo : brightest_stars_from_photo_pixel_coordinates)  {
+            if (calculate_dist2(star_truth, star_photo) < maximal_allowed_deviation2)   {
+                paired_to_stars_from_photo = true;
+            }
+        }
+        if (paired_to_stars_from_photo) n_stars_truth_paired++;
+    }
+
+    return n_stars_truth_paired > 0.8*n_stars_truth;
 };
 
 vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars)   {
@@ -141,7 +183,7 @@ vector<tuple<float,float,float> > select_stars_around_point(const vector<tuple<f
 
     vector<tuple<float,float,float> > result;
     const float radius2 = radius*radius;
-    for (const tuple<float,float,float> star : stars_all)   {
+    for (const tuple<float,float,float> &star : stars_all)   {
         const float distance2 = pow2(get<0>(star) - point_x) + pow2(get<1>(star) - point_y);
         if (distance2 <= radius2)    {
             result.push_back(star);

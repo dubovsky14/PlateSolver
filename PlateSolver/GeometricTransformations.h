@@ -21,6 +21,29 @@ namespace PlateSolver   {
 
             // zero_zero_point = if set to upper_left, it will firstly transform coordinates to [(x-width_in_pixels/2), (y+height_in_pixels/2)]
             std::tuple<float,float> convert_to_ra_dec(float x, float y, ZeroZeroPoint zero_zero_point = ZeroZeroPoint::upper_left);
+
+
+        private:
+            Vector3D m_x_axis = Vector3D(1,0,0);
+            Vector3D m_y_axis = Vector3D(0,1,0);
+            Vector3D m_z_axis = Vector3D(0,0,1);
+
+            float m_half_width, m_half_height;
+
+    };
+
+    class RaDecToPixelCoordinatesConvertor {
+        public:
+
+            RaDecToPixelCoordinatesConvertor() = delete;
+
+            RaDecToPixelCoordinatesConvertor(   float center_RA, float center_dec, float rotation, float angle_per_pixel,
+                                                float width_in_pixels = 0, float height_in_pixels = 0);
+
+            std::tuple<float,float> convert_to_pixel_coordinates(float ra, float dec, ZeroZeroPoint zero_zero_point = ZeroZeroPoint::upper_left);
+
+            std::tuple<float,float> convert_to_pixel_coordinates(const Vector3D &position, ZeroZeroPoint zero_zero_point = ZeroZeroPoint::upper_left);
+
         private:
             Vector3D m_x_axis = Vector3D(1,0,0);
             Vector3D m_y_axis = Vector3D(0,1,0);
