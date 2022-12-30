@@ -15,6 +15,8 @@
 namespace   PlateSolver {
     class PlateSolverTool   {
         public:
+            PlateSolverTool() = delete;
+
             PlateSolverTool(const std::string &hash_file, const std::string &stars_catalogue);
 
             // returns : [RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]

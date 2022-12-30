@@ -45,8 +45,35 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
                                                                                             -m_image_height_pixels/2,
                                                                                             m_image_height_pixels/2);
 
+    vector<tuple<float,float,float,float,float> > valid_hypotheses;
+    for (unsigned int i_hash_photo = 0; i_hash_photo < hashes_with_indices_from_photo.size(); i_hash_photo++)    {
+        for (unsigned int i_hash_similar = 0; i_hash_similar < similar_hashes[i_hash_photo].size(); i_hash_similar++)    {
+            const unsigned int starA_index_photo = get<1>(hashes_with_indices_from_photo[i_hash_photo]);
+            const unsigned int starB_index_photo = get<2>(hashes_with_indices_from_photo[i_hash_photo]);
+            const float xpos_starA = get<0>(stars[starA_index_photo] );
+            const float ypos_starA = get<1>(stars[starA_index_photo] );
+            const float xpos_starB = get<0>(stars[starB_index_photo] );
+            const float ypos_starB = get<1>(stars[starB_index_photo] );
 
+            const unsigned int starA_database_index = get<1>(similar_hashes[i_hash_photo][i_hash_similar]);
+            const unsigned int starB_database_index = get<2>(similar_hashes[i_hash_photo][i_hash_similar]);
 
+            const auto hypothesis_coordinates = get_hypothesis_coordinates( xpos_starA, ypos_starA, starA_database_index,
+                                                                            xpos_starB, ypos_starB, starB_database_index,
+                                                                            m_image_width_pixels, m_image_height_pixels);
+
+            const bool valid_hypotesis = validate_hypothesis(stars_around_center, hypothesis_coordinates);
+            if (valid_hypotesis)    {
+                valid_hypotheses.push_back(hypothesis_coordinates);
+            }
+        }
+    }
+    if (valid_hypotheses.size() == 0)   {
+        return tuple<float,float,float,float,float>(0,0,0,0,0);
+    }
+    else {
+        return valid_hypotheses[0];
+    }
 };
 
 
@@ -178,8 +205,8 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     return tuple<float,float,float,float,float>(RA_center, dec_center, rotation, result_width_angle, result_height_angle);
 };
 
-vector<tuple<float,float,float> > select_stars_around_point(const vector<tuple<float,float,float> > &stars_all,
-                                                            float point_x, float point_y, float radius) {
+vector<tuple<float,float,float> > PlateSolverTool::select_stars_around_point(const vector<tuple<float,float,float> > &stars_all,
+                                                                            float point_x, float point_y, float radius) {
 
     vector<tuple<float,float,float> > result;
     const float radius2 = radius*radius;

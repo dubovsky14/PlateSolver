@@ -7,6 +7,7 @@
 #include "../PlateSolver/HashFinder.h"
 #include "../PlateSolver/Common.h"
 #include "../PlateSolver/ImageHasher.h"
+#include "../PlateSolver/PlateSolverTool.h"
 
 #include <vector>
 #include <tuple>
@@ -20,6 +21,24 @@ using namespace PlateSolver;
 int main(int argc, const char **argv)   {
     try {
 
+    if (true)   {
+        PlateSolverTool plate_solver_tool("../data/index_file_500mm_plane_approx.txt", "../data/catalogue.csv");
+
+        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(argv[1]);
+        const float RA      = get<0>(result);
+        const float dec     = get<1>(result);
+        const float rot     = get<2>(result);
+        const float width   = (180/M_PI)*get<3>(result);
+        const float height  = (180/M_PI)*get<4>(result);
+
+        cout << "Plate solving finished\n";
+        cout << "\tRA = " << convert_to_ged_min_sec(RA, "h") << endl;
+        cout << "\tdec = " << convert_to_ged_min_sec(dec) << endl;
+        cout << "\trot = " << convert_to_ged_min_sec(rot) << endl;
+        cout << "\twidth x height = " << convert_to_ged_min_sec(width) + " x " << convert_to_ged_min_sec(height) << endl;
+
+        return 0;
+    }
 
     // hash finder test
     if (false)   {
@@ -47,7 +66,7 @@ int main(int argc, const char **argv)   {
         return 0;
     }
 
-    if (true)  {
+    if (false)  {
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
         float RA,dec,mag;
         string name;
