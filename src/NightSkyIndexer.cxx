@@ -1,6 +1,7 @@
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/AsterismHasher.h"
 #include "../PlateSolver/GeometricTransformations.h"
+#include "../PlateSolver/Common.h"
 
 
 #include<cmath>
@@ -112,8 +113,9 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > result;
     float angle_width, angle_height;
     focal_length_to_field_of_view(focal_length, &angle_width, &angle_height);
-    const float FOV_angle = (angle_width*0.5);
-    const float step_size_in_FOVs = 0.5;
+    const float FOV_angle = (angle_height*0.5);
+    cout << "Creating index file, FOV = " << convert_to_deg_min_sec(FOV_angle*180/M_PI) << endl;
+    const float step_size_in_FOVs = 0.3;
 
 
     index_sky_region(0,90,FOV_angle, &result);

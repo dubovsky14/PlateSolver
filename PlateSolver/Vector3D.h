@@ -55,6 +55,8 @@ namespace PlateSolver   {
             inline float theta()    const {return asin(m_z/r());};
             inline float phi()      const {return m_y > 0 ? acos(m_x/sqrt(m_x*m_x + m_y*m_y)) : (2*M_PI)-acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
 
+            inline float phi_mpi_pi()   const {return acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
+
             float get_ra()   const;
             inline float get_dec()  const   {return (180/M_PI)*theta();};
 

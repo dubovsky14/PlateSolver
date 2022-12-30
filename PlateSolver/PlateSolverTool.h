@@ -27,7 +27,7 @@ namespace   PlateSolver {
                                                                                     float pos_x_starB, float pos_y_starB, unsigned int id_starB,
                                                                                     float image_width, float image_height);
 
-            std::vector<AsterismHashWithIndices> get_hashes_with_indices(const std::vector<std::tuple<float,float,float> > &stars, unsigned nstars);
+            static std::vector<AsterismHashWithIndices> get_hashes_with_indices(const std::vector<std::tuple<float,float,float> > &stars, unsigned nstars);
 
             static std::vector<std::tuple<float,float,float> > select_stars_around_point(const std::vector<std::tuple<float,float,float> > &stars_all,
                                                                                         float point_x, float point_y, float radius);

@@ -100,13 +100,8 @@ RaDecToPixelCoordinatesConvertor::RaDecToPixelCoordinatesConvertor(   float cent
     m_y_axis.normalize(1/angle_per_pixel);
     m_z_axis.normalize(1/angle_per_pixel);
 
-
     m_half_width    = width_in_pixels/2;
     m_half_height   = height_in_pixels/2;
-
-    cout << "rotated x-axis" << m_x_axis.to_string(CoordinateSystem::enum_spherical) << endl;
-    cout << "rotated y-axis" << m_y_axis.to_string(CoordinateSystem::enum_spherical) << endl;
-    cout << "rotated z-axis" << m_z_axis.to_string(CoordinateSystem::enum_spherical) << endl;
 };
 
 std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coordinates(float ra, float dec, ZeroZeroPoint zero_zero_point) {
@@ -116,9 +111,22 @@ std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coord
 
 std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coordinates(const Vector3D &position, ZeroZeroPoint zero_zero_point)    {
     float original_coordinates[2] = {position.scalar_product(m_y_axis), position.scalar_product(m_z_axis)};
+    //Vector3D rotated_vector(position.scalar_product(m_x_axis), position.scalar_product(m_y_axis), position.scalar_product(m_z_axis));
+    //rotated_vector.normalize();
+    //float original_coordinates[2] = {(m_y_axis.r())*(rotated_vector.phi_mpi_pi()), (m_y_axis.r())*(rotated_vector.theta())};
+    //original_coordinates[1] -= 2*m_half_height;
+    float rotated_coordinates[] = {
+        original_coordinates[0]*m_rotation_matrix[0][0] + original_coordinates[1]*m_rotation_matrix[0][1],
+        original_coordinates[0]*m_rotation_matrix[1][0] + original_coordinates[1]*m_rotation_matrix[1][1]
+    };
+    return tuple<float,float>(
+        rotated_coordinates[0] - m_half_width,
+        rotated_coordinates[1] - m_half_height
+    );
+
     if (zero_zero_point == ZeroZeroPoint::upper_left)   {
         original_coordinates[0] -= m_half_width;
-        original_coordinates[1] += m_half_height;
+        original_coordinates[1] -= m_half_height;
     }
     return tuple<float,float>(
         original_coordinates[0]*m_rotation_matrix[0][0] + original_coordinates[1]*m_rotation_matrix[0][1],

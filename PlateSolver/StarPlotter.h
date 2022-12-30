@@ -11,7 +11,7 @@ namespace PlateSolver   {
 
             void AddStarsFromPhoto(const std::vector<std::tuple<float,float,float> > &stars, unsigned char color = 255);
 
-            void AddStarsFromDatabase(const std::vector<std::tuple<float,float,float> > &stars, unsigned char color = 255);
+            void AddStarsFromDatabase(const std::vector<std::tuple<float,float,float> > &stars, unsigned char color = 130);
 
             void Save(const std::string &output_name);
 

@@ -36,10 +36,16 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     const float brightness_threshold = star_finder.get_threshold(0.002);
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
-    const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 7);
+    const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 8);
     const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
 
-    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo, 50);
+    for (const AsterismHashWithIndices &hash_with_indices : hashes_with_indices_from_photo) {
+        const auto hash = get<0>(hash_with_indices);
+        cout << "[ " << get<0>(hash) << ", " << get<1>(hash) << ", " << get<2>(hash) << ", " << get<3>(hash) << "] ";
+        cout << ", " << get<1>(hash_with_indices) << ", " << get<2>(hash_with_indices) << ", " << get<3>(hash_with_indices) << ", " << get<4>(hash_with_indices) << endl;
+    }
+
+    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,50);
 
     const vector<tuple<float,float,float> > stars_around_center = select_stars_around_point(stars,
                                                                                             m_image_width_pixels/2,
@@ -58,6 +64,10 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
 
             const unsigned int starA_database_index = get<1>(similar_hashes[i_hash_photo][i_hash_similar]);
             const unsigned int starB_database_index = get<2>(similar_hashes[i_hash_photo][i_hash_similar]);
+
+            if (starA_database_index == 3991 || starB_database_index == 3991)  {
+                cout << "Verifying correct coordinates!\n";
+            }
 
             const auto hypothesis_coordinates = get_hypothesis_coordinates( xpos_starA, ypos_starA, starA_database_index,
                                                                             xpos_starB, ypos_starB, starB_database_index,
@@ -115,7 +125,7 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
 
     // Check how many bright stars from database has around a bright star from photo
     unsigned int n_stars_truth_paired = 0;
-    const float maximal_allowed_deviation2 = pow2(m_image_height_pixels*0.02);
+    const float maximal_allowed_deviation2 = pow2(m_image_height_pixels*0.05);
     auto calculate_dist2 = [](const tuple<float,float,float> &star1, const tuple<float,float,float> &star2) {
         return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
     };
@@ -135,20 +145,21 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
 
 vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars)   {
     vector<AsterismHashWithIndices> result;
-    for (unsigned int i_star1 = 0; i_star1 < nstars; i_star1++) {
-        for (unsigned int i_star2 = i_star1+1; i_star2 < nstars; i_star2++) {
-            for (unsigned int i_star3 = i_star2+1; i_star3 < nstars; i_star3++) {
-                for (unsigned int i_star4 = i_star3+1; i_star4 < nstars; i_star4++) {
-                    if (i_star4 >= stars.size())    {
+    unsigned int star_indices[4];
+    for (star_indices[0] = 0; star_indices[0] < nstars; star_indices[0]++) {
+        for (star_indices[1] = (star_indices[0])+1; star_indices[1] < nstars; star_indices[1]++) {
+            for (star_indices[2] = star_indices[1]+1; star_indices[2] < nstars; star_indices[2]++) {
+                for (star_indices[3] = star_indices[2]+1; star_indices[3] < nstars; star_indices[3]++) {
+                    if (star_indices[3] >= stars.size())    {
                         break;
                     }
 
                     tuple<float,float,float,float> asterism_hash;
                     vector<tuple<float, float> > stars_to_hash = {
-                        tuple(get<0>(stars[i_star1]), get<1>(stars[i_star1])),
-                        tuple(get<0>(stars[i_star2]), get<1>(stars[i_star2])),
-                        tuple(get<0>(stars[i_star3]), get<1>(stars[i_star3])),
-                        tuple(get<0>(stars[i_star4]), get<1>(stars[i_star4])),
+                        tuple(get<0>(stars[star_indices[0]]), get<1>(stars[star_indices[0]])),
+                        tuple(get<0>(stars[star_indices[1]]), get<1>(stars[star_indices[1]])),
+                        tuple(get<0>(stars[star_indices[2]]), get<1>(stars[star_indices[2]])),
+                        tuple(get<0>(stars[star_indices[3]]), get<1>(stars[star_indices[3]])),
                     };
                     unsigned int starA,starB,starC,starD;
                     const bool valid_hash = calculate_asterism_hash(stars_to_hash, &asterism_hash,&starA,&starB,&starC,&starD);
@@ -157,7 +168,10 @@ vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const v
                         continue;
                     }
 
-                    result.push_back(AsterismHashWithIndices{asterism_hash, starA, starB, starC, starD});
+                    result.push_back(AsterismHashWithIndices{asterism_hash, star_indices[starA],
+                                                                            star_indices[starB],
+                                                                            star_indices[starC],
+                                                                            star_indices[starD]});
                 }
             }
         }

@@ -9,6 +9,7 @@
 #include "../PlateSolver/ImageHasher.h"
 #include "../PlateSolver/PlateSolverTool.h"
 #include "../PlateSolver/GeometricTransformations.h"
+#include "../PlateSolver/StarPlotter.h"
 
 #include <vector>
 #include <tuple>
@@ -22,34 +23,70 @@ using namespace PlateSolver;
 int main(int argc, const char **argv)   {
     try {
 
-    // geometric transformations
     if (true)   {
-        PixelCoordinatesToRaDecConvertor pix_to_ra_dec_convertor(3.8172,68.1858, M_PI/6, 0.000006989, 6240, 4160);
-        const tuple<float,float> ra_dec = pix_to_ra_dec_convertor.convert_to_ra_dec(2000,-2000);
-        cout << "RA = " << convert_to_deg_min_sec(get<0>(ra_dec),"h") << "\tdec = " << convert_to_deg_min_sec(get<1>(ra_dec)) << endl;
+
+        unsigned int image_width_pixels;
+        vector<unsigned char> m_pixels = load_bw_image_to_uchar(argv[1], &image_width_pixels);
+
+        StarFinder star_finder(m_pixels, image_width_pixels);
+        unsigned int image_height_pixels = m_pixels.size()/image_width_pixels;
+
+        const float brightness_threshold = star_finder.get_threshold(0.002);
+        vector<tuple<float,float,float> > stars_from_photo = star_finder.get_stars(brightness_threshold);
+        if (stars_from_photo.size() > 30)  stars_from_photo.resize(30);
+
+
+        StarDatabaseHandler star_database_handler("../data/catalogue.csv");
+        StarPositionHandler star_position_handler(star_database_handler);
+        std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler.get_stars_around_coordinates(3.8172,68.1858, 0.025); // C5 galaxy
+
+        while (stars_around.size() > 1.5*stars_from_photo.size())   {
+            stars_around.erase(stars_around.begin() + stars_around.size());
+        }
+
+        PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
+        const tuple<float,float,float,float,float> hyp_coor = plate_solver_tool.get_hypothesis_coordinates(
+            5981.8,	-2026.35, 3991,
+            1303.5,	-3140.96, 17617,
+            6240, 4160
+        );
+
+        const float center_RA   = get<0>(hyp_coor);
+        const float center_dec  = get<1>(hyp_coor);
+        const float center_rot  = get<2>(hyp_coor);
+        const float angle_per_pix  = get<3>(hyp_coor)/6240;
+
+        cout << "RA = " << center_RA << "\tdec = " << center_dec << "\t rot = " << (180/M_PI)*center_rot << endl;
+
+        //RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( 3.806,68.428, 89.25*(M_PI/180),0.000006989, 6240, 4160);
+        RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( center_RA, center_dec, -center_rot, angle_per_pix, 6240, 4160);
+        vector<tuple<float,float,float> > stars_from_database;
+        for (const auto &star : stars_around)   {
+            const tuple<float,float> ra_dec = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(get<0>(star));
+            stars_from_database.push_back(tuple<float,float,float>(get<0>(ra_dec), get<1>(ra_dec), get<1>(star)));
+        }
+        //const tuple<float,float> ra_dec = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(center_RA, center_dec);
+        //stars_from_database.push_back(tuple<float,float,float>(get<0>(ra_dec), get<1>(ra_dec), 0));
+
+        StarPlotter star_plotter(image_width_pixels, image_height_pixels,255);
+        //star_plotter.AddStarsFromPhoto(stars_from_photo, 0);
+        star_plotter.AddStarsFromDatabase(stars_from_database);
+        star_plotter.Save("stars_test_database.png");
+
         return 0;
     }
 
+    if (false)   {
+        PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
 
-    if (true)   {
-        PlateSolverTool plate_solver_tool("../data/index_file_500mm_plane_approx.txt", "../data/catalogue.csv");
-
-
-//        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(argv[1]);
-
-//        const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
-//            5981.8, -2026.35, 3991,     //  "HD  23005"
-//            1303.5,	-3140.96, 17617,    //  "V* MM Cam"
-//            6240, 4160
-//        ); // their distance is 4722 pixels
-
-        const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
-            806,-711, 3991,     //  "HD  23005"
-            346,-73, 17617,    //  "V* MM Cam"
-            1369,852
-        ); // their distance is 4722 pixels
+        //const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
+        //    5981.8, -2026.35, 3991,     //  "HD  23005"
+        //    1303.5,	-3140.96, 17617,    //  "V* MM Cam"
+        //    6240, 4160
+        //); // their distance is 4722 pixels
 
 
+        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(argv[1]);
         const float RA      = get<0>(result);
         const float dec     = get<1>(result);
         const float rot     = (180/M_PI)*get<2>(result);
@@ -66,25 +103,57 @@ int main(int argc, const char **argv)   {
     }
 
     // hash finder test
-    if (false)   {
+    if (true)   {
         const string jpg_address = argv[1];
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
 
-        vector<tuple<float,float,float,float> > hashes_from_photo = get_asterism_hashes_from_jpg(jpg_address, 8);
+        unsigned int image_width_pixels;
+        vector<unsigned char> m_pixels = load_bw_image_to_uchar(jpg_address, &image_width_pixels);
 
-        HashFinder hash_finder("index_file_500mm_plane_approx.txt");
+        StarFinder star_finder(m_pixels, image_width_pixels);
+        unsigned int image_height_pixels = m_pixels.size()/image_width_pixels;
+
+        const float brightness_threshold = star_finder.get_threshold(0.002);
+        vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
+
+        const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = PlateSolverTool::get_hashes_with_indices(stars, 8);
+        const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
+
+        HashFinder hash_finder("../data/index_file_840mm_plane_approx.txt");
+        PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
 
         const auto similar_hashes = hash_finder.get_similar_hashes(hashes_from_photo, 50);
 
         for (unsigned int i_input_hash = 0; i_input_hash < hashes_from_photo.size(); i_input_hash++)    {
-            cout << "\n\nOriginal hash: " << hash_tuple_to_string(hashes_from_photo[i_input_hash]) << endl;
+            cout << "\n\nOriginal hash: " << hash_tuple_to_string(hashes_from_photo[i_input_hash]);
+            cout << ",\t(" << get<0>(stars[get<1>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<1>(hashes_with_indices_from_photo[i_input_hash])]) << ") ";
+            cout << ",\t(" << get<0>(stars[get<2>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<2>(hashes_with_indices_from_photo[i_input_hash])]) << ") ";
+            cout << ",\t(" << get<0>(stars[get<3>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<3>(hashes_with_indices_from_photo[i_input_hash])]) << ") ";
+            cout << ",\t(" << get<0>(stars[get<4>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<4>(hashes_with_indices_from_photo[i_input_hash])]) << ")\n";
             for (const auto &similar_hash : similar_hashes[i_input_hash])    {
                 float RA, dec;
                 star_database_handler.get_star_info(get<1>(similar_hash), &RA, &dec);
 
+                const string starA_name = star_database_handler.get_star_name(get<1>(similar_hash));
+                const string starB_name = star_database_handler.get_star_name(get<2>(similar_hash));
+                const string starC_name = star_database_handler.get_star_name(get<3>(similar_hash));
+                const string starD_name = star_database_handler.get_star_name(get<4>(similar_hash));
+
                 if (RA < 5 && RA > 3 && dec > 62 && dec < 80)   {
+                    const unsigned int i_photo_starA = get<1>(hashes_with_indices_from_photo[i_input_hash]);
+                    const unsigned int i_photo_starB = get<2>(hashes_with_indices_from_photo[i_input_hash]);
+                    const auto hyp_coor = plate_solver_tool.get_hypothesis_coordinates(
+                        get<0>(stars[i_photo_starA]),
+                        get<1>(stars[i_photo_starA]),
+                        get<1>(similar_hash),
+                        get<0>(stars[i_photo_starB]),
+                        get<1>(stars[i_photo_starB]),
+                        get<2>(similar_hash),
+                        6240,4160
+                    );
                     cout << hash_tuple_to_string(get<0>(similar_hash));
-                    cout << " RA = " << RA << "   \tdec = " << dec << endl;
+                    cout << " RA = " << get<0>(hyp_coor) << "   \tdec = " << get<1>(hyp_coor) << "\t\t"
+                            << starA_name << "\t" << starB_name << "\t" << starC_name << "\t" << starD_name  <<  endl;
                 }
             }
         }
@@ -106,7 +175,7 @@ int main(int argc, const char **argv)   {
         shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
         std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
         night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
-        night_sky_indexer->create_index_file("index_file_500mm_plane_approx.txt", 500);
+        night_sky_indexer->create_index_file("index_file_840mm_plane_approx.txt", 840);
 
 
 
@@ -118,10 +187,10 @@ int main(int argc, const char **argv)   {
             const float xd = get<2>(hash);
             const float yd = get<3>(hash);
 
-            unsigned int i_starA = get<1>(hash_info);
-            unsigned int i_starB = get<2>(hash_info);
-            unsigned int i_starC = get<3>(hash_info);
-            unsigned int i_starD = get<4>(hash_info);
+            const unsigned int i_starA = get<1>(hash_info);
+            const unsigned int i_starB = get<2>(hash_info);
+            const unsigned int i_starC = get<3>(hash_info);
+            const unsigned int i_starD = get<4>(hash_info);
 
             vector<Vector3D> star_positions;
             for (unsigned int i_star : vector<unsigned int>({i_starA,i_starB,i_starC,i_starD,}))    {

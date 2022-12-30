@@ -28,7 +28,7 @@ void StarPlotter::AddStarsFromPhoto(const std::vector<std::tuple<float,float,flo
 
 void StarPlotter::AddStarsFromDatabase(const std::vector<std::tuple<float,float,float> > &stars, unsigned char color) {
     for (const std::tuple<float,float,float> &star : stars) {
-        const float radius = sqrt(get<2>(star))/M_PI;
+        const float radius = 50*pow(0.5,get<2>(star)/3);
         draw_circle(get<0>(star), get<1>(star), radius*1.5, 0, color);
     }
 };
@@ -45,7 +45,6 @@ void StarPlotter::draw_circle(float x, float y, float outer_radius, float inner_
             const float r2 = pow2(offset_x-x) + pow2(offset_y-y);
             if (r2 < outer_radius2 && r2 > inner_radius2)  {
                 draw_pixel(offset_x, offset_y, color);
-                //cout << "drawing pixel " << offset_x << ", " << offset_y << endl;
             }
         }
     }
