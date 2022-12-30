@@ -26,16 +26,26 @@ std::vector<Vector3D> PlateSolver::get_rotated_axes(const Vector3D &reference_ax
 PixelCoordinatesToRaDecConvertor::PixelCoordinatesToRaDecConvertor( float center_RA, float center_dec, float rotation, float radians_per_pixel,
                                                                     float width_in_pixels, float height_in_pixels)  {
 
+
+    m_rotation_matrix[0][0] = cos(rotation);
+    m_rotation_matrix[0][1] = -sin(rotation);
+    m_rotation_matrix[1][0] = -m_rotation_matrix[0][1]; // sin
+    m_rotation_matrix[1][1] = m_rotation_matrix[0][0]; // cos
+
     m_x_axis = Vector3D::get_vector_unity_from_ra_dec(center_RA, center_dec);
 
-    // let's rotate y-axis by "rotation" angle in z-y plane
-    const Vector3D temp_y_axis = Vector3D(0, cos(rotation), sin(rotation));
-
-    m_z_axis = m_x_axis*temp_y_axis;
+    float z_axis_dec = center_dec + 90;
+    float z_axis_RA = center_RA;
+    if (z_axis_dec > 90)    {
+        z_axis_dec = 180 - z_axis_dec;
+        z_axis_RA += 12;
+        if (z_axis_RA > 24) z_axis_RA -= 24;
+    }
+    m_z_axis = Vector3D::get_vector_unity_from_ra_dec(z_axis_RA, z_axis_dec);
     m_y_axis = m_z_axis*m_x_axis;
 
-    m_half_height = height_in_pixels/2;
-    m_half_width  = width_in_pixels/2;
+    m_half_width    = width_in_pixels/2;
+    m_half_height   = height_in_pixels/2;
 
     m_x_axis.normalize(radians_per_pixel);
     m_y_axis.normalize(radians_per_pixel);
@@ -50,17 +60,18 @@ std::tuple<float,float> PixelCoordinatesToRaDecConvertor::convert_to_ra_dec(floa
         y += m_half_height;
     }
 
-    Vector3D celestial_coordinates = m_x_axis*x + m_y_axis*y;
+    // firstly rotate it the way that "up" points to north celestial pole
+    const float x_rot = x*m_rotation_matrix[0][0] + y*m_rotation_matrix[0][1];
+    const float y_rot = x*m_rotation_matrix[1][0] + y*m_rotation_matrix[1][1];
+
+    Vector3D celestial_coordinates = m_y_axis*x_rot + m_z_axis*y_rot;
     const float xy_size = celestial_coordinates.r();
     if (xy_size > 1)    {
         throw string("convert_to_ra_dec:: invalid pixel coordinates");
     }
-
-    const float coor_x = celestial_coordinates.x();
-    const float coor_y = celestial_coordinates.y();
-    const float coor_z = 1-sqrt(pow2(coor_x) + pow2(coor_y));
-
-    celestial_coordinates = Vector3D(coor_x, coor_y, coor_z);
+    const float coor_x = sqrt(1-celestial_coordinates.r2());
+    const Vector3D x_axis_scaled = m_x_axis*(coor_x/m_x_axis.r());
+    celestial_coordinates = x_axis_scaled+celestial_coordinates;
 
     return tuple<float,float>(celestial_coordinates.get_ra(), celestial_coordinates.get_dec());
 };

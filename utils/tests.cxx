@@ -8,6 +8,7 @@
 #include "../PlateSolver/Common.h"
 #include "../PlateSolver/ImageHasher.h"
 #include "../PlateSolver/PlateSolverTool.h"
+#include "../PlateSolver/GeometricTransformations.h"
 
 #include <vector>
 #include <tuple>
@@ -20,6 +21,15 @@ using namespace PlateSolver;
 
 int main(int argc, const char **argv)   {
     try {
+
+    // geometric transformations
+    if (true)   {
+        PixelCoordinatesToRaDecConvertor pix_to_ra_dec_convertor(3.8172,68.1858, M_PI/6, 0.000006989, 6240, 4160);
+        const tuple<float,float> ra_dec = pix_to_ra_dec_convertor.convert_to_ra_dec(2000,-2000);
+        cout << "RA = " << convert_to_deg_min_sec(get<0>(ra_dec),"h") << "\tdec = " << convert_to_deg_min_sec(get<1>(ra_dec)) << endl;
+        return 0;
+    }
+
 
     if (true)   {
         PlateSolverTool plate_solver_tool("../data/index_file_500mm_plane_approx.txt", "../data/catalogue.csv");
@@ -47,10 +57,10 @@ int main(int argc, const char **argv)   {
         const float height  = (180/M_PI)*get<4>(result);
 
         cout << "Plate solving finished\n";
-        cout << "\tRA = " << convert_to_ged_min_sec(RA, "h") << endl;
-        cout << "\tdec = " << convert_to_ged_min_sec(dec) << endl;
-        cout << "\trot = " << convert_to_ged_min_sec(rot) << endl;
-        cout << "\twidth x height = " << convert_to_ged_min_sec(width) + " x " << convert_to_ged_min_sec(height) << endl;
+        cout << "\tRA = " << convert_to_deg_min_sec(RA, "h") << endl;
+        cout << "\tdec = " << convert_to_deg_min_sec(dec) << endl;
+        cout << "\trot = " << convert_to_deg_min_sec(rot) << endl;
+        cout << "\twidth x height = " << convert_to_deg_min_sec(width) + " x " << convert_to_deg_min_sec(height) << endl;
 
         return 0;
     }

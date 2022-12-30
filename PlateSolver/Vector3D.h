@@ -32,9 +32,9 @@ namespace PlateSolver   {
 
             inline Vector3D operator+(const Vector3D &b) const    {
                 return Vector3D (
-                    m_x*b.m_x,
-                    m_y*b.m_y,
-                    m_z*b.m_z
+                    m_x+b.m_x,
+                    m_y+b.m_y,
+                    m_z+b.m_z
                 );
             };
 
@@ -55,7 +55,7 @@ namespace PlateSolver   {
             inline float theta()    const {return asin(m_z/r());};
             inline float phi()      const {return m_y > 0 ? acos(m_x/sqrt(m_x*m_x + m_y*m_y)) : (2*M_PI)-acos(m_x/sqrt(m_x*m_x + m_y*m_y));};
 
-            inline float get_ra()   const   {return (-12/M_PI)*phi();};
+            float get_ra()   const;
             inline float get_dec()  const   {return (180/M_PI)*theta();};
 
 

@@ -9,7 +9,7 @@ namespace PlateSolver   {
 
     typedef std::tuple<std::tuple<float,float,float,float>, unsigned int, unsigned int, unsigned int, unsigned int> AsterismHashWithIndices;
 
-    std::string convert_to_ged_min_sec(float x, const std::string &degree_symbol = "°");
+    std::string convert_to_deg_min_sec(float x, const std::string &degree_symbol = "°");
 
     std::string hash_tuple_to_string(std::tuple<float,float,float,float> hash);
 

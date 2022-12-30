@@ -32,6 +32,12 @@ float Vector3D::get_angle(const Vector3D &v1, const Vector3D &v2)   {
     return acos( (v1.scalar_product(v2))/(v1.r()*v2.r()) );
 };
 
+float Vector3D::get_ra()   const   {
+    float RA = (-12/M_PI)*phi();
+    if (RA < 24) RA+=24;
+    return RA;
+};
+
 void Vector3D::normalize(float vector_size) {
     const float scale_factor = vector_size/r();
     m_x *= scale_factor;
@@ -44,6 +50,6 @@ std::string Vector3D::to_string(CoordinateSystem coordinate_system)  const {
         return ("[ " + std::to_string(m_x) + ", "  + std::to_string(m_y) + ", "  + std::to_string(m_z) + "]");
     }
     else {
-        return ("[ " + std::to_string(r()) + ", "  + convert_to_ged_min_sec((180/M_PI)*theta()) + ", "  + convert_to_ged_min_sec((180/M_PI)*phi()) + "]");
+        return ("[ " + std::to_string(r()) + ", "  + convert_to_deg_min_sec((180/M_PI)*theta()) + ", "  + convert_to_deg_min_sec((180/M_PI)*phi()) + "]");
     }
 };
