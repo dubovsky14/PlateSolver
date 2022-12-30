@@ -7,6 +7,7 @@
 #include <vector>
 #include <tuple>
 #include <string>
+#include <iostream>
 
 using namespace PlateSolver;
 using namespace std;
@@ -67,10 +68,17 @@ std::tuple<float,float> PixelCoordinatesToRaDecConvertor::convert_to_ra_dec(floa
 RaDecToPixelCoordinatesConvertor::RaDecToPixelCoordinatesConvertor(   float center_RA, float center_dec, float rotation, float angle_per_pixel,
                                     float width_in_pixels, float height_in_pixels)  {
 
+    m_rotation = rotation;
     m_x_axis = Vector3D::get_vector_unity_from_ra_dec(center_RA, center_dec);
 
-    const Vector3D temp_y_axis = Vector3D(0, cos(-rotation), sin(-rotation));
-    m_z_axis = m_x_axis*temp_y_axis;
+    float z_axis_dec = center_dec + 90;
+    float z_axis_RA = center_RA;
+    if (z_axis_dec > 90)    {
+        z_axis_dec = 180 - z_axis_dec;
+        z_axis_RA += 12;
+        if (z_axis_RA > 24) z_axis_RA -= 24;
+    }
+    m_z_axis = Vector3D::get_vector_unity_from_ra_dec(z_axis_RA, z_axis_dec);
     m_y_axis = m_z_axis*m_x_axis;
 
     m_x_axis.normalize(1/angle_per_pixel);
@@ -80,6 +88,10 @@ RaDecToPixelCoordinatesConvertor::RaDecToPixelCoordinatesConvertor(   float cent
 
     m_half_width    = width_in_pixels/2;
     m_half_height   = height_in_pixels/2;
+
+    cout << "rotated x-axis" << m_x_axis.to_string(CoordinateSystem::enum_spherical) << endl;
+    cout << "rotated y-axis" << m_y_axis.to_string(CoordinateSystem::enum_spherical) << endl;
+    cout << "rotated z-axis" << m_z_axis.to_string(CoordinateSystem::enum_spherical) << endl;
 };
 
 std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coordinates(float ra, float dec, ZeroZeroPoint zero_zero_point) {

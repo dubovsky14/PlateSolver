@@ -24,10 +24,23 @@ int main(int argc, const char **argv)   {
     if (true)   {
         PlateSolverTool plate_solver_tool("../data/index_file_500mm_plane_approx.txt", "../data/catalogue.csv");
 
-        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(argv[1]);
+
+//        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(argv[1]);
+//        const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
+//            5981.8, -2026.35, 3991,     //  "HD  23005"
+//            1303.5,	-3140.96, 17617,    //  "V* MM Cam"
+//            6240, 4160
+//        ); // their distance is 4722 pixels
+        const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
+            806,-711, 3991,     //  "HD  23005"
+            346,-73, 17617,    //  "V* MM Cam"
+            1369,852
+        ); // their distance is 4722 pixels
+
+
         const float RA      = get<0>(result);
         const float dec     = get<1>(result);
-        const float rot     = get<2>(result);
+        const float rot     = (180/M_PI)*get<2>(result);
         const float width   = (180/M_PI)*get<3>(result);
         const float height  = (180/M_PI)*get<4>(result);
 

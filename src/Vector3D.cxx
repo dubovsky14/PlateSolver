@@ -1,4 +1,5 @@
 #include "../PlateSolver/Vector3D.h"
+#include "../PlateSolver/Common.h"
 
 using namespace PlateSolver;
 using namespace std;
@@ -36,4 +37,13 @@ void Vector3D::normalize(float vector_size) {
     m_x *= scale_factor;
     m_y *= scale_factor;
     m_z *= scale_factor;
+};
+
+std::string Vector3D::to_string(CoordinateSystem coordinate_system)  const {
+    if (coordinate_system == CoordinateSystem::enum_cartesian)   {
+        return ("[ " + std::to_string(m_x) + ", "  + std::to_string(m_y) + ", "  + std::to_string(m_z) + "]");
+    }
+    else {
+        return ("[ " + std::to_string(r()) + ", "  + convert_to_ged_min_sec((180/M_PI)*theta()) + ", "  + convert_to_ged_min_sec((180/M_PI)*phi()) + "]");
+    }
 };

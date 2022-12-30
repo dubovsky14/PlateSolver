@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <string>
 
 namespace PlateSolver   {
     enum class CoordinateSystem {enum_cartesian, enum_spherical};
@@ -56,6 +57,9 @@ namespace PlateSolver   {
 
             inline float get_ra()   const   {return (-12/M_PI)*phi();};
             inline float get_dec()  const   {return (180/M_PI)*theta();};
+
+
+            std::string to_string(CoordinateSystem coordinate_system = CoordinateSystem::enum_cartesian)  const;
 
             void normalize(float vector_size = 1);
 
