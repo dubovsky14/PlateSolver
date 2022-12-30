@@ -27,7 +27,6 @@ std::vector<unsigned char> PlateSolver::load_bw_image_to_uchar(const std::string
 
 void PlateSolver::dump_to_picture(const std::string &image_address, const std::vector<unsigned char> &pixels, unsigned int pixels_per_line)    {
     int width(pixels_per_line), height(pixels.size()/pixels_per_line);
-    cout << width << "x" << height << endl;
     Mat image = Mat::zeros(height, width,0);
     for (unsigned int i_pixel = 0; i_pixel < pixels.size(); i_pixel++)  {
         image.at<uchar>(i_pixel/width,i_pixel % width) = pixels[i_pixel];
