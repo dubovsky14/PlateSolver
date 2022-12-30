@@ -68,7 +68,11 @@ std::tuple<float,float> PixelCoordinatesToRaDecConvertor::convert_to_ra_dec(floa
 RaDecToPixelCoordinatesConvertor::RaDecToPixelCoordinatesConvertor(   float center_RA, float center_dec, float rotation, float angle_per_pixel,
                                     float width_in_pixels, float height_in_pixels)  {
 
-    m_rotation = rotation;
+    m_rotation_matrix[0][0] = cos(rotation);
+    m_rotation_matrix[0][1] = -sin(rotation);
+    m_rotation_matrix[1][0] = -m_rotation_matrix[0][1]; // sin
+    m_rotation_matrix[1][1] = m_rotation_matrix[0][0]; // cos
+
     m_x_axis = Vector3D::get_vector_unity_from_ra_dec(center_RA, center_dec);
 
     float z_axis_dec = center_dec + 90;
@@ -100,11 +104,14 @@ std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coord
 };
 
 std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coordinates(const Vector3D &position, ZeroZeroPoint zero_zero_point)    {
-    if (zero_zero_point == ZeroZeroPoint::center)   {
-        return tuple<float,float>(position.scalar_product(m_y_axis), position.scalar_product(m_z_axis));
+    float original_coordinates[2] = {position.scalar_product(m_y_axis), position.scalar_product(m_z_axis)};
+    if (zero_zero_point == ZeroZeroPoint::upper_left)   {
+        original_coordinates[0] -= m_half_width;
+        original_coordinates[1] += m_half_height;
     }
-    else    {
-        return tuple<float,float>(position.scalar_product(m_y_axis)-m_half_width, position.scalar_product(m_z_axis)+m_half_height);
-    }
+    return tuple<float,float>(
+        original_coordinates[0]*m_rotation_matrix[0][0] + original_coordinates[1]*m_rotation_matrix[0][1],
+        original_coordinates[0]*m_rotation_matrix[1][0] + original_coordinates[1]*m_rotation_matrix[1][1]
+    );
 };
 

@@ -49,7 +49,8 @@ namespace PlateSolver   {
             Vector3D m_y_axis = Vector3D(0,1,0);
             Vector3D m_z_axis = Vector3D(0,0,1);
 
-            float m_half_width, m_half_height, m_rotation;
+            float m_half_width, m_half_height;
+            float m_rotation_matrix[2][2];
 
     };
 }
