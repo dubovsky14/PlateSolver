@@ -97,6 +97,7 @@ RaDecToPixelCoordinatesConvertor::RaDecToPixelCoordinatesConvertor(   float cent
     m_y_axis.normalize(1/angle_per_pixel);
     m_z_axis.normalize(1/angle_per_pixel);
 
+
     m_half_width    = width_in_pixels/2;
     m_half_height   = height_in_pixels/2;
 };

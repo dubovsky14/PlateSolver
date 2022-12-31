@@ -186,8 +186,8 @@ int main(int argc, const char **argv)   {
 
         shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
         std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
-        night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
-        //night_sky_indexer->create_index_file("index_file_840mm_plane_approx.txt", 840);
+        //night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
+        night_sky_indexer->create_index_file("index_file_840mm_plane_approx.txt", 840);
 
 
 
@@ -209,7 +209,7 @@ int main(int argc, const char **argv)   {
                 star_database_handler.get_star_info(i_star, &RA, &dec);
                 star_positions.push_back(Vector3D(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical));
             }
-            vector<tuple<float,float> > star_positions_in_sensor_coordinates = NightSkyIndexer::convert_star_coordinates_to_pixels_positions(star_positions, reference_axis);
+            vector<tuple<float,float> > star_positions_in_sensor_coordinates = NightSkyIndexer::convert_star_coordinates_to_pixels_positions(star_positions, RA, dec);
 
             const std::string nameA = star_database_handler.get_star_name(i_starA);
             const std::string nameB = star_database_handler.get_star_name(i_starB);

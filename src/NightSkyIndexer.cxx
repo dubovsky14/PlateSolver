@@ -41,8 +41,7 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
     }
 
     // positions of the stars how camera sensor will see them (projection to a plane)
-    const Vector3D reference_axis = Vector3D::get_vector_unity_from_ra_dec(RA, dec);
-    vector<tuple<float, float> > stars_sensor_based_coordinates = convert_star_coordinates_to_pixels_positions(star_positions, reference_axis);
+    vector<tuple<float, float> > stars_sensor_based_coordinates = convert_star_coordinates_to_pixels_positions(star_positions, RA, dec);
 
 
     const unsigned int NSTARS = 7;
@@ -87,11 +86,11 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 };
 
 
-vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels_positions(const vector<Vector3D> &stars, const Vector3D &reference_axis)  {
+vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels_positions(const vector<Vector3D> &stars, float RA, float dec)  {
     vector<tuple<float, float> > result;
 
-    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( reference_axis.get_ra(), reference_axis.get_dec(), 0,
-                                                                1e-6, 12000, 8000); // the last three numbers are arbitrary here
+    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( RA, dec, 0,
+                                                                1e-6, 1200, 800); // the last three numbers are arbitrary here
 
     for (const Vector3D &star_3d_vector : stars)    {
         result.push_back(ra_dec_to_pixel.convert_to_pixel_coordinates(star_3d_vector, ZeroZeroPoint::center));
@@ -104,10 +103,9 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > result;
     float angle_width, angle_height;
     focal_length_to_field_of_view(focal_length, &angle_width, &angle_height);
-    const float FOV_angle = (angle_height*0.5);
+    const float FOV_angle = (angle_width*0.5);
     cout << "Creating index file, FOV = " << convert_to_deg_min_sec(FOV_angle*180/M_PI) << endl;
-    const float step_size_in_FOVs = 0.3;
-
+    const float step_size_in_FOVs = 0.25;
 
     index_sky_region(0,90,FOV_angle, &result);
     const float dec_step = (180/M_PI)*FOV_angle*step_size_in_FOVs;

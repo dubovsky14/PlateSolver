@@ -59,7 +59,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
         cout << ", " << get<1>(hash_with_indices) << ", " << get<2>(hash_with_indices) << ", " << get<3>(hash_with_indices) << ", " << get<4>(hash_with_indices) << endl;
     }
 
-    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,50);
+    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10);
 
 
     vector<tuple<float,float,float,float,float> > valid_hypotheses;
@@ -79,15 +79,6 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
             const auto hypothesis_coordinates = get_hypothesis_coordinates( xpos_starA, ypos_starA, starA_database_index,
                                                                             xpos_starB, ypos_starB, starB_database_index,
                                                                             m_image_width_pixels, m_image_height_pixels);
-
-            if (starA_database_index == 3991 || starB_database_index == 3991)  {
-                cout << "\n\nVerifying correct coordinates!\n";
-                cout << "starA = "  << m_star_database_handler->get_star_name(starA_database_index)
-                                    << "  , " << names[starA_index_photo] << endl;
-                cout << "starB = " << m_star_database_handler->get_star_name(starB_database_index)
-                                    << "  , " << names[starB_index_photo] << endl;
-            }
-
 
             const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
             if (valid_hypotesis)    {

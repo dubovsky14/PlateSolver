@@ -1,6 +1,8 @@
 #include "../PlateSolver/AsterismHasher.h"
+#include "../PlateSolver/Common.h"
 
 #include <string>
+#include <iostream>
 #include <cmath>
 
 using namespace std;
@@ -84,12 +86,12 @@ bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &s
 };
 
 void PlateSolver::get_indices_of_most_distant_stars(const std::vector<std::tuple<float, float > > &stars, int *star1, int *star2)   {
-    float max_distance2 = 0;
+    float max_distance2 = -1;
     for (unsigned int i_star1 = 0; i_star1 < 4; i_star1++)  {
         const float star1_x(get<0>(stars[i_star1])), star1_y(get<1>(stars[i_star1]));
         for (unsigned int i_star2 = 0; i_star2 < i_star1; i_star2++)  {
             const float star2_x(get<0>(stars[i_star2])), star2_y(get<1>(stars[i_star2]));
-            const float distance2 = sqr(star2_x-star1_x) + sqr(star2_y-star1_y);
+            const float distance2 = pow2(star2_x-star1_x) + pow2(star2_y-star1_y);
             if (distance2 > max_distance2)  {
                 *star1 = i_star1;
                 *star2 = i_star2;
@@ -100,5 +102,5 @@ void PlateSolver::get_indices_of_most_distant_stars(const std::vector<std::tuple
 };
 
 float PlateSolver::get_star_distance_squared(const std::tuple<float, float> &star1, const std::tuple<float, float> &star2)  {
-    return sqr(get<0>(star1) - get<0>(star2)) + sqr(get<1>(star1) - get<1>(star2));
+    return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
 };
