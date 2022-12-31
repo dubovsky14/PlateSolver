@@ -28,6 +28,10 @@ std::string PlateSolver::hash_tuple_to_string(std::tuple<float,float,float,float
     return result;
 };
 
+float PlateSolver::vec_size(float x, float y)   {
+    return sqrt(pow2(x) + pow2(y));
+};
+
 std::vector<AsterismHash> PlateSolver::extract_hashes(const std::vector<AsterismHashWithIndices> &asterisms_and_hashes)  {
     std::vector<AsterismHash> result(asterisms_and_hashes.size());
     for (unsigned int i_hash = 0; i_hash < asterisms_and_hashes.size(); i_hash++)   {

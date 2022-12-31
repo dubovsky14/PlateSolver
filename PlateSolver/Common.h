@@ -13,6 +13,8 @@ namespace PlateSolver   {
 
     std::string hash_tuple_to_string(std::tuple<float,float,float,float> hash);
 
+    float vec_size(float x, float y);
+
     std::vector<AsterismHash> extract_hashes(const std::vector<AsterismHashWithIndices> &asterisms_and_hashes);
 
     template <class X>

@@ -7,6 +7,7 @@
 #include "../PlateSolver/Vector3D.h"
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/GeometricTransformations.h"
+#include "../PlateSolver/StarPlotter.h"
 
 
 #include<vector>
@@ -73,7 +74,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
                                                                             xpos_starB, ypos_starB, starB_database_index,
                                                                             m_image_width_pixels, m_image_height_pixels);
 
-            const bool valid_hypotesis = validate_hypothesis(stars_around_center, hypothesis_coordinates);
+            const bool valid_hypotesis = validate_hypothesis(stars_around_center, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
             if (valid_hypotesis)    {
                 valid_hypotheses.push_back(hypothesis_coordinates);
             }
@@ -88,51 +89,62 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
 };
 
 
-bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,float,float> > &stars_around_center,
-                                            const std::tuple<float,float,float,float,float> &hypothesis_coordinates)    {
+bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,float,float> > &stars_from_photo,
+                                            const std::tuple<float,float,float,float,float> &hypothesis_coordinates,
+                                            float image_width_pixels, float image_height_pixels)    {
 
     const float hypothesis_RA       = get<0>(hypothesis_coordinates);
     const float hypothesis_dec      = get<1>(hypothesis_coordinates);
     const float hypothesis_rot      = get<2>(hypothesis_coordinates);
+    const float hypothesis_im_width = get<3>(hypothesis_coordinates);
     const float hypothesis_im_height= get<4>(hypothesis_coordinates);
-    const float radians_per_pixel   = hypothesis_im_height/m_image_height_pixels;
+    const float radians_per_pixel   = hypothesis_im_height/image_height_pixels;
 
-    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( hypothesis_RA, hypothesis_dec, hypothesis_rot,
-                                                                radians_per_pixel, m_image_width_pixels, m_image_height_pixels);
+    // maximal allowed distance in pixels between the rea position of the star (from database) and the position from photo to be considered as "matched"
+    const float maximal_allowed_deviation2 = pow2(0.02*image_width_pixels);
+
+    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( hypothesis_RA, hypothesis_dec, -hypothesis_rot,
+                                                                radians_per_pixel, image_width_pixels, image_height_pixels);
+
+    cout << "radians per pixel: " << radians_per_pixel << endl;
 
     // get the stars that we should see in circle around the center of the image, with the radius hypothesis_im_height/2
-    const std::vector<std::tuple<Vector3D, float, unsigned int> > stars_from_database = m_star_position_handler->get_stars_around_coordinates(hypothesis_RA, hypothesis_dec, hypothesis_im_height/2);
+    const auto stars_from_database = m_star_position_handler->get_stars_around_coordinates( hypothesis_RA,
+                                                                                            hypothesis_dec,
+                                                                                            0.5*vec_size(hypothesis_im_width,hypothesis_im_height),
+                                                                                            true);
 
-    const unsigned int n_stars_truth = min(int(stars_from_database.size()), 10);
-    vector<tuple<float,float,float> > brightest_stars_from_database_pixel_coordinates(n_stars_truth);
-    for (unsigned int i_star = 0; i_star < n_stars_truth; i_star++) {
-        const tuple<float,float> star_pixel_coordinates = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(get<0>(stars_from_database[i_star]), ZeroZeroPoint::upper_left);
-        const float magnitude = get<1>(stars_from_database[i_star]);
-        const float star_size = 600*pow(2.5,-magnitude);
-        brightest_stars_from_database_pixel_coordinates.push_back(tuple<float,float,float>(
-                get<0>(star_pixel_coordinates), get<1>(star_pixel_coordinates), star_size
-            )
-        );
+    // firstly convert RA,dec to pixel coordinates and keep only those with coordinates inside the sensor
+    vector<tuple<float,float,float> > brightest_stars_from_database_pixel_coordinates;
+    brightest_stars_from_database_pixel_coordinates.reserve(stars_from_database.size());
+    for (const tuple<Vector3D, float, unsigned int> &star : stars_from_database) {
+        //cout << "DEBUG 1: " << get<0>(star).to_string(CoordinateSystem::enum_spherical) << "\n";
+        const tuple<float,float> pixel_coor = ra_dec_to_pixel.convert_to_pixel_coordinates(get<0>(star), ZeroZeroPoint::upper_left);
+        //cout << "DEBUG 2: " << get<0>(pixel_coor) << ", " <<  get<1>(pixel_coor) << "]\n";
+        const float pos_x = get<0>(pixel_coor);
+        const float pos_y = get<1>(pixel_coor);
+
+        // skip stars outside of the sensor
+        if (pos_x < 0 || pos_x > image_width_pixels || pos_y > 0 || -pos_y > image_height_pixels) continue;
+
+        const float magnitude = get<1>(star);
+        brightest_stars_from_database_pixel_coordinates.push_back(tuple<float,float,float>(pos_x, pos_y, magnitude));
     }
 
-    vector<tuple<float,float,float> > brightest_stars_from_photo_pixel_coordinates = stars_around_center;
-    sort(   brightest_stars_from_photo_pixel_coordinates.begin(),
-            brightest_stars_from_photo_pixel_coordinates.end(),
-            [](const auto &a, const auto &b) {return get<2>(a) > get<2>(b);}  );
+    // keep only 12 brightest stars from the photo (if available)
+    std::vector<std::tuple<float,float,float> > brightest_stars_from_photo = stars_from_photo;
+    if (brightest_stars_from_photo.size() > 12)   brightest_stars_from_photo.resize(12);
+    const unsigned int n_stars_photo = brightest_stars_from_photo.size();
 
-    const unsigned int n_stars_reco = min(int(n_stars_truth*2), int(brightest_stars_from_photo_pixel_coordinates.size()));
-    brightest_stars_from_photo_pixel_coordinates.resize(n_stars_reco);
+    // select 2 times more stars from database as we have from the photo (if available)
+    if (brightest_stars_from_database_pixel_coordinates.size() > 2*n_stars_photo)   {
+        brightest_stars_from_database_pixel_coordinates.resize(2*n_stars_photo);
+    }
 
-    // Check how many bright stars from database has around a bright star from photo
     unsigned int n_stars_truth_paired = 0;
-    const float maximal_allowed_deviation2 = pow2(m_image_height_pixels*0.05);
-    auto calculate_dist2 = [](const tuple<float,float,float> &star1, const tuple<float,float,float> &star2) {
-        return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
-    };
-
     for (const auto &star_truth : brightest_stars_from_database_pixel_coordinates)  {
         bool paired_to_stars_from_photo = false;
-        for (const auto &star_photo : brightest_stars_from_photo_pixel_coordinates)  {
+        for (const auto &star_photo : brightest_stars_from_photo)  {
             if (calculate_dist2(star_truth, star_photo) < maximal_allowed_deviation2)   {
                 paired_to_stars_from_photo = true;
             }
@@ -140,7 +152,7 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
         if (paired_to_stars_from_photo) n_stars_truth_paired++;
     }
 
-    return n_stars_truth_paired > 0.8*n_stars_truth;
+    return n_stars_truth_paired > 0.5*n_stars_photo;
 };
 
 vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars)   {
@@ -238,4 +250,8 @@ vector<tuple<float,float,float> > PlateSolverTool::select_stars_around_point(con
         }
     }
     return result;
+};
+
+float PlateSolverTool::calculate_dist2(const tuple<float,float,float> &star1, const tuple<float,float,float> &star2) {
+    return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
 };

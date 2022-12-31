@@ -32,8 +32,12 @@ namespace   PlateSolver {
             static std::vector<std::tuple<float,float,float> > select_stars_around_point(const std::vector<std::tuple<float,float,float> > &stars_all,
                                                                                         float point_x, float point_y, float radius);
 
-            bool validate_hypothesis(   const std::vector<std::tuple<float,float,float> > &stars_around_center,
-                                        const std::tuple<float,float,float,float,float> &hypothesis_coordinates);
+            bool validate_hypothesis(   const std::vector<std::tuple<float,float,float> > &stars_from_photo,
+                                        const std::tuple<float,float,float,float,float> &hypothesis_coordinates,
+                                        float image_width_pixels, float image_height_pixels);
+
+
+            static float calculate_dist2(const std::tuple<float,float,float> &star1, const std::tuple<float,float,float> &star2);
         private:
 
             std::shared_ptr<StarDatabaseHandler>    m_star_database_handler = nullptr;

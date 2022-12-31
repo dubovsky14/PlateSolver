@@ -51,6 +51,9 @@ int main(int argc, const char **argv)   {
             image_width_pixels, image_height_pixels
         );
 
+        const bool valid_hypothesis = plate_solver_tool.validate_hypothesis(stars_from_photo, hyp_coor, image_width_pixels, image_height_pixels);
+        cout << "Valid hypothesis: " << valid_hypothesis << endl;
+
         const float center_RA   = get<0>(hyp_coor);
         const float center_dec  = get<1>(hyp_coor);
         const float center_rot  = get<2>(hyp_coor);
@@ -85,7 +88,7 @@ int main(int argc, const char **argv)   {
         return 0;
     }
 
-    if (false)   {
+    if (true)   {
         PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
 
         //const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
