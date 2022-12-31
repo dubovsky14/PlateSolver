@@ -24,7 +24,7 @@ bool PlateSolver::StringIsFloat(const string &x)   {
     return true;
 };
 
-vector<string> PlateSolver::SplitAndStripString(string input_string, const string &separator) {
+vector<string> PlateSolver::SplitAndStripString(const string &input_string, const string &separator) {
     vector<string> result = SplitString(input_string, separator);
     for (string &x : result)    {
         StripString(&x, " \n\t\r");
@@ -35,7 +35,6 @@ vector<string> PlateSolver::SplitAndStripString(string input_string, const strin
 vector<string> PlateSolver::SplitString(string input_string, const string &separator)    {
     vector<string> result;
     size_t pos = 0;
-    std::string token;
     while ((pos = input_string.find(separator)) != std::string::npos) {
         result.push_back(input_string.substr(0, pos));
         input_string.erase(0, pos + separator.length());

@@ -15,7 +15,7 @@ namespace PlateSolver   {
             std::vector<unsigned int>   get_histogram() const {return m_histogram;};
 
             // find the brightness threshold, for which "part*m_pixels.size()" pixels are brighter than the threshold
-            float   get_threshold(float part);
+            float   get_threshold(float part)   const;
 
             // 1st index = index of cluster, 2nd index = index of pixel, value = tuple<x_pixel, y_pixel>
             std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > get_clusters(float threshold);

@@ -14,9 +14,7 @@ using namespace std;
 StarPlotter::StarPlotter(unsigned int image_width, unsigned int image_height, unsigned char background_color)   {
     m_image_height = image_height;
     m_image_width = image_width;
-    m_pixels.resize(m_image_width*m_image_height);
-
-    for (auto &pixel : m_pixels) pixel = background_color;
+    m_pixels = vector<unsigned char>(m_image_width*m_image_height, background_color);
 };
 
 void StarPlotter::AddStarsFromPhoto(const std::vector<std::tuple<float,float,float> > &stars, unsigned char color)  {

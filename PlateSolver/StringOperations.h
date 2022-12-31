@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 namespace PlateSolver {
 
@@ -9,7 +10,7 @@ namespace PlateSolver {
 
     bool StringIsFloat(const std::string &x);
 
-    std::vector<std::string> SplitAndStripString(std::string input_string, const std::string &separator);
+    std::vector<std::string> SplitAndStripString(const std::string &input_string, const std::string &separator);
 
     std::vector<std::string> SplitString(std::string input_string, const std::string &separator);
 
@@ -77,9 +78,7 @@ namespace PlateSolver {
         std::vector<std::string> elements = SplitAndStripString(stripped_string, ",");
 
         std::vector<int> result;
-        for (const std::string &element : elements) {
-            result.push_back(ConvertStringTo<int>(element));
-        }
+        std::transform(elements.begin(),elements.end(),result.begin(), ConvertStringTo<int>);
         return result;
     };
 
@@ -90,9 +89,7 @@ namespace PlateSolver {
         std::vector<std::string> elements = SplitAndStripString(stripped_string, ",");
 
         std::vector<unsigned long long int> result;
-        for (const std::string &element : elements) {
-            result.push_back(ConvertStringTo<unsigned long long int>(element));
-        }
+        std::transform(elements.begin(),elements.end(),result.begin(), ConvertStringTo<unsigned long long int>);
         return result;
     };
 }

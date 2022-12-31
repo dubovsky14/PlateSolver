@@ -36,7 +36,7 @@ std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float thre
 };
 
 void StarFinder::reset_histogram()  {
-    for (auto &x : m_histogram) x = 0;
+    std::transform(m_histogram.begin(), m_histogram.end(), m_histogram.begin(), [](auto x){return 0;});
 };
 
 void StarFinder::fill_histogram()    {
@@ -45,7 +45,7 @@ void StarFinder::fill_histogram()    {
     }
 }
 
-float   StarFinder::get_threshold(float part)   {
+float   StarFinder::get_threshold(float part)   const   {
     const unsigned int n_birgther_pixels = part*m_pixels.size();
     unsigned int current_pixels = 0;
 

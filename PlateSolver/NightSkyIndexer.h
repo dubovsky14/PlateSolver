@@ -11,7 +11,7 @@
 namespace PlateSolver   {
     class NightSkyIndexer   {
         public:
-            NightSkyIndexer(std::shared_ptr<const StarPositionHandler> star_position_handler);
+            explicit NightSkyIndexer(std::shared_ptr<const StarPositionHandler> star_position_handler);
 
             void create_index_file(const std::string &index_file, float focal_length);
 

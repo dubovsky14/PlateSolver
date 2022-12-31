@@ -34,7 +34,6 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 
     vector<tuple<Vector3D, float, unsigned int> >  stars_around = m_star_position_handler->get_stars_around_coordinates(RA, dec, angle, true);
 
-    // these 5 lines would be one line in python :-(
     vector<Vector3D> star_positions;
     star_positions.reserve(stars_around.size());
     for (const tuple<Vector3D, float, unsigned int> &star : stars_around)   {

@@ -14,11 +14,11 @@ namespace PlateSolver   {
 
             void get_star_info(unsigned int star_id, float *RA, float *dec, float *mag = nullptr, std::string *name = nullptr)  const;
 
-            std::string get_star_name(unsigned int star_id);
+            std::string get_star_name(unsigned int star_id) const;
 
-            float get_star_ra(unsigned int star_id);
+            float get_star_ra(unsigned int star_id) const;
 
-            float get_star_dec(unsigned int star_id);
+            float get_star_dec(unsigned int star_id) const;
 
 
         private:
