@@ -33,7 +33,7 @@ int main(int argc, const char **argv)   {
 
         const float brightness_threshold = star_finder.get_threshold(0.002);
         vector<tuple<float,float,float> > stars_from_photo = star_finder.get_stars(brightness_threshold);
-        if (stars_from_photo.size() > 30)  stars_from_photo.resize(30);
+        if (stars_from_photo.size() > 10)  stars_from_photo.resize(10);
 
 
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
@@ -72,7 +72,7 @@ int main(int argc, const char **argv)   {
 
         PixelCoordinatesToRaDecConvertor pixel_to_ra_dec(center_RA, center_dec, center_rot, angle_per_pix, image_width_pixels, image_height_pixels);
         const tuple<float,float> should_be_center = pixel_to_ra_dec.convert_to_ra_dec(  get<0>(stars_from_database.back()),
-                                                                                        get<0>(stars_from_database.back()));
+                                                                                        get<1>(stars_from_database.back()));
 
         cout << "Converted vs. original difference: dRA = " << (get<0>(should_be_center))-center_RA <<
                                                     "\tdec = " << (get<1>(should_be_center))-center_dec << endl;

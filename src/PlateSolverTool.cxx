@@ -213,7 +213,7 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     const float rotation = get_angle(   pos_x_starB - pos_x_starA, pos_y_starB - pos_y_starA,
                                         get<0>(pixel_coordinates[1]), get<1>(pixel_coordinates[1]));
 
-    PixelCoordinatesToRaDecConvertor convertor_center_in_starA(RA_starA, dec_starA, -rotation, angle_per_pixel, image_width, image_height);
+    PixelCoordinatesToRaDecConvertor convertor_center_in_starA(RA_starA, dec_starA, rotation, angle_per_pixel, image_width, image_height);
     const tuple<float,float> RA_dec_center = convertor_center_in_starA.convert_to_ra_dec(
         image_width/2-pos_x_starA,      // coordinates of the center of the image with respect to starA
         -image_height/2-pos_y_starA,    // coordinates of the center of the image with respect to starA

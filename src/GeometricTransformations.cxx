@@ -47,10 +47,10 @@ PixelCoordinatesToRaDecConvertor::PixelCoordinatesToRaDecConvertor( float center
     m_half_width    = width_in_pixels/2;
     m_half_height   = height_in_pixels/2;
 
-    m_x_axis.normalize(angle_per_pixel);
-    m_y_axis.normalize(angle_per_pixel);
-    m_z_axis.normalize(angle_per_pixel);
-
+    m_x_axis.normalize(1.);
+    m_y_axis.normalize(1.);
+    m_z_axis.normalize(1.);
+    m_angle_per_pixel = angle_per_pixel;
 };
 
 
@@ -64,14 +64,11 @@ std::tuple<float,float> PixelCoordinatesToRaDecConvertor::convert_to_ra_dec(floa
     const float x_rot = x*m_rotation_matrix[0][0] + y*m_rotation_matrix[0][1];
     const float y_rot = x*m_rotation_matrix[1][0] + y*m_rotation_matrix[1][1];
 
-    Vector3D celestial_coordinates = m_y_axis*x_rot + m_z_axis*y_rot;
-    const float xy_size = celestial_coordinates.r();
-    if (xy_size > 1)    {
-        throw string("convert_to_ra_dec:: invalid pixel coordinates");
-    }
-    const float coor_x = sqrt(1-celestial_coordinates.r2());
-    const Vector3D x_axis_scaled = m_x_axis*(coor_x/m_x_axis.r());
-    celestial_coordinates = x_axis_scaled+celestial_coordinates;
+    const float x_spherical = x_rot*m_angle_per_pixel;
+    const float y_spherical = y_rot*m_angle_per_pixel;
+    const float z_spherical = sqrt(1-pow2(x_spherical)- pow2(y_spherical));
+
+    Vector3D celestial_coordinates = m_x_axis*z_spherical + m_y_axis*x_spherical + m_z_axis*y_spherical;
 
     return tuple<float,float>(celestial_coordinates.get_ra(), celestial_coordinates.get_dec());
 };
@@ -115,9 +112,15 @@ std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coord
         original_coordinates[0]*m_rotation_matrix[0][0] + original_coordinates[1]*m_rotation_matrix[0][1],
         original_coordinates[0]*m_rotation_matrix[1][0] + original_coordinates[1]*m_rotation_matrix[1][1]
     };
+    if (zero_zero_point == ZeroZeroPoint::upper_left)   {
+        return tuple<float,float>(
+            rotated_coordinates[0] + m_half_width,
+            rotated_coordinates[1] - m_half_height
+        );
+    }
     return tuple<float,float>(
-        rotated_coordinates[0] - m_half_width,
-        rotated_coordinates[1] - m_half_height
+        rotated_coordinates[0],
+        rotated_coordinates[1]
     );
 };
 

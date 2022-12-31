@@ -30,6 +30,14 @@ namespace PlateSolver   {
                 );
             };
 
+            inline Vector3D operator-(const Vector3D &b) const    {
+                return Vector3D (
+                    m_x-b.m_x,
+                    m_y-b.m_y,
+                    m_z-b.m_z
+                );
+            };
+
             inline Vector3D operator+(const Vector3D &b) const    {
                 return Vector3D (
                     m_x+b.m_x,
