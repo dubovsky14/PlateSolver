@@ -29,6 +29,19 @@ PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_ca
 };
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &jpg_file) {
+    const vector<string> names = {
+        "HD  23005",
+        "HD 23662",
+        "3 merged stars",
+        "V* MM Cam",
+        "HD  23450",
+        "HD  23818",
+        "HD 23321",
+        "HD 22829",
+        "HD 22086",
+        "BD+67 291",
+    };
+
     m_pixels = load_bw_image_to_uchar(jpg_file, &m_image_width_pixels);
 
     StarFinder star_finder(m_pixels, m_image_width_pixels);
@@ -37,7 +50,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     const float brightness_threshold = star_finder.get_threshold(0.002);
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
-    const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 8);
+    const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 6);
     const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
 
     for (const AsterismHashWithIndices &hash_with_indices : hashes_with_indices_from_photo) {
@@ -48,10 +61,6 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
 
     const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,50);
 
-    const vector<tuple<float,float,float> > stars_around_center = select_stars_around_point(stars,
-                                                                                            m_image_width_pixels/2,
-                                                                                            -m_image_height_pixels/2,
-                                                                                            m_image_height_pixels/2);
 
     vector<tuple<float,float,float,float,float> > valid_hypotheses;
     for (unsigned int i_hash_photo = 0; i_hash_photo < hashes_with_indices_from_photo.size(); i_hash_photo++)    {
@@ -66,15 +75,21 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
             const unsigned int starA_database_index = get<1>(similar_hashes[i_hash_photo][i_hash_similar]);
             const unsigned int starB_database_index = get<2>(similar_hashes[i_hash_photo][i_hash_similar]);
 
-            if (starA_database_index == 3991 || starB_database_index == 3991)  {
-                cout << "Verifying correct coordinates!\n";
-            }
 
             const auto hypothesis_coordinates = get_hypothesis_coordinates( xpos_starA, ypos_starA, starA_database_index,
                                                                             xpos_starB, ypos_starB, starB_database_index,
                                                                             m_image_width_pixels, m_image_height_pixels);
 
-            const bool valid_hypotesis = validate_hypothesis(stars_around_center, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
+            if (starA_database_index == 3991 || starB_database_index == 3991)  {
+                cout << "\n\nVerifying correct coordinates!\n";
+                cout << "starA = "  << m_star_database_handler->get_star_name(starA_database_index)
+                                    << "  , " << names[starA_index_photo] << endl;
+                cout << "starB = " << m_star_database_handler->get_star_name(starB_database_index)
+                                    << "  , " << names[starB_index_photo] << endl;
+            }
+
+
+            const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
             if (valid_hypotesis)    {
                 valid_hypotheses.push_back(hypothesis_coordinates);
             }
@@ -101,12 +116,11 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     const float radians_per_pixel   = hypothesis_im_height/image_height_pixels;
 
     // maximal allowed distance in pixels between the rea position of the star (from database) and the position from photo to be considered as "matched"
-    const float maximal_allowed_deviation2 = pow2(0.02*image_width_pixels);
+    const float maximal_allowed_deviation2 = pow2(0.01*image_width_pixels);
 
     RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( hypothesis_RA, hypothesis_dec, -hypothesis_rot,
                                                                 radians_per_pixel, image_width_pixels, image_height_pixels);
 
-    cout << "radians per pixel: " << radians_per_pixel << endl;
 
     // get the stars that we should see in circle around the center of the image, with the radius hypothesis_im_height/2
     const auto stars_from_database = m_star_position_handler->get_stars_around_coordinates( hypothesis_RA,
@@ -118,9 +132,7 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     vector<tuple<float,float,float> > brightest_stars_from_database_pixel_coordinates;
     brightest_stars_from_database_pixel_coordinates.reserve(stars_from_database.size());
     for (const tuple<Vector3D, float, unsigned int> &star : stars_from_database) {
-        //cout << "DEBUG 1: " << get<0>(star).to_string(CoordinateSystem::enum_spherical) << "\n";
         const tuple<float,float> pixel_coor = ra_dec_to_pixel.convert_to_pixel_coordinates(get<0>(star), ZeroZeroPoint::upper_left);
-        //cout << "DEBUG 2: " << get<0>(pixel_coor) << ", " <<  get<1>(pixel_coor) << "]\n";
         const float pos_x = get<0>(pixel_coor);
         const float pos_y = get<1>(pixel_coor);
 
@@ -150,6 +162,13 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
             }
         }
         if (paired_to_stars_from_photo) n_stars_truth_paired++;
+    }
+
+    if (n_stars_truth_paired > 0.5*n_stars_photo)  {
+        StarPlotter star_plotter(image_width_pixels, image_height_pixels,255);
+        star_plotter.AddStarsFromPhoto(brightest_stars_from_photo, 0);
+        star_plotter.AddStarsFromDatabase(brightest_stars_from_database_pixel_coordinates);
+        star_plotter.Save("stars_test_" + to_string(hypothesis_RA) + "_" +  to_string(hypothesis_dec) +  ".png");
     }
 
     return n_stars_truth_paired > 0.5*n_stars_photo;

@@ -23,7 +23,7 @@ using namespace PlateSolver;
 int main(int argc, const char **argv)   {
     try {
 
-    if (true)   {
+    if (false)   {
 
         unsigned int image_width_pixels;
         vector<unsigned char> m_pixels = load_bw_image_to_uchar(argv[1], &image_width_pixels);
@@ -115,7 +115,7 @@ int main(int argc, const char **argv)   {
     }
 
     // hash finder test
-    if (true)   {
+    if (false)   {
         const string jpg_address = argv[1];
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
 
@@ -187,7 +187,7 @@ int main(int argc, const char **argv)   {
         shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
         std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
         night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
-        night_sky_indexer->create_index_file("index_file_840mm_plane_approx.txt", 840);
+        //night_sky_indexer->create_index_file("index_file_840mm_plane_approx.txt", 840);
 
 
 
@@ -216,18 +216,22 @@ int main(int argc, const char **argv)   {
             const std::string nameC = star_database_handler.get_star_name(i_starC);
             const std::string nameD = star_database_handler.get_star_name(i_starD);
 
-            cout << "[" << xc << ", " << yc << ", " << xd << ", " << yd << "], "
-                << nameA << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[0])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[0])-910.618  << " ], "
-                << nameB << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[1])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[1])-910.618  << " ], "
-                << nameC << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[2])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[2])-910.618  << " ], "
-                << nameD << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[3])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[3])-910.618  << " ]\n";
+            cout << "[" << xc << "," << yc << "," << xd << "," << yd << "], "
+                << i_starA << ","
+                << i_starB << ","
+                << i_starC << ","
+                << i_starD << "\n";
+                //<< nameA << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[0])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[0])-910.618  << " ], "
+                //<< nameB << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[1])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[1])-910.618  << " ], "
+                //<< nameC << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[2])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[2])-910.618  << " ], "
+                //<< nameD << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[3])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[3])-910.618  << " ]\n";
         }
 
 
         return 0;
     }
 
-    if (true)   {
+    if (false)   {
         unsigned int pixels_per_line;
         vector<unsigned char> pixels = load_bw_image_to_uchar(argv[1], &pixels_per_line);
         StarFinder star_finder(pixels, pixels_per_line);
