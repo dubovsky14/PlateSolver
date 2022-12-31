@@ -43,7 +43,7 @@ namespace   PlateSolver {
 
 
             std::vector<unsigned char> m_pixels;
-            unsigned int m_image_width_pixels;
-            unsigned int m_image_height_pixels;
+            unsigned int m_image_width_pixels = 0;
+            unsigned int m_image_height_pixels= 0;
     };
 }

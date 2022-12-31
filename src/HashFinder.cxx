@@ -14,8 +14,8 @@
 using namespace std;
 using namespace PlateSolver;
 
-HashFinder::HashFinder(const string &hash_file) {
-    m_hash_file_address = hash_file;
+HashFinder::HashFinder(const string &hash_file) : m_hash_file_address{hash_file}    {
+
 };
 
 vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > >  HashFinder::get_similar_hashes(const vector<tuple<float,float,float,float> > &input_hashes, unsigned int requested_number_of_hashes)  {

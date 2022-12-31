@@ -23,7 +23,7 @@ std::vector<Vector3D> PlateSolver::get_rotated_axes(const Vector3D &reference_ax
 };
 
 
-PixelCoordinatesToRaDecConvertor::PixelCoordinatesToRaDecConvertor( float center_RA, float center_dec, float rotation, float radians_per_pixel,
+PixelCoordinatesToRaDecConvertor::PixelCoordinatesToRaDecConvertor( float center_RA, float center_dec, float rotation, float angle_per_pixel,
                                                                     float width_in_pixels, float height_in_pixels)  {
 
 
@@ -47,9 +47,9 @@ PixelCoordinatesToRaDecConvertor::PixelCoordinatesToRaDecConvertor( float center
     m_half_width    = width_in_pixels/2;
     m_half_height   = height_in_pixels/2;
 
-    m_x_axis.normalize(radians_per_pixel);
-    m_y_axis.normalize(radians_per_pixel);
-    m_z_axis.normalize(radians_per_pixel);
+    m_x_axis.normalize(angle_per_pixel);
+    m_y_axis.normalize(angle_per_pixel);
+    m_z_axis.normalize(angle_per_pixel);
 
 };
 
@@ -110,27 +110,14 @@ std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coord
 };
 
 std::tuple<float,float> RaDecToPixelCoordinatesConvertor::convert_to_pixel_coordinates(const Vector3D &position, ZeroZeroPoint zero_zero_point)    {
-    float original_coordinates[2] = {position.scalar_product(m_y_axis), position.scalar_product(m_z_axis)};
-    //Vector3D rotated_vector(position.scalar_product(m_x_axis), position.scalar_product(m_y_axis), position.scalar_product(m_z_axis));
-    //rotated_vector.normalize();
-    //float original_coordinates[2] = {(m_y_axis.r())*(rotated_vector.phi_mpi_pi()), (m_y_axis.r())*(rotated_vector.theta())};
-    //original_coordinates[1] -= 2*m_half_height;
-    float rotated_coordinates[] = {
+    const float original_coordinates[2] = {position.scalar_product(m_y_axis), position.scalar_product(m_z_axis)};
+    const float rotated_coordinates[] = {
         original_coordinates[0]*m_rotation_matrix[0][0] + original_coordinates[1]*m_rotation_matrix[0][1],
         original_coordinates[0]*m_rotation_matrix[1][0] + original_coordinates[1]*m_rotation_matrix[1][1]
     };
     return tuple<float,float>(
         rotated_coordinates[0] - m_half_width,
         rotated_coordinates[1] - m_half_height
-    );
-
-    if (zero_zero_point == ZeroZeroPoint::upper_left)   {
-        original_coordinates[0] -= m_half_width;
-        original_coordinates[1] -= m_half_height;
-    }
-    return tuple<float,float>(
-        original_coordinates[0]*m_rotation_matrix[0][0] + original_coordinates[1]*m_rotation_matrix[0][1],
-        original_coordinates[0]*m_rotation_matrix[1][0] + original_coordinates[1]*m_rotation_matrix[1][1]
     );
 };
 

@@ -7,6 +7,8 @@
 namespace PlateSolver   {
     class HashFinder    {
         public:
+            HashFinder()    = delete;
+
             HashFinder(const std::string &hash_file);
 
             std::vector<std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > >  get_similar_hashes(const std::vector<std::tuple<float,float,float,float> > &input_hashes, unsigned int requested_number_of_hashes);

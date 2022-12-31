@@ -48,30 +48,39 @@ int main(int argc, const char **argv)   {
         const tuple<float,float,float,float,float> hyp_coor = plate_solver_tool.get_hypothesis_coordinates(
             5981.8,	-2026.35, 3991,
             1303.5,	-3140.96, 17617,
-            6240, 4160
+            image_width_pixels, image_height_pixels
         );
 
         const float center_RA   = get<0>(hyp_coor);
         const float center_dec  = get<1>(hyp_coor);
         const float center_rot  = get<2>(hyp_coor);
-        const float angle_per_pix  = get<3>(hyp_coor)/6240;
+        const float angle_per_pix  = get<3>(hyp_coor)/image_width_pixels;
 
         cout << "RA = " << center_RA << "\tdec = " << center_dec << "\t rot = " << (180/M_PI)*center_rot << endl;
 
-        //RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( 3.806,68.428, 89.25*(M_PI/180),0.000006989, 6240, 4160);
-        RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( center_RA, center_dec, -center_rot, angle_per_pix, 6240, 4160);
+        //return 0;
+
+        //RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( 3.806,68.428, 89.25*(M_PI/180),0.000006989, image_width_pixels, image_height_pixels);
+        RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( center_RA, center_dec, -center_rot, angle_per_pix, image_width_pixels, image_height_pixels);
         vector<tuple<float,float,float> > stars_from_database;
         for (const auto &star : stars_around)   {
             const tuple<float,float> ra_dec = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(get<0>(star));
             stars_from_database.push_back(tuple<float,float,float>(get<0>(ra_dec), get<1>(ra_dec), get<1>(star)));
         }
-        //const tuple<float,float> ra_dec = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(center_RA, center_dec);
-        //stars_from_database.push_back(tuple<float,float,float>(get<0>(ra_dec), get<1>(ra_dec), 0));
+        const tuple<float,float> ra_dec = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(center_RA, center_dec);
+        stars_from_database.push_back(tuple<float,float,float>(get<0>(ra_dec), get<1>(ra_dec), 0));
+
+        PixelCoordinatesToRaDecConvertor pixel_to_ra_dec(center_RA, center_dec, center_rot, angle_per_pix, image_width_pixels, image_height_pixels);
+        const tuple<float,float> should_be_center = pixel_to_ra_dec.convert_to_ra_dec(  get<0>(stars_from_database.back()),
+                                                                                        get<0>(stars_from_database.back()));
+
+        cout << "Converted vs. original difference: dRA = " << (get<0>(should_be_center))-center_RA <<
+                                                    "\tdec = " << (get<1>(should_be_center))-center_dec << endl;
 
         StarPlotter star_plotter(image_width_pixels, image_height_pixels,255);
-        //star_plotter.AddStarsFromPhoto(stars_from_photo, 0);
+        star_plotter.AddStarsFromPhoto(stars_from_photo, 0);
         star_plotter.AddStarsFromDatabase(stars_from_database);
-        star_plotter.Save("stars_test_database.png");
+        star_plotter.Save("stars_test_horizontal.png");
 
         return 0;
     }
