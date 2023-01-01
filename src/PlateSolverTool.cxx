@@ -29,28 +29,20 @@ PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_ca
 };
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &jpg_file) {
-    const vector<string> names = {
-        "HD  23005",
-        "HD 23662",
-        "3 merged stars",
-        "V* MM Cam",
-        "HD  23450",
-        "HD  23818",
-        "HD 23321",
-        "HD 22829",
-        "HD 22086",
-        "BD+67 291",
-    };
-
     m_pixels = load_bw_image_to_uchar(jpg_file, &m_image_width_pixels);
 
     StarFinder star_finder(m_pixels, m_image_width_pixels);
     m_image_height_pixels = m_pixels.size()/m_image_width_pixels;
 
-    const float brightness_threshold = star_finder.get_threshold(0.002);
+    const float brightness_threshold = star_finder.get_threshold(0.0005);
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
-    const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 6);
+    vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 13);
+    sort(hashes_with_indices_from_photo.begin(), hashes_with_indices_from_photo.end(),
+            [](const AsterismHashWithIndices &a, const AsterismHashWithIndices &b)  {return (
+                (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
+            );} );
+
     const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
 
     for (const AsterismHashWithIndices &hash_with_indices : hashes_with_indices_from_photo) {
@@ -59,8 +51,8 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
         cout << ", " << get<1>(hash_with_indices) << ", " << get<2>(hash_with_indices) << ", " << get<3>(hash_with_indices) << ", " << get<4>(hash_with_indices) << endl;
     }
 
-    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10);
-
+    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,5);
+    cout << "Similar hashes extracted\n";
 
     vector<tuple<float,float,float,float,float> > valid_hypotheses;
     for (unsigned int i_hash_photo = 0; i_hash_photo < hashes_with_indices_from_photo.size(); i_hash_photo++)    {
@@ -82,7 +74,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
 
             const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
             if (valid_hypotesis)    {
-                valid_hypotheses.push_back(hypothesis_coordinates);
+                return hypothesis_coordinates;
             }
         }
     }
@@ -145,24 +137,24 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     }
 
     unsigned int n_stars_truth_paired = 0;
-    for (const auto &star_truth : brightest_stars_from_database_pixel_coordinates)  {
-        bool paired_to_stars_from_photo = false;
-        for (const auto &star_photo : brightest_stars_from_photo)  {
+    for (const auto &star_photo : brightest_stars_from_photo)  {
+        bool paired_to_truth_star = false;
+        for (const auto &star_truth : brightest_stars_from_database_pixel_coordinates)  {
             if (calculate_dist2(star_truth, star_photo) < maximal_allowed_deviation2)   {
-                paired_to_stars_from_photo = true;
+                paired_to_truth_star = true;
             }
         }
-        if (paired_to_stars_from_photo) n_stars_truth_paired++;
+        if (paired_to_truth_star) n_stars_truth_paired++;
     }
 
-    if (n_stars_truth_paired > 0.5*n_stars_photo)  {
+    if (n_stars_truth_paired > 0.7*n_stars_photo)  {
         StarPlotter star_plotter(image_width_pixels, image_height_pixels,255);
         star_plotter.AddStarsFromPhoto(brightest_stars_from_photo, 0);
         star_plotter.AddStarsFromDatabase(brightest_stars_from_database_pixel_coordinates);
         star_plotter.Save("stars_test_" + to_string(hypothesis_RA) + "_" +  to_string(hypothesis_dec) +  ".png");
     }
 
-    return n_stars_truth_paired > 0.5*n_stars_photo;
+    return n_stars_truth_paired > 0.7*n_stars_photo;
 };
 
 vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars)   {

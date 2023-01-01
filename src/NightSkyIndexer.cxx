@@ -44,7 +44,7 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
     vector<tuple<float, float> > stars_sensor_based_coordinates = convert_star_coordinates_to_pixels_positions(star_positions, RA, dec);
 
 
-    const unsigned int NSTARS = 7;
+    const unsigned int NSTARS = 5;
     unsigned int combination[4];
     for (unsigned int i_star1 = 0; i_star1 < NSTARS; i_star1++) {
         combination[0] = i_star1;
@@ -103,9 +103,9 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > result;
     float angle_width, angle_height;
     focal_length_to_field_of_view(focal_length, &angle_width, &angle_height);
-    const float FOV_angle = (angle_width*0.5);
+    const float FOV_angle = (min(angle_width,angle_height)*0.5);
     cout << "Creating index file, FOV = " << convert_to_deg_min_sec(FOV_angle*180/M_PI) << endl;
-    const float step_size_in_FOVs = 0.25;
+    const float step_size_in_FOVs = 0.2;
 
     index_sky_region(0,90,FOV_angle, &result);
     const float dec_step = (180/M_PI)*FOV_angle*step_size_in_FOVs;
