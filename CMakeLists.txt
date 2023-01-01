@@ -14,7 +14,12 @@ add_library(PlateSolver ${SOURCES})
 
 add_executable(tests       "utils/tests.cxx")
 add_executable(plate_solve "utils/plate_solve.cxx")
+add_executable(create_hash_file "utils/create_hash_file.cxx")
+
 add_dependencies(tests PlateSolver)
 add_dependencies(plate_solve PlateSolver)
+add_dependencies(create_hash_file PlateSolver)
+
 target_link_libraries(tests PlateSolver ${OpenCV_LIBS})
 target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})
+target_link_libraries(create_hash_file PlateSolver ${OpenCV_LIBS})

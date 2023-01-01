@@ -3,12 +3,19 @@
 #include "../PlateSolver/GeometricTransformations.h"
 #include "../PlateSolver/Common.h"
 
+#include "../PlateSolver/StarDatabaseHandler.h"
+
 
 #include<cmath>
 #include<iostream>
 
 using namespace std;
 using namespace PlateSolver;
+
+NightSkyIndexer::NightSkyIndexer(const std::string &star_catalogue)  {
+    StarDatabaseHandler star_database_handler(star_catalogue);
+    m_star_position_handler = make_shared<const StarPositionHandler>(star_database_handler);
+};
 
 NightSkyIndexer::NightSkyIndexer(shared_ptr<const StarPositionHandler> star_position_handler)  {
     m_star_position_handler = star_position_handler;
