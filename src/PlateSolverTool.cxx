@@ -37,7 +37,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     const float brightness_threshold = star_finder.get_threshold(0.0005);
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
-    vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 13);
+    vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 10);
     sort(hashes_with_indices_from_photo.begin(), hashes_with_indices_from_photo.end(),
             [](const AsterismHashWithIndices &a, const AsterismHashWithIndices &b)  {return (
                 (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
@@ -51,7 +51,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
         cout << ", " << get<1>(hash_with_indices) << ", " << get<2>(hash_with_indices) << ", " << get<3>(hash_with_indices) << ", " << get<4>(hash_with_indices) << endl;
     }
 
-    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,5);
+    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10);
     cout << "Similar hashes extracted\n";
 
     vector<tuple<float,float,float,float,float> > valid_hypotheses;

@@ -12,6 +12,9 @@ file(GLOB SOURCES "src/*.cxx")
 
 add_library(PlateSolver ${SOURCES})
 
-add_executable(tests ${CI_TESTS_SOURCES} "utils/tests.cxx")
+add_executable(tests       "utils/tests.cxx")
+add_executable(plate_solve "utils/plate_solve.cxx")
 add_dependencies(tests PlateSolver)
+add_dependencies(plate_solve PlateSolver)
 target_link_libraries(tests PlateSolver ${OpenCV_LIBS})
+target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})

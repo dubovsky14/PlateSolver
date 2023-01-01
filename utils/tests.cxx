@@ -89,8 +89,10 @@ int main(int argc, const char **argv)   {
     }
 
     // Plate solve
-    if (true)   {
-        PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
+    if (false)   {
+        PlateSolverTool plate_solver_tool("../data/index_file_400mm_plane_approx_step0.2_FOV_0.5h.txt", "../data/catalogue.csv");
+        //PlateSolverTool plate_solver_tool("index_file_600mm_plane_approx_step0.2_FOV_0.5h.txt", "../data/catalogue.csv");
+
 
         //const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
         //    5981.8, -2026.35, 3991,     //  "HD  23005"
@@ -174,7 +176,7 @@ int main(int argc, const char **argv)   {
     }
 
     // create hash file
-    if (false)  {
+    if (true)  {
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
         float RA,dec,mag;
         string name;
@@ -189,7 +191,7 @@ int main(int argc, const char **argv)   {
         shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
         std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
         //night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
-        night_sky_indexer->create_index_file("index_file_840mm_plane_approx_step0125_FOV_0.5h.txt", 840);
+        night_sky_indexer->create_index_file("index_file_1200mm_plane_approx_step0.2_FOV_0.5h.txt", 1200);
 
 
 
