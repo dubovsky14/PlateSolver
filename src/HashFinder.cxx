@@ -7,6 +7,7 @@
 #include<vector>
 #include<tuple>
 #include<fstream>
+//#include <bits/stdc++.h>
 
 #include<algorithm>
 
@@ -19,7 +20,7 @@ HashFinder::HashFinder(const string &hash_file) : m_hash_file_address{hash_file}
 };
 
 vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > >  HashFinder::get_similar_hashes(const vector<tuple<float,float,float,float> > &input_hashes, unsigned int requested_number_of_hashes)  {
-    vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float> > >   result_temp(input_hashes.size());
+    tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float> result_temp[input_hashes.size()][requested_number_of_hashes];
 
     tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float> default_hash{
         tuple<float,float,float,float>({0,0,0,0}),
@@ -29,7 +30,7 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
 
     for (unsigned int i_in_hash = 0; i_in_hash < input_hashes.size(); i_in_hash++)  {
         for (unsigned int i_requested_hash = 0; i_requested_hash < requested_number_of_hashes; i_requested_hash++)  {
-            result_temp[i_in_hash].push_back(default_hash);
+            result_temp[i_in_hash][i_requested_hash]=default_hash;
         }
     }
 
@@ -66,7 +67,7 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
                     result_temp[i_in_hash][n_last_requested] = tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float>({
                         hash, starA, starB, starC, starD, distance2
                     });
-                    sort(result_temp[i_in_hash].begin(), result_temp[i_in_hash].end(), [](const auto &a, const auto &b) {
+                    sort(&result_temp[i_in_hash][0], &result_temp[i_in_hash][requested_number_of_hashes], [](const auto &a, const auto &b) {
                         return get<5>(b) > get<5>(a);
                     });
                 }
