@@ -88,164 +88,93 @@ int main(int argc, const char **argv)   {
         return 0;
     }
 
-    // Plate solve
-    if (false)   {
-        PlateSolverTool plate_solver_tool("../data/index_file_400mm_plane_approx_step0.2_FOV_0.5h.txt", "../data/catalogue.csv");
-        //PlateSolverTool plate_solver_tool("index_file_600mm_plane_approx_step0.2_FOV_0.5h.txt", "../data/catalogue.csv");
+    if (true)   {
+        unsigned int pixels_per_line;
+        vector<unsigned char> pixels = load_bw_image_to_uchar(argv[1], &pixels_per_line);
+        StarFinder star_finder(pixels, pixels_per_line);
+
+        const float threshold = star_finder.get_threshold(0.0005);
+        cout << endl << "threshold(0.05%) = " << threshold << endl;
+
+        vector<unsigned char> pixels_above_threshold(pixels.size());
+        for (unsigned int i = 0; i < pixels.size(); i++)  {
+            pixels_above_threshold[i] = 255*(pixels[i] > threshold);
+        }
+        dump_to_picture("stars.png", pixels_above_threshold, pixels_per_line);
+
+        std::vector<std::tuple<float, float, float> > stars = star_finder.get_stars(threshold);
+
+        //cout << get<0>(stars[0]) << ", " << get<1>(stars[0]) << endl;
+        //cout << get<0>(stars[1]) << ", " << get<1>(stars[1]) << endl;
+        if (stars.size() > 15)  stars.resize(15);
+        const unsigned int sensor_x(6240), sensor_y(4160);
+
+        //StarDatabaseHandler star_database("../data/star_list.csv");
+        StarDatabaseHandler star_database("../data/catalogue.csv");
+        StarPositionHandler star_position_handler(star_database);
+        //auto truth_stars_around1 = star_position_handler.get_stars_around_coordinates(14.046198273, 54.25255, 0.004);
+        //const unsigned int id1 = get<2>(truth_stars_around1[0]);
+        //cout << star_database.get_star_name(id1);
 
 
-        //const tuple<float,float,float,float,float> result = plate_solver_tool.get_hypothesis_coordinates(
-        //    5981.8, -2026.35, 3991,     //  "HD  23005"
-        //    1303.5,	-3140.96, 17617,    //  "V* MM Cam"
-        //    6240, 4160
-        //); // their distance is 4722 pixels
-
-
-        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(argv[1]);
-        const float RA      = get<0>(result);
-        const float dec     = get<1>(result);
-        const float rot     = (180/M_PI)*get<2>(result);
-        const float width   = (180/M_PI)*get<3>(result);
-        const float height  = (180/M_PI)*get<4>(result);
-
-        cout << "Plate solving finished\n";
-        cout << "\tRA = " << convert_to_deg_min_sec(RA, "h") << endl;
-        cout << "\tdec = " << convert_to_deg_min_sec(dec) << endl;
-        cout << "\trot = " << convert_to_deg_min_sec(rot) << endl;
-        cout << "\twidth x height = " << convert_to_deg_min_sec(width) + " x " << convert_to_deg_min_sec(height) << endl;
-
-        return 0;
-    }
-
-    // hash finder test
-    if (false)   {
-        const string jpg_address = argv[1];
-        StarDatabaseHandler star_database_handler("../data/catalogue.csv");
-
-        unsigned int image_width_pixels;
-        vector<unsigned char> m_pixels = load_bw_image_to_uchar(jpg_address, &image_width_pixels);
-
-        StarFinder star_finder(m_pixels, image_width_pixels);
-        unsigned int image_height_pixels = m_pixels.size()/image_width_pixels;
-
-        const float brightness_threshold = star_finder.get_threshold(0.002);
-        vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
-
-        const vector<AsterismHashWithIndices> hashes_with_indices_from_photo = PlateSolverTool::get_hashes_with_indices(stars, 8);
-        const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
-
-        HashFinder hash_finder("../data/index_file_840mm_plane_approx_step02_FOV_0.5h_5stars.txt");
         PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
+        const tuple<float,float,float,float,float> hyp_coor = plate_solver_tool.get_hypothesis_coordinates(
+            5858.45, -598.438, 13823,
+            5492, -3480.06, 17772,
+            sensor_x, sensor_y
+        );
 
-        const auto similar_hashes = hash_finder.get_similar_hashes(hashes_from_photo, 50);
 
-        for (unsigned int i_input_hash = 0; i_input_hash < hashes_from_photo.size(); i_input_hash++)    {
-            cout << "\n\nOriginal hash: " << hash_tuple_to_string(hashes_from_photo[i_input_hash]);
-            cout << ",\t(" << get<0>(stars[get<1>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<1>(hashes_with_indices_from_photo[i_input_hash])]) << ") ";
-            cout << ",\t(" << get<0>(stars[get<2>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<2>(hashes_with_indices_from_photo[i_input_hash])]) << ") ";
-            cout << ",\t(" << get<0>(stars[get<3>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<3>(hashes_with_indices_from_photo[i_input_hash])]) << ") ";
-            cout << ",\t(" << get<0>(stars[get<4>(hashes_with_indices_from_photo[i_input_hash])]) << ", " << get<1>(stars[get<4>(hashes_with_indices_from_photo[i_input_hash])]) << ")\n";
-            for (const auto &similar_hash : similar_hashes[i_input_hash])    {
-                float RA, dec;
-                star_database_handler.get_star_info(get<1>(similar_hash), &RA, &dec);
+        const float RA = get<0>(hyp_coor);
+        const float dec = get<1>(hyp_coor);
+        const float rot = get<2>(hyp_coor);
+        const float rad_per_pix = get<3>(hyp_coor)/6240;
 
-                const string starA_name = star_database_handler.get_star_name(get<1>(similar_hash));
-                const string starB_name = star_database_handler.get_star_name(get<2>(similar_hash));
-                const string starC_name = star_database_handler.get_star_name(get<3>(similar_hash));
-                const string starD_name = star_database_handler.get_star_name(get<4>(similar_hash));
+        auto truth_stars_around = star_position_handler.get_stars_around_coordinates(RA, dec, 0.03);
+        RaDecToPixelCoordinatesConvertor ra_dec_to_pix(RA, dec, -rot, rad_per_pix, sensor_x, sensor_y);
+        vector<tuple<float,float,float> > pixel_coordinates_truth_stars;
 
-                if (RA < 5 && RA > 3 && dec > 62 && dec < 80)   {
-                    const unsigned int i_photo_starA = get<1>(hashes_with_indices_from_photo[i_input_hash]);
-                    const unsigned int i_photo_starB = get<2>(hashes_with_indices_from_photo[i_input_hash]);
-                    const auto hyp_coor = plate_solver_tool.get_hypothesis_coordinates(
-                        get<0>(stars[i_photo_starA]),
-                        get<1>(stars[i_photo_starA]),
-                        get<1>(similar_hash),
-                        get<0>(stars[i_photo_starB]),
-                        get<1>(stars[i_photo_starB]),
-                        get<2>(similar_hash),
-                        6240,4160
-                    );
-                    cout << hash_tuple_to_string(get<0>(similar_hash));
-                    cout << " RA = " << get<0>(hyp_coor) << "   \tdec = " << get<1>(hyp_coor) << "\t\t"
-                            << starA_name << "\t" << starB_name << "\t" << starC_name << "\t" << starD_name  <<  endl;
-                }
+        for (const auto &truth_star : truth_stars_around)   {
+            const Vector3D star_position = get<0>(truth_star);
+            const float magnitude       = get<1>(truth_star);
+
+            const tuple<float,float> pix_coordinates = ra_dec_to_pix.convert_to_pixel_coordinates(star_position);
+            const float x = get<0>(pix_coordinates);
+            const float y = get<1>(pix_coordinates);
+            if (x < 0 || x > sensor_x || y > 0 || -y > sensor_y)    {
+                continue;
             }
-        }
-        return 0;
-    }
 
-    // create hash file
-    if (true)  {
-        StarDatabaseHandler star_database_handler("../data/catalogue.csv");
-        float RA,dec,mag;
-        string name;
+            cout << get<2>(truth_star) << "\t" << star_database.get_star_name(get<2>(truth_star)) << "\t" << magnitude << "\t[ " << x << ", " << y << " ]" << endl;
+            pixel_coordinates_truth_stars.push_back(tuple<float,float,float>(x,y, magnitude));
 
-        shared_ptr<StarPositionHandler> star_position_handler = make_shared<StarPositionHandler>(star_database_handler);
-        //std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler->get_stars_around_coordinates(5.698,-1.92, 0.0085); // Alnitak
-        //std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler->get_stars_around_coordinates(12.92,55.89, 0.01); // Allioth
-        std::vector<std::tuple<Vector3D, float, unsigned int> >  stars_around = star_position_handler->get_stars_around_coordinates(3.8172,68.1858, 0.025); // C5 galaxy
-
-        const Vector3D reference_axis(1, -1.92*(M_PI/180), 5.698*(M_PI/12), CoordinateSystem::enum_spherical);
-
-        shared_ptr<NightSkyIndexer> night_sky_indexer = make_shared<NightSkyIndexer>(star_position_handler);
-        std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > hash_vector;
-        //night_sky_indexer->index_sky_region(3.8172,68.1858, 0.025, &hash_vector);
-        night_sky_indexer->create_index_file("index_file_1200mm_plane_approx_step0.2_FOV_0.5h.txt", 1200);
-
-
-
-
-        for (const auto &hash_info : hash_vector)   {
-            const std::tuple<float,float,float,float> hash = get<0>(hash_info);
-            const float xc = get<0>(hash);
-            const float yc = get<1>(hash);
-            const float xd = get<2>(hash);
-            const float yd = get<3>(hash);
-
-            const unsigned int i_starA = get<1>(hash_info);
-            const unsigned int i_starB = get<2>(hash_info);
-            const unsigned int i_starC = get<3>(hash_info);
-            const unsigned int i_starD = get<4>(hash_info);
-
-            vector<Vector3D> star_positions;
-            for (unsigned int i_star : vector<unsigned int>({i_starA,i_starB,i_starC,i_starD,}))    {
-                star_database_handler.get_star_info(i_star, &RA, &dec);
-                star_positions.push_back(Vector3D(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical));
-            }
-            vector<tuple<float,float> > star_positions_in_sensor_coordinates = NightSkyIndexer::convert_star_coordinates_to_pixels_positions(star_positions, RA, dec);
-
-            const std::string nameA = star_database_handler.get_star_name(i_starA);
-            const std::string nameB = star_database_handler.get_star_name(i_starB);
-            const std::string nameC = star_database_handler.get_star_name(i_starC);
-            const std::string nameD = star_database_handler.get_star_name(i_starD);
-
-            cout << "[" << xc << "," << yc << "," << xd << "," << yd << "], "
-                << i_starA << ","
-                << i_starB << ","
-                << i_starC << ","
-                << i_starD << "\n";
-                //<< nameA << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[0])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[0])-910.618  << " ], "
-                //<< nameB << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[1])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[1])-910.618  << " ], "
-                //<< nameC << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[2])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[2])-910.618  << " ], "
-                //<< nameD << "" << " [ " << 1000*get<0>(star_positions_in_sensor_coordinates[3])-238.568 << ", " << 1000*get<1>(star_positions_in_sensor_coordinates[3])-910.618  << " ]\n";
         }
 
+        //if (pixel_coordinates_truth_stars.size() > 20)  pixel_coordinates_truth_stars.resize(20);
 
-        return 0;
+        StarPlotter star_plotter(6240, 4160, 255);
+        star_plotter.AddStarsFromPhoto(stars, 0);
+        star_plotter.AddStarsFromDatabase(pixel_coordinates_truth_stars);
+        star_plotter.Save("stars_photo.png");
+
     }
 
+
+
+
+
+    // plot star pixels
     if (false)   {
         unsigned int pixels_per_line;
         vector<unsigned char> pixels = load_bw_image_to_uchar(argv[1], &pixels_per_line);
         StarFinder star_finder(pixels, pixels_per_line);
 
-        const float threshold = star_finder.get_threshold(0.002);
+        const float threshold = star_finder.get_threshold(0.0005);
         cout << endl << "threshold(0.05%) = " << threshold << endl;
 
         vector<unsigned char> pixels_above_threshold(pixels.size());
         for (unsigned int i = 0; i < pixels.size(); i++)  {
-            pixels_above_threshold[i] = 240*(pixels[i] > threshold);
+            pixels_above_threshold[i] = 255*(pixels[i] > threshold);
         }
         dump_to_picture("stars.png", pixels_above_threshold, pixels_per_line);
 

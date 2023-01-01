@@ -147,13 +147,6 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
         if (paired_to_truth_star) n_stars_truth_paired++;
     }
 
-    if (n_stars_truth_paired > 0.7*n_stars_photo)  {
-        StarPlotter star_plotter(image_width_pixels, image_height_pixels,255);
-        star_plotter.AddStarsFromPhoto(brightest_stars_from_photo, 0);
-        star_plotter.AddStarsFromDatabase(brightest_stars_from_database_pixel_coordinates);
-        star_plotter.Save("stars_test_" + to_string(hypothesis_RA) + "_" +  to_string(hypothesis_dec) +  ".png");
-    }
-
     return n_stars_truth_paired > 0.7*n_stars_photo;
 };
 

@@ -3,6 +3,7 @@
 #include "../PlateSolver/GeometricTransformations.h"
 #include "../PlateSolver/Common.h"
 
+#include "../PlateSolver/StringOperations.h"
 #include "../PlateSolver/StarDatabaseHandler.h"
 
 
@@ -22,8 +23,13 @@ NightSkyIndexer::NightSkyIndexer(shared_ptr<const StarPositionHandler> star_posi
 };
 
 void NightSkyIndexer::create_index_file(const string &index_file, float focal_length)  {
-    m_output_hash_file = make_shared<ofstream>();
-    m_output_hash_file->open(index_file);
+    m_binary_file_output = EndsWith(index_file, ".bin");
+    if (m_binary_file_output)   {
+        m_output_hash_file = make_shared<ofstream>(index_file, std::ios::binary | std::ios::out);
+    }
+    else {
+        m_output_hash_file = make_shared<ofstream>(index_file);
+    }
 
     loop_over_night_sky(focal_length);
 
@@ -139,7 +145,13 @@ void NightSkyIndexer::dump_hash_vector_to_outfile(const std::vector<std::tuple<s
         const unsigned int id_starC = get<3>(x);
         const unsigned int id_starD = get<4>(x);
 
-        *m_output_hash_file << get<0>(hash) << "," << get<1>(hash) << ","  << get<2>(hash) << ","  << get<3>(hash) << ",";
-        *m_output_hash_file << id_starA << "," << id_starB << "," << id_starC << "," << id_starD << endl;
+        if (m_binary_file_output)    {
+            *m_output_hash_file << std::noskipws << get<0>(hash) << get<1>(hash)  << get<2>(hash)  << get<3>(hash);
+            *m_output_hash_file << std::noskipws << id_starA << id_starB << id_starC << id_starD;
+        }
+        else {
+            *m_output_hash_file << get<0>(hash) << "," << get<1>(hash) << ","  << get<2>(hash) << ","  << get<3>(hash) << ",";
+            *m_output_hash_file << id_starA << "," << id_starB << "," << id_starC << "," << id_starD << endl;
+        }
     }
 };
