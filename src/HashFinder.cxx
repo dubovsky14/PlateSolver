@@ -8,6 +8,7 @@
 #include<tuple>
 #include<fstream>
 #include<memory>
+#include<iostream>
 
 #include<algorithm>
 
@@ -39,19 +40,20 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
     const bool is_binary_file = EndsWith(m_hash_file_address, ".bin");
 
     if (is_binary_file) {
-        unsigned int starA,starB,starC,starD;
+        unsigned int star_ids[4];
         tuple<float,float,float,float> hash;
 
         ifstream input_file (m_hash_file_address, std::ios::binary | std::ios::out);
         while(input_file.good())    {
-            input_file  >>  std::noskipws >> get<0>(hash) >> get<1>(hash)  >> get<2>(hash)  >> get<3>(hash);
-            input_file  >>  std::noskipws >> starA >> starB >> starC >> starD;
+
+            input_file.read(reinterpret_cast<char *>(&hash), sizeof(hash));
+            input_file.read(reinterpret_cast<char *>(star_ids), sizeof(hash));
 
             for (unsigned int i_in_hash = 0; i_in_hash < input_hashes.size(); i_in_hash++)  {
                 const float distance2 = calculate_hash_distance_squared(hash, input_hashes[i_in_hash]);
                 if (distance2 < get<5>(result_temp[i_in_hash][n_last_requested]))    {
                     result_temp[i_in_hash][n_last_requested] = tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float>({
-                        hash, starA, starB, starC, starD, distance2
+                        hash, star_ids[0], star_ids[1], star_ids[2], star_ids[3], distance2
                     });
                     sort(&result_temp[i_in_hash][0], &result_temp[i_in_hash][requested_number_of_hashes], [](const auto &a, const auto &b) {
                         return get<5>(b) > get<5>(a);

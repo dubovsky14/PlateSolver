@@ -140,14 +140,15 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
 void NightSkyIndexer::dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector) {
     for (const auto &x : hash_vector)   {
         const std::tuple<float,float,float,float> hash = get<0>(x);
+        const unsigned int star_ids[4] = {get<1>(x), get<2>(x), get<3>(x), get<4>(x), };
         const unsigned int id_starA = get<1>(x);
         const unsigned int id_starB = get<2>(x);
         const unsigned int id_starC = get<3>(x);
         const unsigned int id_starD = get<4>(x);
 
         if (m_binary_file_output)    {
-            *m_output_hash_file << std::noskipws << get<0>(hash) << get<1>(hash)  << get<2>(hash)  << get<3>(hash);
-            *m_output_hash_file << std::noskipws << id_starA << id_starB << id_starC << id_starD;
+            m_output_hash_file->write(reinterpret_cast<const char *>(&hash), sizeof(hash));
+            m_output_hash_file->write(reinterpret_cast<const char *>(star_ids), sizeof(hash));
         }
         else {
             *m_output_hash_file << get<0>(hash) << "," << get<1>(hash) << ","  << get<2>(hash) << ","  << get<3>(hash) << ",";
