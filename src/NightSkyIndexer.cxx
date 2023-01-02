@@ -8,6 +8,7 @@
 
 
 #include<cmath>
+#include<map>
 #include<iostream>
 
 using namespace std;
@@ -57,7 +58,10 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
     vector<tuple<float, float> > stars_sensor_based_coordinates = convert_star_coordinates_to_pixels_positions(star_positions, RA, dec);
 
 
-    const unsigned int NSTARS = 5;
+    map<tuple<unsigned int, unsigned int, unsigned int, unsigned int>, char> combinations_already_added;
+    unsigned int this_combination[4];
+
+    const unsigned int NSTARS = 6;
     unsigned int combination[4];
     for (unsigned int i_star1 = 0; i_star1 < NSTARS; i_star1++) {
         combination[0] = i_star1;
@@ -70,6 +74,20 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
                     if (i_star4 >= stars_sensor_based_coordinates.size()) {
                         break;
                     }
+
+                    // avoid having the same combination of stars multiple time in the output:
+                    this_combination[0] = get<2>(stars_around[i_star1]);
+                    this_combination[1] = get<2>(stars_around[i_star2]);
+                    this_combination[2] = get<2>(stars_around[i_star3]);
+                    this_combination[3] = get<2>(stars_around[i_star4]);
+                    sort(this_combination, this_combination+4);
+                    auto comb_tuple = tuple<unsigned int, unsigned int, unsigned int, unsigned int>(this_combination[0], this_combination[1], this_combination[2], this_combination[3]);
+                    if (combinations_already_added.find(comb_tuple) != combinations_already_added.end())    {
+                        continue;
+                    }
+                    combinations_already_added[comb_tuple] = 0;
+
+
                     tuple<float,float,float,float> asterism_hash;
                     vector<tuple<float, float> > stars_to_hash = {
                         stars_sensor_based_coordinates[i_star1],
@@ -118,7 +136,7 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     focal_length_to_field_of_view(focal_length, &angle_width, &angle_height);
     const float FOV_angle = (min(angle_width,angle_height)*0.5);
     cout << "Creating index file, FOV = " << convert_to_deg_min_sec(FOV_angle*180/M_PI) << endl;
-    const float step_size_in_FOVs = 0.2;
+    const float step_size_in_FOVs = 0.3;
 
     index_sky_region(0,90,FOV_angle, &result);
     const float dec_step = (180/M_PI)*FOV_angle*step_size_in_FOVs;
@@ -148,7 +166,7 @@ void NightSkyIndexer::dump_hash_vector_to_outfile(const std::vector<std::tuple<s
 
         if (m_binary_file_output)    {
             m_output_hash_file->write(reinterpret_cast<const char *>(&hash), sizeof(hash));
-            m_output_hash_file->write(reinterpret_cast<const char *>(star_ids), sizeof(hash));
+            m_output_hash_file->write(reinterpret_cast<const char *>(star_ids), sizeof(star_ids));
         }
         else {
             *m_output_hash_file << get<0>(hash) << "," << get<1>(hash) << ","  << get<2>(hash) << ","  << get<3>(hash) << ",";

@@ -48,7 +48,7 @@ int main(int argc, const char **argv)   {
                 star_ids[3] = std::stoi(elements[7]);
 
                 output_file.write(reinterpret_cast<char *>(&hash), sizeof(hash));
-                output_file.write(reinterpret_cast<char *>(star_ids), sizeof(hash));
+                output_file.write(reinterpret_cast<char *>(star_ids), sizeof(star_ids));
             }
             input_file.close();
         }
