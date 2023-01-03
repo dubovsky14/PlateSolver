@@ -61,4 +61,5 @@ Once you have the hash file and the csv file, you can plate solve your photo:
 Python binding:
 ----------------
 
-The ```python``` folder contains an example python script ```wrapper_example.py``` on how to use the python interface of the package.
+The ```python``` folder contains python wrapper for the C++ part - ```plate_solving_wrapper.py```.
+The folder also contains the example python script ```wrapper_example.py``` on how to the wrapper.
