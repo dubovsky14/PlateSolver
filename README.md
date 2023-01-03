@@ -14,7 +14,9 @@ How to use the code:
 
 The code depends on OpenCV library, you firstly have to install it: ```https://opencv.org/```
 
-Once you have OpenCV installed, you can download and compile the code:
+The python binding of the code also depends on python3-dev package, you have to install (i.e. ```sudo apt-get install python3-dev``` for Ubuntu)
+
+Once you have OpenCV and python3-dev installed, you can download and compile the code:
 
 ```
     git clone git@github.com:dubovsky14/PlateSolver.git
@@ -55,3 +57,8 @@ Once you have the hash file and the csv file, you can plate solve your photo:
 ```
 ./bin/plate_solve <path to the csv file with stars info> <path to the hash file> <path to the jpg file you would like to plate-solve>
 ```
+
+Python binding:
+----------------
+
+The ```python``` folder contains an example python script ```wrapper_example.py``` on how to use the python interface of the package.

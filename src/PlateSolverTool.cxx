@@ -44,15 +44,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
             );} );
 
     const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
-
-    for (const AsterismHashWithIndices &hash_with_indices : hashes_with_indices_from_photo) {
-        const auto hash = get<0>(hash_with_indices);
-        cout << "[ " << get<0>(hash) << ", " << get<1>(hash) << ", " << get<2>(hash) << ", " << get<3>(hash) << "] ";
-        cout << ", " << get<1>(hash_with_indices) << ", " << get<2>(hash_with_indices) << ", " << get<3>(hash_with_indices) << ", " << get<4>(hash_with_indices) << endl;
-    }
-
     const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10);
-    cout << "Similar hashes extracted\n";
 
     vector<tuple<float,float,float,float,float> > valid_hypotheses;
     for (unsigned int i_hash_photo = 0; i_hash_photo < hashes_with_indices_from_photo.size(); i_hash_photo++)    {
