@@ -1,12 +1,7 @@
 # short example on how to use the plateSolving module
 
-from sys import argv, path
-
-# module "lives" in bin folder
-path.append("../bin")
-
-
-from plateSolving import plateSolving
+from sys import argv
+from plate_solving_wrapper import plate_solve
 
 def convert_angle_to_string(angle_floating_point : float, degree_symbol : str = "°") -> str:
     """
@@ -35,7 +30,7 @@ if __name__ == "__main__":
     hash_file      = argv[2]
     photo_address  = argv[3]
 
-    plate_solving_result = plateSolving(star_catalogue, hash_file, photo_address)
+    plate_solving_result = plate_solve(star_catalogue, hash_file, photo_address)
 
     RA      = plate_solving_result[0]
     dec     = plate_solving_result[1]
