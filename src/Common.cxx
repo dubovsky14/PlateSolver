@@ -41,8 +41,14 @@ std::vector<AsterismHash> PlateSolver::extract_hashes(const std::vector<Asterism
 };
 
 float PlateSolver::get_angle(float vec1_x, float vec1_y, float vec2_x, float vec2_y)    {
-    const float scalar_product_z = (vec1_x*vec2_y - vec2_x*vec1_y);
+    const float vector_product_z = (vec1_x*vec2_y - vec2_x*vec1_y);
+    const float scalar_product = vec1_x*vec2_x + vec1_y*vec2_y;
     const float size1 = sqrt(pow2(vec1_x) + pow2(vec1_y));
     const float size2 = sqrt(pow2(vec2_x) + pow2(vec2_y));
-    return asin(scalar_product_z/(size1*size2));
+    if (scalar_product > 0) {
+        return asin(vector_product_z/(size1*size2));
+    }
+    else {
+        return vector_product_z > 0 ? acos(scalar_product/(size1*size2)) : -acos(scalar_product/(size1*size2));
+    }
 };

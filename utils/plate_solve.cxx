@@ -30,6 +30,11 @@ int main(int argc, const char **argv)   {
         const float width   = (180/M_PI)*get<3>(result);
         const float height  = (180/M_PI)*get<4>(result);
 
+        if (width == 0) {
+            cout << "Plate solving failed!\n";
+            return 0;
+        }
+
         cout << "Plate solving finished\n";
         cout << "\tRA = " << convert_to_deg_min_sec(RA, "h") << endl;
         cout << "\tdec = " << convert_to_deg_min_sec(dec) << endl;

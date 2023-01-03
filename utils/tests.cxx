@@ -117,18 +117,28 @@ int main(int argc, const char **argv)   {
         //cout << star_database.get_star_name(id1);
 
 
-        PlateSolverTool plate_solver_tool("../data/index_file_840mm_plane_approx.txt", "../data/catalogue.csv");
-        const tuple<float,float,float,float,float> hyp_coor = plate_solver_tool.get_hypothesis_coordinates(
-            5858.45, -598.438, 13823,
-            5492, -3480.06, 17772,
+        PlateSolverTool plate_solver_tool("../data/index_file_840mm.bin", "../data/catalogue.csv");
+        const tuple<float,float,float,float,float> hyp_coor = plate_solver_tool.get_hypothesis_coordinates( // M101 photo
+            5858.45, -598.438, 13823,   // HD 122200
+            5492, -3480.06, 17772,      // HD 123518
             sensor_x, sensor_y
         );
 
+        //  287155,"HD 122200B",13.98207081090133,53.10867143174,9.76
+        //  17772,"HD 123518",14.111463321051332,53.312304181730006,7.12
 
         const float RA = get<0>(hyp_coor);
         const float dec = get<1>(hyp_coor);
         const float rot = get<2>(hyp_coor);
         const float rad_per_pix = get<3>(hyp_coor)/6240;
+        const float width   = (180/M_PI)*get<3>(hyp_coor);
+        const float height  = (180/M_PI)*get<4>(hyp_coor);
+
+
+        cout << "\tRA = " << convert_to_deg_min_sec(RA, "h") << endl;
+        cout << "\tdec = " << convert_to_deg_min_sec(dec) << endl;
+        cout << "\trot = " << convert_to_deg_min_sec(rot) << endl;
+        cout << "\twidth x height = " << convert_to_deg_min_sec(width) + " x " << convert_to_deg_min_sec(height) << endl;
 
         auto truth_stars_around = star_position_handler.get_stars_around_coordinates(RA, dec, 0.03);
         RaDecToPixelCoordinatesConvertor ra_dec_to_pix(RA, dec, -rot, rad_per_pix, sensor_x, sensor_y);
@@ -149,6 +159,13 @@ int main(int argc, const char **argv)   {
             pixel_coordinates_truth_stars.push_back(tuple<float,float,float>(x,y, magnitude));
 
         }
+
+        //const Vector3D reference_axis = Vector3D::get_vector_unity_from_ra_dec(RA, dec);
+        const Vector3D reference_axis = Vector3D::get_vector_unity_from_ra_dec(14.111463321051332,53.312304181730006);
+        const tuple<float,float> should_be_center = ra_dec_to_pix.convert_to_pixel_coordinates(reference_axis);
+        pixel_coordinates_truth_stars.push_back(tuple<float,float,float>(
+            get<0>(should_be_center), get<1>(should_be_center), 2
+        ));
 
         //if (pixel_coordinates_truth_stars.size() > 20)  pixel_coordinates_truth_stars.resize(20);
 
