@@ -6,7 +6,6 @@
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/HashFinder.h"
 #include "../PlateSolver/Common.h"
-#include "../PlateSolver/ImageHasher.h"
 #include "../PlateSolver/PlateSolverTool.h"
 #include "../PlateSolver/GeometricTransformations.h"
 #include "../PlateSolver/StarPlotter.h"

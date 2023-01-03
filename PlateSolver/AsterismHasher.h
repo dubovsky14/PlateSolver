@@ -15,8 +15,6 @@ namespace PlateSolver   {
 
     float get_star_distance_squared(const std::tuple<float, float> &star1, const std::tuple<float, float> &star2);
 
-    inline float sqr(float x)  {return x*x;};
-
     inline float calculate_coordinate_along_axis(const float *original_vector, const float *axis)   {
         return (original_vector[0]*axis[0] + original_vector[1]*axis[1]);
     };
