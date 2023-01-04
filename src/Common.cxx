@@ -19,7 +19,7 @@ std::string PlateSolver::convert_to_deg_min_sec(float x, const std::string &degr
     return result;
 };
 
-std::string PlateSolver::hash_tuple_to_string(std::tuple<float,float,float,float> hash) {
+std::string PlateSolver::hash_tuple_to_string(const AsterismHash &hash) {
     string result = "[";
     result = result + to_string(get<0>(hash)) + ", ";
     result = result + to_string(get<1>(hash)) + ", ";

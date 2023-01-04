@@ -9,9 +9,10 @@ namespace PlateSolver   {
         public:
             StarFinder(const std::vector<unsigned char> &pixels, unsigned int pixels_per_line);
 
-            // vector of tuples<x-position, y-position, intensity>
+            // returns vector of tuples<x-position, y-position, intensity>, threshold is the brightness threshold - pixels brighter than it will be considered to form stars
             std::vector<std::tuple<float, float, float> >   get_stars(float threshold, bool invert_y_axis = true);
 
+            // get "histogram" from photography point of view -> return vector, where i-th element is count of the pixels with brightness "i"
             std::vector<unsigned int>   get_histogram() const {return m_histogram;};
 
             // find the brightness threshold, for which "part*m_pixels.size()" pixels are brighter than the threshold

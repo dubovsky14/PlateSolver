@@ -228,20 +228,6 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     return tuple<float,float,float,float,float>(RA_center, dec_center, rotation, result_width_angle, result_height_angle);
 };
 
-vector<tuple<float,float,float> > PlateSolverTool::select_stars_around_point(const vector<tuple<float,float,float> > &stars_all,
-                                                                            float point_x, float point_y, float radius) {
-
-    vector<tuple<float,float,float> > result;
-    const float radius2 = radius*radius;
-    for (const tuple<float,float,float> &star : stars_all)   {
-        const float distance2 = pow2(get<0>(star) - point_x) + pow2(get<1>(star) - point_y);
-        if (distance2 <= radius2)    {
-            result.push_back(star);
-        }
-    }
-    return result;
-};
-
 float PlateSolverTool::calculate_dist2(const tuple<float,float,float> &star1, const tuple<float,float,float> &star2) {
     return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
 };

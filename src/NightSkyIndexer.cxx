@@ -113,15 +113,12 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
             }
         }
     }
-
 };
-
 
 vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels_positions(const vector<Vector3D> &stars, float RA, float dec)  {
     vector<tuple<float, float> > result;
 
-    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( RA, dec, 0,
-                                                                1e-6, 1200, 800); // the last three numbers are arbitrary here
+    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( RA, dec, 0, 1e-6, 1200, 800); // the last three numbers are arbitrary here
 
     for (const Vector3D &star_3d_vector : stars)    {
         result.push_back(ra_dec_to_pixel.convert_to_pixel_coordinates(star_3d_vector, ZeroZeroPoint::center));

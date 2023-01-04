@@ -11,6 +11,9 @@ namespace PlateSolver   {
     std::vector<Vector3D> get_rotated_axes(const Vector3D &reference_axis);
 
     enum class ZeroZeroPoint {center, upper_left};
+
+    // Class responsible for conversion of pixel coordinates into RA-dec coordinates.
+    // It takes RA and dec of the middle of the sensor, its rotation, size in pixels and angle covered by a pixel in its constructor and then provides a method for conversion
     class PixelCoordinatesToRaDecConvertor {
         public:
 
@@ -34,6 +37,9 @@ namespace PlateSolver   {
 
     };
 
+
+    // Class responsible for conversion of RA-dec coordinates into pixel coordinates.
+    // It takes RA and dec of the middle of the sensor, its rotation, size in pixels and angle covered by a pixel in its constructor and then provides a method for conversion
     class RaDecToPixelCoordinatesConvertor {
         public:
 

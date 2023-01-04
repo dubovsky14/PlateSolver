@@ -9,9 +9,10 @@ namespace PlateSolver   {
 
     typedef std::tuple<std::tuple<float,float,float,float>, unsigned int, unsigned int, unsigned int, unsigned int> AsterismHashWithIndices;
 
+    // get string representation fo the angle x, in format 1°2'4"
     std::string convert_to_deg_min_sec(float x, const std::string &degree_symbol = "°");
 
-    std::string hash_tuple_to_string(std::tuple<float,float,float,float> hash);
+    std::string hash_tuple_to_string(const AsterismHash &hash);
 
     float vec_size(float x, float y);
 

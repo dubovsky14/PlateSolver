@@ -23,9 +23,9 @@ namespace PlateSolver   {
             void index_sky_region(  float RA, float dec, float angle,
                                     std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > *result);
 
+        private:
             static std::vector<std::tuple<float, float> > convert_star_coordinates_to_pixels_positions(const std::vector<Vector3D> &stars, float RA, float dec);
 
-        private:
             void loop_over_night_sky(float focal_length);
 
             std::shared_ptr<const StarPositionHandler> m_star_position_handler = nullptr;
