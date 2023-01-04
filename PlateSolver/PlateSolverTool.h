@@ -28,7 +28,7 @@ namespace   PlateSolver {
                                                                                     float image_width, float image_height);
 
             // Calculate asterism hashes from all combinations of the "nstars" leading stars and return them in vector with the indices of stars A,B,C and D
-            static std::vector<AsterismHashWithIndices> get_hashes_with_indices(const std::vector<std::tuple<float,float,float> > &stars, unsigned nstars);
+            static std::vector<AsterismHashWithIndices> get_hashes_with_indices(const std::vector<std::tuple<float,float,float> > &stars, unsigned nstars, unsigned int min_star4_index = 0);
 
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,float> > &stars_from_photo,
                                         const std::tuple<float,float,float,float,float> &hypothesis_coordinates,

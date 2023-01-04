@@ -38,8 +38,10 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
     const vector<unsigned int> stars_to_consider_vector{6,8,10};    // in most of the cases hashes built from 6 stars are enough to plate-solve
+    unsigned int previous_n_stars = 0;
     for (const unsigned int stars_to_consider : stars_to_consider_vector)   {
-        vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, stars_to_consider);
+        vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, stars_to_consider, previous_n_stars);
+        previous_n_stars = stars_to_consider;
         sort(hashes_with_indices_from_photo.begin(), hashes_with_indices_from_photo.end(),
                 [](const AsterismHashWithIndices &a, const AsterismHashWithIndices &b)  {return (
                     (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
@@ -144,13 +146,13 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     return n_stars_truth_paired > 0.6*n_stars_photo;
 };
 
-vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars)   {
+vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars, unsigned int min_star4_index)   {
     vector<AsterismHashWithIndices> result;
     unsigned int star_indices[4];
     for (star_indices[0] = 0; star_indices[0] < nstars; star_indices[0]++) {
         for (star_indices[1] = (star_indices[0])+1; star_indices[1] < nstars; star_indices[1]++) {
             for (star_indices[2] = star_indices[1]+1; star_indices[2] < nstars; star_indices[2]++) {
-                for (star_indices[3] = star_indices[2]+1; star_indices[3] < nstars; star_indices[3]++) {
+                for (star_indices[3] = max(star_indices[2]+1, min_star4_index); star_indices[3] < nstars; star_indices[3]++) {
                     if (star_indices[3] >= stars.size())    {
                         break;
                     }
