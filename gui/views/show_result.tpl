@@ -1,10 +1,27 @@
-Right ascension = {{RA}} <br>
+% include('header.tpl')
 
-declination = {{dec}} <br>
+<center style="padding-bottom: 2rem">
+Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_platesolve,3))}} s <br>
+</center>
 
-camera rotation = {{rot}} <br>
+% if success:
 
-photo angular size: {{width}} x {{height}} <br>
+<div class="container" style="width:50%">
+    <table class='table table-sm result-table'>
+        <tbody>
+            <tr> <td> Right ascension </td><td> {{RA}}</td> </tr>
+            <tr> <td> Declination </td><td> {{dec}}</td> </tr>
+            <tr> <td> Camera rotation </td><td> {{rot}}</td> </tr>
+            <tr> <td> Photo angular size </td><td>{{width}} x {{height}} </td> </tr>
+        </tbody>
+    </table>
+</div>
+%end
 
+<center style="padding-bottom: 7rem">
+    <a href="/">
+    <input type="button" value="Go back" />
+    </a>
+</center>
 
-
+% include('footer.tpl')

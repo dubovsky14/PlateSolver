@@ -1,7 +1,10 @@
-#run as: uwsgi --http-socket :9090 --wsgi-file local_test.py --master
+# run as:
+# uwsgi --http-socket :9090 --wsgi-file run_localhost.py --master
+# access the gui in browser at address: localhost:9090
 
 from bottle import Bottle, view, request, static_file, abort, route
 import os, sys
+from timeit import default_timer as timer
 
 sys.path.append("../python")
 from plate_solving_wrapper import plate_solve
@@ -16,6 +19,9 @@ def show_index():
 
     return context
 
+@app.route('/static/css/<filename:re:.*\.css>')
+def server_static_css(filename):
+    return static_file(filename, root='static/css')
 
 @app.route('/upload', method='POST')
 @view('show_result')
@@ -30,20 +36,30 @@ def do_upload():
         os.remove(FILE_ADDRESS )
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
 
+    time_start = timer()
     plate_solving_result = plate_solve("../data/catalogue.csv", "../data/index_file_840mm.bin", FILE_ADDRESS)
+    time_end = timer()
 
-    RA      = convert_angle_to_string(plate_solving_result[0], "h")
-    dec     = convert_angle_to_string(plate_solving_result[1])
-    rot     = convert_angle_to_string(plate_solving_result[2])
-    width   = convert_angle_to_string(plate_solving_result[3])
-    height  = convert_angle_to_string(plate_solving_result[4])
+    RA      = convert_angle_to_string(plate_solving_result[0], "h")     if plate_solving_result else None
+    dec     = convert_angle_to_string(plate_solving_result[1])      if plate_solving_result else None
+    rot     = convert_angle_to_string(plate_solving_result[2])      if plate_solving_result else None
+    width   = convert_angle_to_string(plate_solving_result[3])      if plate_solving_result else None
+    height  = convert_angle_to_string(plate_solving_result[4])      if plate_solving_result else None
+
+
+    if plate_solving_result:
+        success = plate_solving_result[4] != 0
+    else:
+        success = False
 
     context = {
+            "success" : success,
             "RA" :      RA,
             "dec" :     dec,
             "rot" :     rot,
             "width" :   width,
             "height" :  height,
+            "time_to_platesolve"  : (time_end-time_start),
     }
 
     os.remove(FILE_ADDRESS )

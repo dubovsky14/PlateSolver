@@ -1,0 +1,36 @@
+html {
+  position: relative;
+  min-height: 100%;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  padding-top: 1rem;
+  padding-bottom: 9rem;
+}
+
+nav {
+  border-bottom-style: solid;
+  border-bottom-width: .3rem;
+  border-bottom-color: #3771cb;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 6rem;
+}
+
+.result-table {
+  border: 1px solid black;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
