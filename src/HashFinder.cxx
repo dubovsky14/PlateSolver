@@ -132,12 +132,3 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
 
     return result;
 };
-
-
-float HashFinder::calculate_hash_distance_squared(const std::tuple<float,float,float,float> &hash1, const std::tuple<float,float,float,float> &hash2)   {
-    return  pow2(get<0>(hash1) - get<0>(hash2)) +
-            pow2(get<1>(hash1) - get<1>(hash2)) +
-            pow2(get<2>(hash1) - get<2>(hash2)) +
-            pow2(get<3>(hash1) - get<3>(hash2));
-};
-
