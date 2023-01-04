@@ -18,7 +18,7 @@ namespace PlateSolver   {
     std::vector<AsterismHash> extract_hashes(const std::vector<AsterismHashWithIndices> &asterisms_and_hashes);
 
     template <class X>
-    X pow2(X x) {return x*x;};
+    inline X pow2(X x) {return x*x;};
 
     // if vec2 can be obtained by anti-clock wise rotation of vec1 by (0,pi), the result is positive, otherwise negative
     float get_angle(float vec1_x, float vec1_y, float vec2_x, float vec2_y);

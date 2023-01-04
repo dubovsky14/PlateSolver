@@ -20,10 +20,10 @@ HashFinder::HashFinder(const string &hash_file) : m_hash_file_address{hash_file}
 
 };
 
-vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > >  HashFinder::get_similar_hashes(const vector<tuple<float,float,float,float> > &input_hashes, unsigned int requested_number_of_hashes)  {
-    tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float> result_temp[input_hashes.size()][requested_number_of_hashes];
+vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > >  HashFinder::get_similar_hashes(const vector<tuple<float,float,float,float> > &input_hashes, unsigned int requested_number_of_hashes, std::vector<tuple<unsigned int, unsigned int,float> > *ordering_by_match)  {
+    AsterismHashWithIndicesAndDistance result_temp[input_hashes.size()][requested_number_of_hashes];
 
-    tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int, float> default_hash{
+    AsterismHashWithIndicesAndDistance default_hash{
         tuple<float,float,float,float>({0,0,0,0}),
         0,0,0,0,1e6
     };
@@ -112,6 +112,25 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
             throw std::string("Unable to open file \"" + m_hash_file_address + "\"");
         }
     }
+
+    if (ordering_by_match != nullptr)   {
+        typedef tuple<unsigned int, unsigned int,float> CoordinatesAndDistance;
+        ordering_by_match->reserve(input_hashes.size()*requested_number_of_hashes);
+        for (unsigned int i_in_hash = 0; i_in_hash < input_hashes.size(); i_in_hash++)  {
+            for (unsigned int i_requested_hash = 0; i_requested_hash < requested_number_of_hashes; i_requested_hash++)  {
+                ordering_by_match->push_back(CoordinatesAndDistance(i_in_hash,
+                                                                    i_requested_hash,
+                                                                    get<5>(result_temp[i_in_hash][i_requested_hash])));
+            }
+        }
+
+        sort(ordering_by_match->begin(), ordering_by_match->end(), [](const CoordinatesAndDistance &a, const CoordinatesAndDistance &b) {
+            const float dist_a = get<2>(a);
+            const float dist_b = get<2>(b);
+            return dist_b > dist_a;
+        });
+    }
+
 
     vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > > result(input_hashes.size());
     for (unsigned int i_in_hash = 0; i_in_hash < input_hashes.size(); i_in_hash++)  {

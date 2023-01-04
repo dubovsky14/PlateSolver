@@ -7,6 +7,7 @@
 #include<tuple>
 
 namespace PlateSolver   {
+    typedef std::tuple<AsterismHash, unsigned int, unsigned int, unsigned int, unsigned int, float> AsterismHashWithIndicesAndDistance;
     class HashFinder    {
         public:
             HashFinder()    = delete;
@@ -15,9 +16,13 @@ namespace PlateSolver   {
 
             HashFinder(const HashFinder &a) = default;
 
-            std::vector<std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > >  get_similar_hashes(const std::vector<std::tuple<float,float,float,float> > &input_hashes, unsigned int requested_number_of_hashes);
+            // look at input hashes and for each of them, return vector of hashes with corresponding star ids from the pre-calculated file
+            // ir ordering ordering_by_match != nullptr, it will push into this pairs indices, where 0-th element are the indices for the best match, 1-st element is 2nd match etc.
+            std::vector<std::vector<AsterismHashWithIndices>>  get_similar_hashes(  const std::vector<AsterismHash> &input_hashes,
+                                                                                    unsigned int requested_number_of_hashes,
+                                                                                    std::vector<std::tuple<unsigned int, unsigned int,float> > *ordering_by_match = nullptr);
 
-            inline static float calculate_hash_distance_squared(const std::tuple<float,float,float,float> &hash1, const std::tuple<float,float,float,float> &hash2) {
+            inline static float calculate_hash_distance_squared(const AsterismHash &hash1, const AsterismHash &hash2) {
                 return  pow2(std::get<0>(hash1) - std::get<0>(hash2)) +
                         pow2(std::get<1>(hash1) - std::get<1>(hash2)) +
                         pow2(std::get<2>(hash1) - std::get<2>(hash2)) +
