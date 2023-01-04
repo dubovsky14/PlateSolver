@@ -1,1 +1,3 @@
 hypatie
+bottle
+uwsgi
