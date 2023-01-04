@@ -121,9 +121,9 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
         brightest_stars_from_database_pixel_coordinates.push_back(tuple<float,float,float>(pos_x, pos_y, magnitude));
     }
 
-    // keep only 12 brightest stars from the photo (if available)
+    // keep only 18 brightest stars from the photo (if available)
     std::vector<std::tuple<float,float,float> > brightest_stars_from_photo = stars_from_photo;
-    if (brightest_stars_from_photo.size() > 12)   brightest_stars_from_photo.resize(12);
+    if (brightest_stars_from_photo.size() > 18)   brightest_stars_from_photo.resize(18);
     const unsigned int n_stars_photo = brightest_stars_from_photo.size();
 
     // select 2 times more stars from database as we have from the photo (if available)
@@ -142,7 +142,7 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
         if (paired_to_truth_star) n_stars_truth_paired++;
     }
 
-    return n_stars_truth_paired > 0.7*n_stars_photo;
+    return n_stars_truth_paired > 0.6*n_stars_photo;
 };
 
 vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars)   {
