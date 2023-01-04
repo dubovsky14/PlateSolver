@@ -37,48 +37,47 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     const float brightness_threshold = star_finder.get_threshold(0.0005);
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
-    vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, 10);
-    sort(hashes_with_indices_from_photo.begin(), hashes_with_indices_from_photo.end(),
-            [](const AsterismHashWithIndices &a, const AsterismHashWithIndices &b)  {return (
-                (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
-            );} );
+    const vector<unsigned int> stars_to_consider_vector{6,8,10};    // in most of the cases hashes built from 6 stars are enough to plate-solve
+    for (const unsigned int stars_to_consider : stars_to_consider_vector)   {
+        vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, stars_to_consider);
+        sort(hashes_with_indices_from_photo.begin(), hashes_with_indices_from_photo.end(),
+                [](const AsterismHashWithIndices &a, const AsterismHashWithIndices &b)  {return (
+                    (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
+                );} );
 
-    const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
-    std::vector<std::tuple<unsigned int, unsigned int,float> > ordering_by_distance;
-    const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10, &ordering_by_distance);
-
-
-
-    vector<tuple<float,float,float,float,float> > valid_hypotheses;
-    for (const tuple<unsigned int, unsigned int,float> &indexes_and_distance : ordering_by_distance)    {
-        const unsigned int i_hash_photo     = get<0>(indexes_and_distance);
-        const unsigned int i_hash_similar   = get<1>(indexes_and_distance);
-        const unsigned int starA_index_photo = get<1>(hashes_with_indices_from_photo[i_hash_photo]);
-        const unsigned int starB_index_photo = get<2>(hashes_with_indices_from_photo[i_hash_photo]);
-        const float xpos_starA = get<0>(stars[starA_index_photo] );
-        const float ypos_starA = get<1>(stars[starA_index_photo] );
-        const float xpos_starB = get<0>(stars[starB_index_photo] );
-        const float ypos_starB = get<1>(stars[starB_index_photo] );
-
-        const unsigned int starA_database_index = get<1>(similar_hashes[i_hash_photo][i_hash_similar]);
-        const unsigned int starB_database_index = get<2>(similar_hashes[i_hash_photo][i_hash_similar]);
+        const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
+        std::vector<std::tuple<unsigned int, unsigned int,float> > ordering_by_distance;
+        const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10, &ordering_by_distance);
 
 
-        const auto hypothesis_coordinates = get_hypothesis_coordinates( xpos_starA, ypos_starA, starA_database_index,
-                                                                        xpos_starB, ypos_starB, starB_database_index,
-                                                                        m_image_width_pixels, m_image_height_pixels);
 
-        const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
-        if (valid_hypotesis)    {
-            return hypothesis_coordinates;
+        vector<tuple<float,float,float,float,float> > valid_hypotheses;
+        for (const tuple<unsigned int, unsigned int,float> &indexes_and_distance : ordering_by_distance)    {
+            const unsigned int i_hash_photo     = get<0>(indexes_and_distance);
+            const unsigned int i_hash_similar   = get<1>(indexes_and_distance);
+            const unsigned int starA_index_photo = get<1>(hashes_with_indices_from_photo[i_hash_photo]);
+            const unsigned int starB_index_photo = get<2>(hashes_with_indices_from_photo[i_hash_photo]);
+            const float xpos_starA = get<0>(stars[starA_index_photo] );
+            const float ypos_starA = get<1>(stars[starA_index_photo] );
+            const float xpos_starB = get<0>(stars[starB_index_photo] );
+            const float ypos_starB = get<1>(stars[starB_index_photo] );
+
+            const unsigned int starA_database_index = get<1>(similar_hashes[i_hash_photo][i_hash_similar]);
+            const unsigned int starB_database_index = get<2>(similar_hashes[i_hash_photo][i_hash_similar]);
+
+
+            const auto hypothesis_coordinates = get_hypothesis_coordinates( xpos_starA, ypos_starA, starA_database_index,
+                                                                            xpos_starB, ypos_starB, starB_database_index,
+                                                                            m_image_width_pixels, m_image_height_pixels);
+
+            const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
+            if (valid_hypotesis)    {
+                return hypothesis_coordinates;
+            }
         }
     }
-    if (valid_hypotheses.size() == 0)   {
-        return tuple<float,float,float,float,float>(0,0,0,0,0);
-    }
-    else {
-        return valid_hypotheses[0];
-    }
+
+    return tuple<float,float,float,float,float>(0,0,0,0,0);
 };
 
 
