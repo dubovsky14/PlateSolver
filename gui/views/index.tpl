@@ -6,7 +6,7 @@
 
         <label for="file">Select a photo to plate-solve:</label>
         <input type="file" id="file" name="upload" /> <p  style="padding-top: 2rem"></p>
-         <label for="index_file">Choose a index_file:</label>
+         <label for="index_file">Choose an index_file:</label>
 
         <select name="index_file" id="index_file">
         % for index_file_name in index_files:

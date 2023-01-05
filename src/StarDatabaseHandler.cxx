@@ -25,7 +25,7 @@ StarDatabaseHandler::StarDatabaseHandler(const std::string &csv_file_address)   
                 m_vector_mag .push_back( std::stod(elements.at(4))  );
             }
             catch(...)  {
-                throw std::string("Unable to read line \"" + line + "\"");
+                throw std::string("Unable to read file \"" + csv_file_address + "\"");
             }
 
         }
