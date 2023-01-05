@@ -9,15 +9,27 @@ Once you have the two files described above, you can use the code to plate-solve
 The code will identify stars in your photo, select few brightest stars of them, create asterism hashes for all combinations of these stars and compare the hashes with the pre-calculated hashes from the hash file.
 It will find the most similar hashes and it will then go through all of them and verify if the stars from photo match the stars from the database around the hashed stars.
 
-How to use the code:
-----------------------
+Installing the dependencies:
+----------------------------
+If you do not have the basic C++ development tools, you will need ```gcc``` and ```cmake```. You will also need ```python3-dev```.
+In order to install these packages on Ubuntu:
 
-The code depends on OpenCV library, you firstly have to install it: ```https://opencv.org/```
+```
+sudo apt-get install python3-dev gcc cmake
+```
 
-The python binding of the code also depends on python3-dev package, you have to install (i.e. ```sudo apt-get install python3-dev``` for Ubuntu)
+Now you need to install OpenCV (```https://opencv.org/```) library, in order to do that on Ubuntu:
 
-Once you have OpenCV and python3-dev installed, you can download and compile the code:
+```sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata libx11-dev && apt-get install -y --no-install-recommends libopencv-dev```
 
+for the python part of the package (GUI and some scripts) you need to install some python packages:
+
+```pip3 install -r ../requirements.txt```
+
+At this point, you should have all the dependencies installed. You can compile the code.
+
+Checking out and compiling the code
+-----------------------------------
 ```
     git clone git@github.com:dubovsky14/PlateSolver.git
 
@@ -29,9 +41,13 @@ Once you have OpenCV and python3-dev installed, you can download and compile the
 
     cmake ../.
 
-    make
+    make # optionally use "make -j4" for compiling on 4 CPUs, or "make -j" to compile on all available CPUs
 
 ```
+
+
+How to use the code:
+----------------------
 
 Now you will need to produce the csv file with the positions of the stars.
 It will need ```hypatie``` module for python, so if you do not have it, you should install if first by ```pip3 install hypatie```.
@@ -63,3 +79,16 @@ Python binding:
 
 The ```python``` folder contains python wrapper for the C++ part - ```plate_solving_wrapper.py```.
 The folder also contains the example python script ```wrapper_example.py``` on how to the wrapper.
+
+GUI:
+-----
+
+The framework also contains a graphical user interface for running the tool as a web application. In order to use it:
+
+```
+cd gui
+
+uwsgi --http-socket :9090 --wsgi-file run_localhost.py --master
+```
+
+Side note: in order to be able to use the GUI, your csv file with positions of the stars, and your hash files have to be in the ```data``` folder. The name of the star csv file must be ```catalogue.csv``` and your index files must have the name ```index_file_<something>.bin```, where ```<something>``` might be any string, for example focal length.
