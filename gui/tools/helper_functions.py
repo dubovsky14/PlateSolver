@@ -1,3 +1,4 @@
+import os
 
 def convert_angle_to_string(angle_floating_point : float, degree_symbol : str = "°") -> str:
     """
@@ -13,4 +14,32 @@ def convert_angle_to_string(angle_floating_point : float, degree_symbol : str = 
     result = result + str(int(60*angle_floating_point)) + "\""
     angle_floating_point = 60*(angle_floating_point*60-int(angle_floating_point*60))
     result = result + str(round(angle_floating_point,1)) + "\'"
+    return result
+
+def get_list_of_index_files(address_of_input_files) -> list:
+    dir_list = os.listdir(address_of_input_files)
+    result = []
+    for file_name in dir_list:
+        if not file_name.startswith("index_file_"):
+            continue
+        if (file_name.endswith(".bin") or file_name.endswith(".text")):
+            result.append(file_name)
+    return get_sorted_index_files(result)
+
+def get_sorted_index_files(index_files : list) -> None:
+    index_files_map = {}
+    lengths = []
+    for index_file in index_files:
+        N = len(index_file)
+        if not N in index_files_map:
+            index_files_map[N] = []
+            lengths.append(N)
+        index_files_map[N].append(index_file)
+
+    result = []
+    lengths.sort()
+    for N in lengths:
+        index_files_map[N].sort()
+        for index_file in index_files_map[N]:
+            result.append(index_file)
     return result

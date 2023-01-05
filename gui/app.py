@@ -8,24 +8,26 @@ from timeit import default_timer as timer
 
 sys.path.append("../python")
 from plate_solving_wrapper import plate_solve
-from tools.helper_functions import convert_angle_to_string
+from tools.helper_functions import convert_angle_to_string, get_list_of_index_files
 
 app = Bottle()
 
 @app.route('/')
 @view('index')
 def show_index():
-    context = {}
-
+    index_files = get_list_of_index_files("../data/")
+    context = {"index_files" : index_files}
     return context
 
 @app.route('/static/css/<filename:re:.*\.css>')
 def server_static_css(filename):
+
     return static_file(filename, root='static/css')
 
 @app.route('/upload', method='POST')
 @view('show_result')
 def do_upload():
+    index_file = request.forms.get("index_file")
     upload     = request.files.get('upload')
     name, ext = os.path.splitext(upload.filename)
     if ext.upper() not in ('.JPG','.PNG','.JPEG'):
@@ -37,7 +39,7 @@ def do_upload():
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
 
     time_start = timer()
-    plate_solving_result = plate_solve("../data/catalogue.csv", "../data/index_file_840mm.bin", FILE_ADDRESS)
+    plate_solving_result = plate_solve("../data/catalogue.csv", "../data/" + index_file, FILE_ADDRESS)
     time_end = timer()
 
     RA      = convert_angle_to_string(plate_solving_result[0], "h")     if plate_solving_result else None
