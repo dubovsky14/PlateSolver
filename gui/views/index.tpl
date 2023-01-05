@@ -10,10 +10,10 @@
 
         <select name="index_file" id="index_file">
         % for index_file_name in index_files:
-          <option value="{{index_file_name}}">{{index_file_name}}</option>
+          <option value="{{index_file_name}}" {{"/selected" if index_file_name == selected_index_file else ""}}>{{index_file_name}}</option>
+
         % end
         </select>
-
         <p  style="padding-top: 6rem"></p>
         <input type="submit" value="Plate Solve" />
 

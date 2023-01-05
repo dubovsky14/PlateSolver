@@ -19,7 +19,8 @@ Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_pla
 %end
 
 <center style="padding-bottom: 7rem">
-    <a href="/">
+    <a href="/?index_file={{index_file}}">
+
     <input type="button" value="Go back" />
     </a>
 </center>

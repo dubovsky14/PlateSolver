@@ -16,12 +16,17 @@ app = Bottle()
 @view('index')
 def show_index():
     index_files = get_list_of_index_files("../data/")
-    context = {"index_files" : index_files}
+    selected_index_file = request.query.index_file
+    selected_index_file = selected_index_file if selected_index_file in index_files else ""
+
+    context =   {
+                    "index_files" : index_files,
+                    "selected_index_file" : selected_index_file
+                }
     return context
 
 @app.route('/static/css/<filename:re:.*\.css>')
 def server_static_css(filename):
-
     return static_file(filename, root='static/css')
 
 @app.route('/upload', method='POST')
@@ -43,10 +48,10 @@ def do_upload():
     time_end = timer()
 
     RA      = convert_angle_to_string(plate_solving_result[0], "h")     if plate_solving_result else None
-    dec     = convert_angle_to_string(plate_solving_result[1])      if plate_solving_result else None
-    rot     = convert_angle_to_string(plate_solving_result[2])      if plate_solving_result else None
-    width   = convert_angle_to_string(plate_solving_result[3])      if plate_solving_result else None
-    height  = convert_angle_to_string(plate_solving_result[4])      if plate_solving_result else None
+    dec     = convert_angle_to_string(plate_solving_result[1])          if plate_solving_result else None
+    rot     = convert_angle_to_string(plate_solving_result[2])          if plate_solving_result else None
+    width   = convert_angle_to_string(plate_solving_result[3])          if plate_solving_result else None
+    height  = convert_angle_to_string(plate_solving_result[4])          if plate_solving_result else None
 
 
     if plate_solving_result:
@@ -62,6 +67,7 @@ def do_upload():
             "width" :   width,
             "height" :  height,
             "time_to_platesolve"  : (time_end-time_start),
+            "index_file" : index_file,
     }
 
     os.remove(FILE_ADDRESS )

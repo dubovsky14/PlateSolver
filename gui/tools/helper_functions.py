@@ -22,7 +22,7 @@ def get_list_of_index_files(address_of_input_files) -> list:
     for file_name in dir_list:
         if not file_name.startswith("index_file_"):
             continue
-        if (file_name.endswith(".bin") or file_name.endswith(".text")):
+        if (file_name.endswith(".bin") or file_name.endswith(".txt")):
             result.append(file_name)
     return get_sorted_index_files(result)
 
