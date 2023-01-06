@@ -20,7 +20,7 @@ sudo apt-get install python3-dev gcc cmake
 
 Now you need to install OpenCV (```https://opencv.org/```) library, in order to do that on Ubuntu:
 
-```sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata libx11-dev && apt-get install -y --no-install-recommends libopencv-dev```
+```sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev```
 
 for the python part of the package (GUI and some scripts) you need to install some python packages:
 
