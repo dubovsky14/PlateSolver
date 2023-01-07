@@ -1,4 +1,4 @@
-The package implements plate solving (i.e. calculating celestial coordinate from a photo of the night sky).
+The package implements plate solving (i.e. calculating celestial coordinates from a photo of the night sky).
 The code uses the algorithm published in 2009 by D. Lang, D. W. Hogg, K. Mierle, M. Blantom and S. Roweis: https://arxiv.org/pdf/0910.2233.pdf
 
 In order to be able to plate solve, one has to have two files:
@@ -26,7 +26,7 @@ for the python part of the package (GUI and some scripts) you need to install so
 
 ```pip3 install -r ../requirements.txt```
 
-At this point, you should have all the dependencies installed. You can compile the code.
+At this point, you should have all the dependencies installed. Now you can compile the code.
 
 Checking out and compiling the code
 -----------------------------------
@@ -92,3 +92,33 @@ uwsgi --http-socket :9090 --wsgi-file run_localhost.py --master
 ```
 
 Side note: in order to be able to use the GUI, your csv file with positions of the stars, and your hash files have to be in the ```data``` folder. The name of the star csv file must be ```catalogue.csv``` and your index files must have the name ```index_file_<something>.bin```, where ```<something>``` might be any string, for example focal length.
+
+
+Running on Raspberry Pi:
+------------------------
+
+In order to run the app as system service on Rapsberry Pi do the following, but firstly open ```app.service``` and change the paths accordingly (also change port number if you would like to choose a different port).
+
+```
+cd gui
+
+sudo cp app.service /etc/systemd/system/
+
+sudo systemctl daemon-reload
+
+sudo systemctl start app.service
+
+sudo systemctl enable app.service
+
+```
+
+In order to be able to access the page from other devices on the network, you have to expose the port 9090:
+
+```
+sudo ufw allow 9090
+```
+
+If you want to hide it again:
+```
+fuser -k 9090/tcp
+```
