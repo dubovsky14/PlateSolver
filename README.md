@@ -122,3 +122,7 @@ If you want to hide it again:
 ```
 fuser -k 9090/tcp
 ```
+
+The code and tutorial might be useful if you want to run in on Raspberry Pi and create a wifi access point from it:
+
+```https://github.com/oblique/create_ap```
