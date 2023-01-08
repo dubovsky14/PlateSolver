@@ -22,11 +22,6 @@ Now you need to install OpenCV (```https://opencv.org/```) library, in order to 
 
 ```sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev```
 
-for the python part of the package (GUI and some scripts) you need to install some python packages:
-
-```pip3 install -r ../requirements.txt```
-
-At this point, you should have all the dependencies installed. Now you can compile the code.
 
 Checking out and compiling the code
 -----------------------------------
@@ -43,7 +38,15 @@ Checking out and compiling the code
 
     make # optionally use "make -j4" for compiling on 4 CPUs, or "make -j" to compile on all available CPUs
 
+    cd ..
+
 ```
+
+Now install the dependencies for the python part of the code:
+
+```pip3 install -r requirements.txt```
+
+At this point, you should have everything installed and ready to use.
 
 
 How to use the code:
