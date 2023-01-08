@@ -1,0 +1,14 @@
+[Unit]
+Description=Create AP Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=mkdir /run/systemd/resolve/
+ExecStart=/usr/bin/create_ap -n wlan0 plate_solver_wifi nbusr123
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

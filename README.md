@@ -126,6 +126,4 @@ If you want to hide it again:
 fuser -k 9090/tcp
 ```
 
-The code and tutorial might be useful if you want to run in on Raspberry Pi and create a wifi access point from it:
-
-```https://github.com/oblique/create_ap```
+This code and tutorial might be useful if you want to run in on Raspberry Pi and create a wifi access point from it: https://github.com/oblique/create_ap . However, you will have to modify the config file when you want to run it as system service. The example config file can be found in this (PlateSolver) repository: ```cat gui/create_ap/create_ap.service```
