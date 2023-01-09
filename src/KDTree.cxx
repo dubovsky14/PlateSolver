@@ -37,7 +37,7 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
 
 int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_index) {
 
-    if (m_nodes_built % 1000 == 0) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes, sub_indices.size() = " << sub_indices.size() << endl;
+    if (m_nodes_built % 100000 == 0) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes, sub_indices.size() = " << sub_indices.size() << endl;
     m_nodes_built++;
 
     const bool has_parent = parent_index >= 0;
@@ -96,8 +96,9 @@ CoordinateDataType KDTree::get_median_and_its_index_from_sample(const std::vecto
     }
     else {
         for (unsigned int i = 0; i < 200; i++)  {
-            const unsigned int random_index = RandomUniform()*sub_indices.size();
-            subsample_indices.push_back(sub_indices[random_index]);
+            unsigned int random_index = RandomUniform()*sub_indices.size();
+            if (random_index == sub_indices.size()) random_index--;
+            subsample_indices.push_back(sub_indices.at(random_index));
         }
     }
     indices_in_subsample_vector.resize(subsample_indices.size());
@@ -105,23 +106,23 @@ CoordinateDataType KDTree::get_median_and_its_index_from_sample(const std::vecto
     // you definitely do not want to grab value from points_in_tree during sorting and jump randomly over hundreds MBs of memory ...
     vector<CoordinateDataType> subsample_values(subsample_indices.size());
     for (unsigned int i = 0; i < subsample_indices.size(); i++)  {
-        indices_in_subsample_vector[i] = i;
-        subsample_values[i] = m_points_in_tree[ subsample_indices[i] ].m_coordinates[coordinate];
+        indices_in_subsample_vector.at(i) = i;
+        subsample_values.at(i) = m_points_in_tree.at( subsample_indices.at(i) ).m_coordinates[coordinate];
     }
 
     sort(indices_in_subsample_vector.begin(), indices_in_subsample_vector.end(), [subsample_values](unsigned int a, unsigned int b){
-        return subsample_values[a] > subsample_values[b];
+        return subsample_values.at(a) > subsample_values.at(b);
     });
 
     vector<unsigned int> subsample_indices_sorted(subsample_indices.size());
     for (unsigned int i = 0; i < indices_in_subsample_vector.size(); i++)  {
-        subsample_indices_sorted[i] = sub_indices[indices_in_subsample_vector[i]];
+        subsample_indices_sorted.at(i) = sub_indices.at(indices_in_subsample_vector.at(i));
     }
 
-    const unsigned int middle_index = subsample_indices_sorted[subsample_indices_sorted.size()/2];
+    const unsigned int middle_index = subsample_indices_sorted.at(subsample_indices_sorted.size()/2);
     if (median_index) *median_index = middle_index;
 
-    return m_points_in_tree[middle_index].m_coordinates[coordinate];
+    return m_points_in_tree.at(middle_index).m_coordinates[coordinate];
 };
 
 
