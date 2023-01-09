@@ -15,6 +15,21 @@ PointInKDTree::PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndic
     m_star_indices      = star_indices;
 };
 
+
+PointIndexType PointInKDTree::get_child_index(const CoordinateDataType *coordinates) {
+    if (m_index_for_splitting < 0)  {
+        return -1;
+    }
+    cout << "\nsplitting index = " << m_index_for_splitting << "\t\t";
+
+    if (coordinates[m_index_for_splitting] > m_coordinates[m_index_for_splitting])  {
+        cout << "\t" << coordinates[m_index_for_splitting] << " > " << m_coordinates[m_index_for_splitting];
+        return m_index_child_right;
+    }
+    cout << "\t" << coordinates[m_index_for_splitting] << " <= "  << m_coordinates[m_index_for_splitting];
+    return m_index_child_left;
+};
+
 KDTree::KDTree(unsigned int n_points)   {
     m_points_in_tree.reserve(n_points);
 };
@@ -35,9 +50,38 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
 
 };
 
+
+std::tuple<PointCoordinatesTuple, StarIndices> KDTree::get_k_nearest_neighbor(const PointCoordinatesTuple &query_point)  {
+    CoordinateDataType query_point_array[4];
+    query_point_array[0]    = get<0>(query_point);
+    query_point_array[1]    = get<1>(query_point);
+    query_point_array[2]    = get<2>(query_point);
+    query_point_array[3]    = get<3>(query_point);
+
+    if (m_root_node_index < 0)  {
+        return tuple<PointCoordinatesTuple, StarIndices>(PointCoordinatesTuple(0,0,0,0), StarIndices(0,0));
+    }
+
+    int node_index = m_root_node_index;
+    int result_node_index = m_root_node_index;
+    while   (node_index >= 0)   {
+        result_node_index = node_index;
+        node_index = m_points_in_tree[node_index].get_child_index(query_point_array);
+    }
+
+    const CoordinateDataType *coordinate_array = m_points_in_tree[result_node_index].m_coordinates;
+    const StarIndices &star_indices = m_points_in_tree[result_node_index].m_star_indices;
+
+    return tuple<PointCoordinatesTuple, StarIndices>(
+        PointCoordinatesTuple(coordinate_array[0],coordinate_array[1],coordinate_array[2],coordinate_array[3]),
+        StarIndices(get<0>(star_indices), get<1>(star_indices))
+    );
+};
+
+
 int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_index) {
 
-    if (m_nodes_built % 100000 == 0) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes, sub_indices.size() = " << sub_indices.size() << endl;
+    if (m_nodes_built % 1000000 == 0) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes\n";
     m_nodes_built++;
 
     const bool has_parent = parent_index >= 0;

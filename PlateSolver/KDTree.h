@@ -15,6 +15,8 @@ namespace PlateSolver   {
         public:
             PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
 
+            PointIndexType get_child_index(const CoordinateDataType *coordinates);
+
             PointCoordinatesArray   m_coordinates;
             StarIndices             m_star_indices;
             short                   m_index_for_splitting   = -1;
@@ -33,6 +35,8 @@ namespace PlateSolver   {
             void create_tree_structure();
 
             std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points);
+
+            std::tuple<PointCoordinatesTuple, StarIndices> get_k_nearest_neighbor(const PointCoordinatesTuple &query_point);
 
         private:
             int m_root_node_index = -1;

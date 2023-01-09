@@ -1,5 +1,8 @@
 #include "../PlateSolver/KDTree.h"
 
+#include "../PlateSolver/StringOperations.h"
+#include "../PlateSolver/Common.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -48,6 +51,24 @@ int main(int argc, const char **argv)   {
 
         cout << "Hashes loaded, going to create kd-tree\n";
         kd_tree.create_tree_structure();
+        cout << "kd-tree created. Please provide type the hash:\n";
+
+        while(true) {
+            cout << "Please provide type the hash:\n";
+            string hash_string;
+            cin >> hash_string;
+            vector<string> elements = SplitAndStripString(hash_string, ",");
+            if (elements.size() != 4)   {
+                cout << "Invalid hash\n";
+                continue;
+            }
+            tuple<float,float,float,float> hash(std::stod(elements[0]), std::stod(elements[1]),std::stod(elements[2]),std::stod(elements[3]));
+
+            cout << "input hash: " << hash_tuple_to_string(hash) << endl;
+            const auto result = kd_tree.get_k_nearest_neighbor(hash);
+            cout << "[ " << get<0>(get<0>(result)) << ","  << get<1>(get<0>(result)) << ","  << get<2>(get<0>(result)) << ","  << get<3>(get<0>(result)) << " ],"
+                    << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << endl;
+        }
 
 
         return 0;
