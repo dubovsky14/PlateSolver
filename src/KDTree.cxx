@@ -37,7 +37,7 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
 
 int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_index) {
 
-    if (m_nodes_built % 1000) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes, sub_indices.size() = " << sub_indices.size() << endl;
+    if (m_nodes_built % 1000 == 0) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes, sub_indices.size() = " << sub_indices.size() << endl;
     m_nodes_built++;
 
     const bool has_parent = parent_index >= 0;
@@ -57,8 +57,9 @@ int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_
     indices_child_right.reserve(sub_indices.size()/2);
     split_based_on_cut(sub_indices, index_for_splitting, median, this_point_index, &indices_child_left, &indices_child_right);
 
-    cout << "Children right = " << indices_child_right.size() << endl;
-    cout << "Children left = " << indices_child_left.size() << endl;
+    //cout << "Children right = " << indices_child_right.size() << endl;
+    //cout << "Children left = " << indices_child_left.size() << endl;
+    //cin.get();
 
     if (indices_child_left.size())  {
         this_point.m_index_child_left = build_node(indices_child_left, this_point_index);
@@ -86,26 +87,41 @@ void KDTree::split_based_on_cut(const vector<unsigned int> &sub_indices, short c
 };
 
 CoordinateDataType KDTree::get_median_and_its_index_from_sample(const std::vector<unsigned int> &sub_indices, short coordinate, unsigned int *median_index)   const   {
-    vector<unsigned int> subsample;
+    // yes, this function is a mess, I know. But if you want to use processor cache and not to jump in the memory by few hundred MBs in each sort comparison, you don't have too much of a choice ...
+
+    vector<unsigned int> subsample_indices;
+    vector<unsigned int> indices_in_subsample_vector;
     if (sub_indices.size() < 200)   {
-        subsample = sub_indices;
+        subsample_indices = sub_indices;
     }
     else {
         for (unsigned int i = 0; i < 200; i++)  {
             const unsigned int random_index = RandomUniform()*sub_indices.size();
-            subsample.push_back(sub_indices[random_index]);
+            subsample_indices.push_back(sub_indices[random_index]);
         }
     }
+    indices_in_subsample_vector.resize(subsample_indices.size());
 
-    const vector<PointInKDTree> &points_in_tree = m_points_in_tree;
-    sort(subsample.begin(), subsample.end(), [points_in_tree, coordinate](unsigned int a, unsigned int b){
-        return points_in_tree[a].m_coordinates[coordinate] > points_in_tree[b].m_coordinates[coordinate];
+    // you definitely do not want to grab value from points_in_tree during sorting and jump randomly over hundreds MBs of memory ...
+    vector<CoordinateDataType> subsample_values(subsample_indices.size());
+    for (unsigned int i = 0; i < subsample_indices.size(); i++)  {
+        indices_in_subsample_vector[i] = i;
+        subsample_values[i] = m_points_in_tree[ subsample_indices[i] ].m_coordinates[coordinate];
+    }
+
+    sort(indices_in_subsample_vector.begin(), indices_in_subsample_vector.end(), [subsample_values](unsigned int a, unsigned int b){
+        return subsample_values[a] > subsample_values[b];
     });
 
-    const unsigned int middle_index = subsample[subsample.size()/2];
+    vector<unsigned int> subsample_indices_sorted(subsample_indices.size());
+    for (unsigned int i = 0; i < indices_in_subsample_vector.size(); i++)  {
+        subsample_indices_sorted[i] = sub_indices[indices_in_subsample_vector[i]];
+    }
+
+    const unsigned int middle_index = subsample_indices_sorted[subsample_indices_sorted.size()/2];
     if (median_index) *median_index = middle_index;
 
-    return points_in_tree[middle_index].m_coordinates[coordinate];
+    return m_points_in_tree[middle_index].m_coordinates[coordinate];
 };
 
 
