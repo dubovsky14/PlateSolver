@@ -23,6 +23,10 @@ add_executable(plate_solve "utils/plate_solve.cxx")
 add_dependencies(plate_solve PlateSolver)
 target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})
 
+add_executable(test "utils/test.cxx")
+add_dependencies(test PlateSolver)
+target_link_libraries(test PlateSolver ${OpenCV_LIBS})
+
 
 add_executable(convert_text_hash_file_to_binary "utils/convert_text_hash_file_to_binary.cxx")
 add_dependencies(convert_text_hash_file_to_binary PlateSolver)
