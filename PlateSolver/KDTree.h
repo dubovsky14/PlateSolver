@@ -2,6 +2,7 @@
 
 #include<tuple>
 #include<vector>
+#include<map>
 #include <stdlib.h>
 
 namespace PlateSolver   {
@@ -36,7 +37,8 @@ namespace PlateSolver   {
 
             std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points);
 
-            std::tuple<PointCoordinatesTuple, StarIndices> get_k_nearest_neighbor(const PointCoordinatesTuple &query_point);
+            std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points);
+
 
         private:
             int m_root_node_index = -1;
@@ -53,6 +55,18 @@ namespace PlateSolver   {
             CoordinateDataType get_median_and_its_index_from_sample(const std::vector<unsigned int> &sub_indices, short coordinate, unsigned int *median_index = nullptr)   const;
 
             unsigned int m_nodes_built = 0;
+
+            static float get_distance(const CoordinateDataType *x1, const CoordinateDataType *x2);
+
+            void scan_children_nodes(   unsigned int node_index,
+                                        std::map<unsigned int, char> *visited_nodes,
+                                        std::vector<std::tuple <unsigned int, float> > *vector_index_distance,
+                                        const CoordinateDataType *query_point_array
+                                        );
+
+            static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);
+
+
     };
 
 

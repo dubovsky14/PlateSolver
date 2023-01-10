@@ -64,10 +64,12 @@ int main(int argc, const char **argv)   {
             }
             tuple<float,float,float,float> hash(std::stod(elements[0]), std::stod(elements[1]),std::stod(elements[2]),std::stod(elements[3]));
 
-            cout << "input hash: " << hash_tuple_to_string(hash) << endl;
-            const auto result = kd_tree.get_k_nearest_neighbor(hash);
-            cout << "[ " << get<0>(get<0>(result)) << ","  << get<1>(get<0>(result)) << ","  << get<2>(get<0>(result)) << ","  << get<3>(get<0>(result)) << " ],"
-                    << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << endl;
+            cout << "\ninput hash: " << hash_tuple_to_string(hash) << endl;
+            const auto results = kd_tree.get_k_nearest_neighbors(hash, 10);
+            for (const auto &result : results)   {
+                cout << "[ " << get<0>(get<0>(result)) << ","  << get<1>(get<0>(result)) << ","  << get<2>(get<0>(result)) << ","  << get<3>(get<0>(result)) << " ],"
+                        << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << endl;
+            }
         }
 
 
