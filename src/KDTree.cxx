@@ -9,6 +9,13 @@
 using namespace PlateSolver;
 using namespace std;
 
+PointInKDTree::PointInKDTree()  {
+    m_coordinates[0] = 0;
+    m_coordinates[1] = 0;
+    m_coordinates[2] = 0;
+    m_coordinates[3] = 0;
+    m_star_indices = std::tuple<unsigned int, unsigned int>(0,0);
+};
 
 PointInKDTree::PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndices &star_indices)   {
     m_coordinates[0]    = get<0>(coordinates);
@@ -34,6 +41,13 @@ KDTree::KDTree(unsigned int n_points)   {
     m_points_in_tree.reserve(n_points);
 };
 
+KDTree::KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size)  {
+    m_input_file = make_shared<ifstream>(kd_tree_binary_file, std::ios::binary | std::ios::out);
+    m_chache_size = cache_size;
+    m_input_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));
+    cout << "Root node: " << m_root_node_index << endl;
+};
+
 void KDTree::add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices) {
     m_points_in_tree.push_back(PointInKDTree(coordinates, star_indices));
 };
@@ -53,11 +67,11 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
     for (unsigned int index : indices)  {
         result.push_back (
             tuple<PointCoordinatesTuple, StarIndices>   (
-                PointCoordinatesTuple(  m_points_in_tree[index].m_coordinates[0],
-                                        m_points_in_tree[index].m_coordinates[1],
-                                        m_points_in_tree[index].m_coordinates[2],
-                                        m_points_in_tree[index].m_coordinates[3]),
-                m_points_in_tree[index].m_star_indices
+                PointCoordinatesTuple(  get_point_in_tree(index).m_coordinates[0],
+                                        get_point_in_tree(index).m_coordinates[1],
+                                        get_point_in_tree(index).m_coordinates[2],
+                                        get_point_in_tree(index).m_coordinates[3]),
+                get_point_in_tree(index).m_star_indices
             )
         );
     }
@@ -85,18 +99,18 @@ std::vector<unsigned int> KDTree::get_k_nearest_neighbors_indices(const PointCoo
     // find the leaf node
     while   (node_index >= 0)   {
         visited_nodes[node_index] = 1;
-        const float distance = get_distance(query_point_array, m_points_in_tree[node_index].m_coordinates);
+        const float distance = get_distance(query_point_array, get_point_in_tree(node_index).m_coordinates);
         add_node_to_vector_index_distance(distance, &vector_index_distance, n_points, node_index);
 
         leaf_node_index = node_index;
-        node_index = m_points_in_tree[node_index].get_child_index(query_point_array);
+        node_index = get_point_in_tree(node_index).get_child_index(query_point_array);
     }
 
     // now go upwards the tree
     node_index = leaf_node_index;
     while   (node_index >= 0)   {
         scan_children_nodes(node_index, &visited_nodes, &vector_index_distance, query_point_array);
-        node_index = m_points_in_tree[node_index].m_index_parent;
+        node_index = get_point_in_tree(node_index).m_index_parent;
     }
 
     vector<unsigned int>    result;
@@ -148,7 +162,7 @@ void KDTree::split_based_on_cut(const vector<unsigned int> &sub_indices, short c
         if (sub_index == index_to_omit) {
             continue;
         }
-        const PointInKDTree &this_point = m_points_in_tree.at(sub_index);
+        const PointInKDTree &this_point = get_point_in_tree(sub_index);
         const CoordinateDataType value_this_point = this_point.m_coordinates[coordinate_index];
         if (value_this_point > cut_value)   indices_higher_value->push_back(sub_index);
         else                                indices_lower_value->push_back(sub_index);
@@ -176,7 +190,7 @@ CoordinateDataType KDTree::get_median_and_its_index_from_sample(const std::vecto
     vector<CoordinateDataType> subsample_values(subsample_indices.size());
     for (unsigned int i = 0; i < subsample_indices.size(); i++)  {
         indices_in_subsample_vector.at(i) = i;
-        subsample_values.at(i) = m_points_in_tree.at( subsample_indices.at(i) ).m_coordinates[coordinate];
+        subsample_values.at(i) = get_point_in_tree( subsample_indices.at(i) ).m_coordinates[coordinate];
     }
 
     sort(indices_in_subsample_vector.begin(), indices_in_subsample_vector.end(), [subsample_values](unsigned int a, unsigned int b){
@@ -191,7 +205,7 @@ CoordinateDataType KDTree::get_median_and_its_index_from_sample(const std::vecto
     const unsigned int middle_index = subsample_indices_sorted.at(subsample_indices_sorted.size()/2);
     if (median_index) *median_index = middle_index;
 
-    return m_points_in_tree.at(middle_index).m_coordinates[coordinate];
+    return get_point_in_tree(middle_index).m_coordinates[coordinate];
 };
 
 
@@ -215,18 +229,18 @@ void KDTree::scan_children_nodes (   unsigned int node_index,
     }
     (*visited_nodes)[node_index] = 1;
 
-    short split_index = m_points_in_tree[node_index].m_index_for_splitting;
-    const float dist_from_splitting_plane = fabs(query_point_array[split_index] - m_points_in_tree[node_index].m_coordinates[split_index]);
+    short split_index = get_point_in_tree(node_index).m_index_for_splitting;
+    const float dist_from_splitting_plane = fabs(query_point_array[split_index] - get_point_in_tree(node_index).m_coordinates[split_index]);
 
-    const bool query_point_on_right = query_point_array[split_index] > m_points_in_tree[node_index].m_coordinates[split_index];
+    const bool query_point_on_right = query_point_array[split_index] > get_point_in_tree(node_index).m_coordinates[split_index];
 
     if (query_point_on_right || dist_from_splitting_plane < get<1>(vector_index_distance->back()))   {
-        const int child_id = m_points_in_tree[node_index].m_index_child_right;
+        const int child_id = get_point_in_tree(node_index).m_index_child_right;
         scan_children_nodes(child_id, visited_nodes, vector_index_distance, query_point_array);
     }
 
     if (!query_point_on_right || dist_from_splitting_plane < get<1>(vector_index_distance->back()))   {
-        const int child_id = m_points_in_tree[node_index].m_index_child_left;
+        const int child_id = get_point_in_tree(node_index).m_index_child_left;
         scan_children_nodes(child_id, visited_nodes, vector_index_distance, query_point_array);
     }
 };
@@ -246,6 +260,31 @@ void KDTree::add_node_to_vector_index_distance(float distance, vector<tuple <uns
     });
 };
 
+void KDTree::save_to_file(const std::string &output_file_address)   const  {
+    ofstream output_file(output_file_address, std::ios::binary | std::ios::out);
+    auto write_data = [&output_file](const auto &data)  {
+        output_file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+    };
+
+    write_data(m_root_node_index);
+    for (const PointInKDTree &node : m_points_in_tree)  {
+        write_data(node);
+    }
+
+    output_file.close();
+};
+
+PointInKDTree KDTree::get_point_in_tree(unsigned int node_index) const   {
+    if (m_input_file == nullptr)    {
+        return m_points_in_tree[node_index];
+    }
+    else    {
+        PointInKDTree result;
+        m_input_file->seekg(sizeof(m_root_node_index) + node_index*sizeof(result));
+        m_input_file->read(reinterpret_cast<char *>(&result), sizeof(result));
+        return result;
+    }
+};
 
 float PlateSolver::RandomUniform()  {
     // Be carefull about the brackets, otherwise RAND_MAX will overflow

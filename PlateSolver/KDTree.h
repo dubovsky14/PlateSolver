@@ -3,6 +3,9 @@
 #include<tuple>
 #include<vector>
 #include<map>
+#include<string>
+#include<memory>
+#include<fstream>
 #include <stdlib.h>
 
 namespace PlateSolver   {
@@ -14,6 +17,7 @@ namespace PlateSolver   {
 
     class PointInKDTree {
         public:
+            PointInKDTree();
             PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
 
             PointIndexType get_child_index(const CoordinateDataType *coordinates);
@@ -31,6 +35,8 @@ namespace PlateSolver   {
         public:
             KDTree(unsigned int n_points);
 
+            KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size = 1000);
+
             void add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
 
             void create_tree_structure();
@@ -39,8 +45,10 @@ namespace PlateSolver   {
 
             std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points);
 
+            void save_to_file(const std::string &output_file_address)   const;
 
         private:
+
             int m_root_node_index = -1;
 
             std::vector<PointInKDTree> m_points_in_tree;
@@ -65,6 +73,15 @@ namespace PlateSolver   {
                                         );
 
             static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);
+
+            // for reading from disk implementation
+            std::shared_ptr<std::ifstream> m_input_file = nullptr;
+
+            std::map<unsigned int, PointInKDTree>   m_index_to_node_map;
+            unsigned int                            m_points_in_map;
+            unsigned int                            m_chache_size;
+
+            PointInKDTree get_point_in_tree(unsigned int node_index) const;
 
 
     };
