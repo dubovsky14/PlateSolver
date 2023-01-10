@@ -14,7 +14,7 @@ PointInKDTree::PointInKDTree()  {
     m_coordinates[1] = 0;
     m_coordinates[2] = 0;
     m_coordinates[3] = 0;
-    m_star_indices = std::tuple<unsigned int, unsigned int>(0,0);
+    m_star_indices = StarIndices(0,0,0,0);
 };
 
 PointInKDTree::PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndices &star_indices)   {

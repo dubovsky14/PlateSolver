@@ -2,6 +2,7 @@
 #include "../PlateSolver/StringOperations.h"
 
 #include "../PlateSolver/Common.h"
+#include "../PlateSolver/KDTree.h"
 
 #include<string>
 #include<vector>
@@ -37,7 +38,27 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
 
     const unsigned int n_last_requested = requested_number_of_hashes-1;
 
-    const bool is_binary_file = EndsWith(m_hash_file_address, ".bin");
+    const bool is_binary_file   = EndsWith(m_hash_file_address, ".bin");
+    const bool is_kdtree_file   = EndsWith(m_hash_file_address, ".kdtree");
+    const bool is_text_file     = EndsWith(m_hash_file_address, ".txt") || EndsWith(m_hash_file_address, ".csv");
+
+    if (is_kdtree_file) {
+        KDTree kd_tree(m_hash_file_address);
+        for (unsigned int i_in_hash = 0; i_in_hash < input_hashes.size(); i_in_hash++)  {
+            auto hashes_and_indices = kd_tree.get_k_nearest_neighbors(input_hashes[i_in_hash], requested_number_of_hashes);
+            for (unsigned int i_requested_hash = 0; i_requested_hash < requested_number_of_hashes; i_requested_hash++)  {
+                const float distance2 = calculate_hash_distance_squared(input_hashes[i_in_hash], get<0>(hashes_and_indices[i_in_hash]));
+                const auto &star_indices = get<1>(hashes_and_indices[i_requested_hash]);
+                result_temp[i_in_hash][i_requested_hash]=AsterismHashWithIndicesAndDistance(
+                    get<0>(hashes_and_indices[i_requested_hash]),
+                    get<0>(star_indices), get<1>(star_indices), get<2>(star_indices), get<3>(star_indices),
+                    distance2
+                );
+            }
+        }
+
+    }
+
 
     if (is_binary_file) {
         unsigned int star_ids[4];
@@ -64,11 +85,7 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
         input_file.close();
     }
 
-
-
-
-
-    if (!is_binary_file)    {
+    if (is_text_file)    {
         string line;
         ifstream input_file (m_hash_file_address);
         if (input_file.is_open())    {

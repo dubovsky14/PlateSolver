@@ -12,7 +12,7 @@ namespace PlateSolver   {
     typedef float CoordinateDataType;
     typedef std::tuple<CoordinateDataType, CoordinateDataType, CoordinateDataType, CoordinateDataType> PointCoordinatesTuple;
     typedef CoordinateDataType PointCoordinatesArray[4];
-    typedef std::tuple<unsigned int, unsigned int> StarIndices;
+    typedef std::tuple<unsigned int, unsigned int, unsigned int, unsigned int> StarIndices;
     typedef int PointIndexType;
 
     class PointInKDTree {

@@ -51,7 +51,7 @@ int main(int argc, const char **argv)   {
                 const auto results = kd_tree.get_k_nearest_neighbors(hash, 10);
                 for (const auto &result : results)   {
                     cout << "[ " << get<0>(get<0>(result)) << ","  << get<1>(get<0>(result)) << ","  << get<2>(get<0>(result)) << ","  << get<3>(get<0>(result)) << " ],"
-                            << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << endl;
+                            << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << "," << get<2>(get<1>(result)) << "," << get<3>(get<1>(result)) << "," << endl;
                 }
             }
 
@@ -63,17 +63,15 @@ int main(int argc, const char **argv)   {
 
             ifstream input_file (binary_file, std::ios::binary | std::ios::out);
             tuple<float,float,float,float> hash;
-            tuple<unsigned int, unsigned int> stars_AB;
-            tuple<unsigned int, unsigned int> stars_CD;
-
+            unsigned int star_ids[4];
             KDTree kd_tree(get_file_size(binary_file)/32);
             while(input_file.good())    {
 
                 input_file.read(reinterpret_cast<char *>(&hash), sizeof(hash));
-                input_file.read(reinterpret_cast<char *>(&stars_AB), sizeof(stars_AB));
-                input_file.read(reinterpret_cast<char *>(&stars_CD), sizeof(stars_CD));
+                input_file.read(reinterpret_cast<char *>(&star_ids), sizeof(hash));
 
-                kd_tree.add_point(hash, stars_AB);
+                StarIndices stars_id_tuple(star_ids[0],star_ids[1],star_ids[2],star_ids[3]);
+                kd_tree.add_point(hash, stars_id_tuple);
             }
             input_file.close();
 
