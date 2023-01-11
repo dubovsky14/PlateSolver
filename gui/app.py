@@ -45,7 +45,7 @@ def do_upload():
 
     time_start = timer()
     catalogue_file = "../data/catalogue.bin" if os.path.exists("../data/catalogue.bin" ) else "../data/catalogue.csv"
-    plate_solving_result = plate_solve("../data/catalogue.csv", "../data/" + index_file, FILE_ADDRESS)
+    plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
     time_end = timer()
 
     RA      = convert_angle_to_string(plate_solving_result[0], "h")     if plate_solving_result else None
