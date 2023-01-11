@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../PlateSolver/StarPositionHandler.h"
+#include "../PlateSolver/KDTree.h"
 
 #include<string>
 #include<map>
@@ -9,6 +10,7 @@
 #include <fstream>
 
 namespace PlateSolver   {
+    enum class OutputType{text_file, binary_file, kd_tree_file};
     class NightSkyIndexer   {
         public:
             NightSkyIndexer(const std::string &star_catalogue);
@@ -30,9 +32,10 @@ namespace PlateSolver   {
 
             std::shared_ptr<const StarPositionHandler> m_star_position_handler = nullptr;
 
-            std::shared_ptr<std::ofstream> m_output_hash_file = nullptr;
+            std::shared_ptr<std::ofstream> m_output_hash_file   = nullptr;
+            std::shared_ptr<KDTree> m_output_kd_tree            = nullptr;
 
-            bool m_binary_file_output = false;
+            OutputType m_output_type = OutputType::kd_tree_file;
 
             void dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector);
 
