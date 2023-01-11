@@ -25,6 +25,7 @@ Now you need to install OpenCV (```https://opencv.org/```) library, in order to 
 
 Checking out and compiling the code
 -----------------------------------
+
 ```
     git clone git@github.com:dubovsky14/PlateSolver.git
 
@@ -49,12 +50,11 @@ Now install the dependencies for the python part of the code:
 At this point, you should have everything installed and ready to use.
 
 
-How to use the code:
-----------------------
+How to prepare the necessary input files:
+-----------------------------------------
 
 Now you will need to produce the csv file with the positions of the stars.
-It will need ```hypatie``` module for python, so if you do not have it, you should install if first by ```pip3 install hypatie```.
-Now you can use the provided python script to get the csv file with stars info:
+The following command will produce that file, downloading stars from SIMBAD database (internet connection is needed to run the script).
 
 ```
 python3 python/get_catalogue.py <address of the csv file you would like to produce>
@@ -82,7 +82,11 @@ Output file can be one of these three types:
 
 If the space is not an issue (usually it's not), it's recommended to use ```.kdtree``` extension, since it allows for significantly faster searches.
 
-Once you have the hash file and the csv file, you can plate solve your photo:
+
+How to plate-solve your photo using terminal:
+---------------------------------------------
+
+Once you have the hash file and the csv file, you can plate solve your photo using the executable ```bin/plate_solve``` through terminal:
 
 ```
 ./bin/plate_solve <path to the csv file with stars info> <path to the hash file> <path to the jpg file you would like to plate-solve>
