@@ -279,9 +279,17 @@ PointInKDTree KDTree::get_point_in_tree(unsigned int node_index) const   {
         return m_points_in_tree[node_index];
     }
     else    {
+        if (m_index_to_node_map.find(node_index) != m_index_to_node_map.end())   {
+            return m_index_to_node_map[node_index];
+        }
+
         PointInKDTree result;
         m_input_file->seekg(sizeof(m_root_node_index) + node_index*sizeof(result));
         m_input_file->read(reinterpret_cast<char *>(&result), sizeof(result));
+
+        if (m_index_to_node_map.size() < m_chache_size) {
+            m_index_to_node_map[node_index] = result;
+        }
         return result;
     }
 };

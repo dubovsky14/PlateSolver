@@ -49,7 +49,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
 
         const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
         std::vector<std::tuple<unsigned int, unsigned int,float> > ordering_by_distance;
-        const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,10, &ordering_by_distance);
+        const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,5, &ordering_by_distance);
 
 
 

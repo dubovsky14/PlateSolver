@@ -47,7 +47,7 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
         for (unsigned int i_in_hash = 0; i_in_hash < input_hashes.size(); i_in_hash++)  {
             auto hashes_and_indices = kd_tree.get_k_nearest_neighbors(input_hashes[i_in_hash], requested_number_of_hashes);
             for (unsigned int i_requested_hash = 0; i_requested_hash < requested_number_of_hashes; i_requested_hash++)  {
-                const float distance2 = calculate_hash_distance_squared(input_hashes[i_in_hash], get<0>(hashes_and_indices[i_in_hash]));
+                const float distance2 = calculate_hash_distance_squared(input_hashes[i_in_hash], get<0>(hashes_and_indices[i_requested_hash]));
                 const auto &star_indices = get<1>(hashes_and_indices[i_requested_hash]);
                 result_temp[i_in_hash][i_requested_hash]=AsterismHashWithIndicesAndDistance(
                     get<0>(hashes_and_indices[i_requested_hash]),
@@ -56,7 +56,6 @@ vector<vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, u
                 );
             }
         }
-
     }
 
 

@@ -19,6 +19,10 @@ add_executable(create_hash_file "utils/create_hash_file.cxx")
 add_dependencies(create_hash_file PlateSolver)
 target_link_libraries(create_hash_file PlateSolver ${OpenCV_LIBS})
 
+add_executable(convert_binary_to_kd_tree "utils/convert_binary_to_kd_tree.cxx")
+add_dependencies(convert_binary_to_kd_tree PlateSolver)
+target_link_libraries(convert_binary_to_kd_tree PlateSolver ${OpenCV_LIBS})
+
 add_executable(plate_solve "utils/plate_solve.cxx")
 add_dependencies(plate_solve PlateSolver)
 target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})

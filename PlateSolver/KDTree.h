@@ -35,7 +35,7 @@ namespace PlateSolver   {
         public:
             KDTree(unsigned int n_points);
 
-            KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size = 1000);
+            KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size = 100000);
 
             void add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
 
@@ -76,10 +76,11 @@ namespace PlateSolver   {
 
             // for reading from disk implementation
             std::shared_ptr<std::ifstream> m_input_file = nullptr;
+            void clean_cache();
 
-            std::map<unsigned int, PointInKDTree>   m_index_to_node_map;
-            unsigned int                            m_points_in_map;
-            unsigned int                            m_chache_size;
+            mutable std::map<unsigned int, PointInKDTree>   m_index_to_node_map;    // cache
+            unsigned int                            m_points_in_map = 0;
+            unsigned int                            m_chache_size   = 0;
 
             PointInKDTree get_point_in_tree(unsigned int node_index) const;
 
