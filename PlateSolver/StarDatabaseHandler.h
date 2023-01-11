@@ -8,7 +8,7 @@ namespace PlateSolver   {
         public:
             StarDatabaseHandler() = delete;
 
-            StarDatabaseHandler(const std::string &csv_file_address);
+            StarDatabaseHandler(const std::string &star_catalogue_file);
 
             int get_number_of_stars()   const {return m_vector_RA.size();};
 

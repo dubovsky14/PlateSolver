@@ -1,106 +1,48 @@
-#include "../PlateSolver/KDTree.h"
+#include "../PlateSolver/PlateSolverTool.h"
 
-#include "../PlateSolver/StringOperations.h"
-#include "../PlateSolver/Common.h"
-
+#include <tuple>
+#include <string>
 #include <iostream>
-#include <fstream>
 
 using namespace std;
 using namespace PlateSolver;
 
-
-long long int get_file_size(const std::string &file_address) {
-    ifstream file(file_address, ios::binary);
-
-    // if file does not exist
-    if (file.fail())    return -1;
-
-    const auto begin = file.tellg();
-    file.seekg (0, ios::end);
-    const auto end = file.tellg();
-    file.close();
-    return (end-begin);
-};
-
-
 int main(int argc, const char **argv)   {
     try {
-        if (argc != 2)  {
-            cout << "Please provide an address of the hash file";
+        bench_mark("start");
+        if (argc != 4)  {
+            cout << "Three input arguments are required:\n";
+            cout << "\t1st = address of the file with asterisms hashes\n";
+            cout << "\t2nd = csv with catalogue of stars\n";
+            cout << "\t3rd = address of the photo to plate-solve\n";
             return 0;
         }
 
-        // read from tree file
-        if (true)   {
-            const string binary_file   = argv[1];
-            KDTree kd_tree(binary_file);
+        const string hash_file      = argv[1];
+        const string star_catalogue = argv[2];
+        const string photo_address  = argv[3];
 
-            while(true) {
-                cout << "Please provide type the hash:\n";
-                string hash_string;
-                cin >> hash_string;
-                vector<string> elements = SplitAndStripString(hash_string, ",");
-                if (elements.size() != 4)   {
-                    cout << "Invalid hash\n";
-                    continue;
-                }
-                tuple<float,float,float,float> hash(std::stod(elements[0]), std::stod(elements[1]),std::stod(elements[2]),std::stod(elements[3]));
+        PlateSolverTool plate_solver_tool(hash_file, star_catalogue);
 
-                cout << "\ninput hash: " << hash_tuple_to_string(hash) << endl;
-                const auto results = kd_tree.get_k_nearest_neighbors(hash, 10);
-                for (const auto &result : results)   {
-                    cout << "[ " << get<0>(get<0>(result)) << ","  << get<1>(get<0>(result)) << ","  << get<2>(get<0>(result)) << ","  << get<3>(get<0>(result)) << " ],"
-                            << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << "," << get<2>(get<1>(result)) << "," << get<3>(get<1>(result)) << "," << endl;
-                }
-            }
 
-        }
+        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(photo_address);
+        const float RA      = get<0>(result);
+        const float dec     = get<1>(result);
+        const float rot     = (180/M_PI)*get<2>(result);
+        const float width   = (180/M_PI)*get<3>(result);
+        const float height  = (180/M_PI)*get<4>(result);
 
-        // create tree file
-        if (false)   {
-            const string binary_file   = argv[1];
-
-            ifstream input_file (binary_file, std::ios::binary | std::ios::out);
-            tuple<float,float,float,float> hash;
-            unsigned int star_ids[4];
-            KDTree kd_tree(get_file_size(binary_file)/32);
-            while(input_file.good())    {
-
-                input_file.read(reinterpret_cast<char *>(&hash), sizeof(hash));
-                input_file.read(reinterpret_cast<char *>(&star_ids), sizeof(hash));
-
-                StarIndices stars_id_tuple(star_ids[0],star_ids[1],star_ids[2],star_ids[3]);
-                kd_tree.add_point(hash, stars_id_tuple);
-            }
-            input_file.close();
-
-            cout << "Hashes loaded, going to create kd-tree\n";
-            kd_tree.create_tree_structure();
-            cout << "kd-tree created. Please provide type the hash:\n";
-
-            kd_tree.save_to_file("test_tree.kdtree");
+        if (width == 0) {
+            cout << "Plate solving failed!\n";
             return 0;
-
-            while(true) {
-                cout << "Please provide type the hash:\n";
-                string hash_string;
-                cin >> hash_string;
-                vector<string> elements = SplitAndStripString(hash_string, ",");
-                if (elements.size() != 4)   {
-                    cout << "Invalid hash\n";
-                    continue;
-                }
-                tuple<float,float,float,float> hash(std::stod(elements[0]), std::stod(elements[1]),std::stod(elements[2]),std::stod(elements[3]));
-
-                cout << "\ninput hash: " << hash_tuple_to_string(hash) << endl;
-                const auto results = kd_tree.get_k_nearest_neighbors(hash, 10);
-                for (const auto &result : results)   {
-                    cout << "[ " << get<0>(get<0>(result)) << ","  << get<1>(get<0>(result)) << ","  << get<2>(get<0>(result)) << ","  << get<3>(get<0>(result)) << " ],"
-                            << get<0>(get<1>(result)) << "," << get<1>(get<1>(result)) << endl;
-                }
-            }
         }
+
+        cout << "Plate solving finished\n";
+        cout << "\tRA = " << convert_to_deg_min_sec(RA, "h") << endl;
+        cout << "\tdec = " << convert_to_deg_min_sec(dec) << endl;
+        cout << "\trot = " << convert_to_deg_min_sec(rot) << endl;
+        cout << "\twidth x height = " << convert_to_deg_min_sec(width) + " x " << convert_to_deg_min_sec(height) << endl;
+
         return 0;
     }
     catch(const string &e)  {

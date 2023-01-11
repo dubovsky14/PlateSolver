@@ -44,6 +44,7 @@ def do_upload():
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
 
     time_start = timer()
+    catalogue_file = "../data/catalogue.bin" if os.path.exists("../data/catalogue.bin" ) else "../data/catalogue.csv"
     plate_solving_result = plate_solve("../data/catalogue.csv", "../data/" + index_file, FILE_ADDRESS)
     time_end = timer()
 

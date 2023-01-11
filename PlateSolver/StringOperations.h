@@ -12,7 +12,7 @@ namespace PlateSolver {
 
     std::vector<std::string> SplitAndStripString(const std::string &input_string, const std::string &separator);
 
-    std::vector<std::string> SplitString(std::string input_string, const std::string &separator);
+    std::vector<std::string> SplitString(std::string input_string, const std::string &separator, unsigned int estimated_elements = 4);
 
     std::vector<std::string> SplitByWhitespaces(std::string line);
 

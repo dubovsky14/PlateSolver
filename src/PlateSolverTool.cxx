@@ -37,7 +37,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     const float brightness_threshold = star_finder.get_threshold(0.0005);
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
 
-    const vector<unsigned int> stars_to_consider_vector{6,8,10};    // in most of the cases hashes built from 6 stars are enough to plate-solve
+    const vector<unsigned int> stars_to_consider_vector{8,10};    // in most of the cases hashes built from 6 stars are enough to plate-solve
     unsigned int previous_n_stars = 0;
     for (const unsigned int stars_to_consider : stars_to_consider_vector)   {
         vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, stars_to_consider, previous_n_stars);

@@ -9,21 +9,6 @@
 using namespace std;
 using namespace PlateSolver;
 
-
-long long int get_file_size(const std::string &file_address) {
-    ifstream file(file_address, ios::binary);
-
-    // if file does not exist
-    if (file.fail())    return -1;
-
-    const auto begin = file.tellg();
-    file.seekg (0, ios::end);
-    const auto end = file.tellg();
-    file.close();
-    return (end-begin);
-};
-
-
 int main(int argc, const char **argv)   {
     try {
         if (argc != 3)  {

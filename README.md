@@ -61,6 +61,12 @@ python3 python/get_catalogue.py <address of the csv file you would like to produ
 
 ```
 
+If you plan to run the app on Raspberry Pi, or another device with slower CPU, memory and disk, you can convert the csv file to binary file,
+to be able to read it faster. When running on laptops it's usually not a big issue:
+
+```
+./bin/convert_catalogue_csv_to_bin data/catalogue.csv data/catalogue.bin
+```
 
 Once you have the csv file with the stars positions, you can produce hash files. This process can take up to few hours, depending on the focal length:
 
@@ -115,7 +121,10 @@ Side note: in order to be able to use the GUI, your csv file with positions of t
 Running on Raspberry Pi:
 ------------------------
 
-In order to run the app as system service on Rapsberry Pi do the following, but firstly open ```app.service``` and change the paths accordingly (also change port number if you would like to choose a different port).
+First of all, consider converting your csv catalogue file to binary file (see How to prepare the necessary input files chapter).
+It will make a big difference in plate-solving time when running on Raspberry Pi.
+
+In order to run the app as system service on Raspberry Pi do the following, but firstly open ```app.service``` and change the paths accordingly (also change port number if you would like to choose a different port).
 
 ```
 cd gui

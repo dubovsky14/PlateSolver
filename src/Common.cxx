@@ -1,6 +1,8 @@
 #include "../PlateSolver/Common.h"
 
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
 using namespace PlateSolver;
 using namespace std;
@@ -51,4 +53,25 @@ float PlateSolver::get_angle(float vec1_x, float vec1_y, float vec2_x, float vec
     else {
         return vector_product_z > 0 ? acos(scalar_product/(size1*size2)) : -acos(scalar_product/(size1*size2));
     }
+};
+
+void PlateSolver::bench_mark(const std::string &message) {
+
+    auto time_now = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(time_now - last_time);
+    cout << "Bench marking:" << message << "\nTime from previous bench mark: " << duration.count()/1000. << " s\n\n";
+    last_time = time_now;
+}
+
+long long int PlateSolver::get_file_size(const std::string &file_address) {
+    ifstream file(file_address, ios::binary);
+
+    // if file does not exist
+    if (file.fail())    return -1;
+
+    const auto begin = file.tellg();
+    file.seekg (0, ios::end);
+    const auto end = file.tellg();
+    file.close();
+    return (end-begin);
 };

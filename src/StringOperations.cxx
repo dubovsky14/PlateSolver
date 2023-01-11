@@ -32,8 +32,9 @@ vector<string> PlateSolver::SplitAndStripString(const string &input_string, cons
     return result;
 }
 
-vector<string> PlateSolver::SplitString(string input_string, const string &separator)    {
+vector<string> PlateSolver::SplitString(string input_string, const string &separator, unsigned int estimated_elements)    {
     vector<string> result;
+    result.reserve(estimated_elements);
     size_t pos = 0;
     while ((pos = input_string.find(separator)) != std::string::npos) {
         result.push_back(input_string.substr(0, pos));
