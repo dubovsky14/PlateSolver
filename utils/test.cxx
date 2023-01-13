@@ -46,15 +46,19 @@ int main(int argc, const char **argv)   {
         cout << "\twidth x height = " << convert_to_deg_min_sec(width) + " x " << convert_to_deg_min_sec(height) << endl;
 
 
+        bench_mark("plate-solving finished");
         Mat original_image = imread(input_image_address);
         const unsigned int width_pixels = 1400;
         Mat resized_image = get_resized_image(original_image, width_pixels);
 
+        bench_mark("image loaded and rescaled");
         StarDatabaseHandler star_database_handler("../data/catalogue.csv");
+        bench_mark("catalogue loaded");
         DescriptionAdder    description_adder(&resized_image, RA, dec, rot, width);
         const float c = width_pixels/1920.;
-        description_adder.add_star_description(star_database_handler, 6);
+        description_adder.add_star_description(star_database_handler, 8);
         description_adder.save_image(output_image_address);
+        bench_mark("image saved");
 
         return 0;
     }

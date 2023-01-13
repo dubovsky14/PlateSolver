@@ -11,7 +11,7 @@ using namespace PlateSolver;
 int main(int argc, const char **argv)   {
     try {
         if (argc != 3)  {
-            cout << "Three input arguments are required:\n";
+            cout << "Two input arguments are required:\n";
             cout << "\t1st = address of the text file with asterisms hashes\n";
             cout << "\t2nd = address of the binary file with asterisms hashes\n";
             return 0;
