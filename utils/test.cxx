@@ -1,4 +1,11 @@
 #include "../PlateSolver/PlateSolverTool.h"
+#include "../PlateSolver/Common.h"
+#include "../PlateSolver/GraphicsFunctions.h"
+#include "../PlateSolver/DescriptionAdder.h"
+
+#include<opencv4/opencv2/highgui/highgui.hpp>
+#include<opencv4/opencv2/opencv.hpp>
+
 
 #include <tuple>
 #include <string>
@@ -6,42 +13,48 @@
 
 using namespace std;
 using namespace PlateSolver;
+using namespace cv;
 
 int main(int argc, const char **argv)   {
     try {
         bench_mark("start");
-        if (argc != 4)  {
-            cout << "Three input arguments are required:\n";
-            cout << "\t1st = address of the file with asterisms hashes\n";
-            cout << "\t2nd = csv with catalogue of stars\n";
-            cout << "\t3rd = address of the photo to plate-solve\n";
+        if (argc != 3)  {
+            cout << "Two input arguments are required:\n";
+            cout << "\t1st = input image\n";
+            cout << "\t2nd = output image\n";
             return 0;
         }
+        const string input_image_address  = argv[1];
+        const string output_image_address = argv[2];
 
-        const string hash_file      = argv[1];
-        const string star_catalogue = argv[2];
-        const string photo_address  = argv[3];
+        const string hash_file = "../data/index_file_840mm.kdtree";
+        const string star_catalogue_file = "../data/catalogue.bin";
 
-        PlateSolverTool plate_solver_tool(hash_file, star_catalogue);
+        PlateSolverTool plate_solver_tool(hash_file, star_catalogue_file);
 
-
-        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(photo_address);
+        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(input_image_address);
         const float RA      = get<0>(result);
         const float dec     = get<1>(result);
-        const float rot     = (180/M_PI)*get<2>(result);
-        const float width   = (180/M_PI)*get<3>(result);
-        const float height  = (180/M_PI)*get<4>(result);
-
-        if (width == 0) {
-            cout << "Plate solving failed!\n";
-            return 0;
-        }
+        const float rot     = get<2>(result);
+        const float width   = get<3>(result);
+        const float height  = get<4>(result);
 
         cout << "Plate solving finished\n";
         cout << "\tRA = " << convert_to_deg_min_sec(RA, "h") << endl;
         cout << "\tdec = " << convert_to_deg_min_sec(dec) << endl;
         cout << "\trot = " << convert_to_deg_min_sec(rot) << endl;
         cout << "\twidth x height = " << convert_to_deg_min_sec(width) + " x " << convert_to_deg_min_sec(height) << endl;
+
+
+        Mat original_image = imread(input_image_address);
+        const unsigned int width_pixels = 1400;
+        Mat resized_image = get_resized_image(original_image, width_pixels);
+
+        StarDatabaseHandler star_database_handler("../data/catalogue.csv");
+        DescriptionAdder    description_adder(&resized_image, RA, dec, rot, width);
+        const float c = width_pixels/1920.;
+        description_adder.add_star_description(star_database_handler, 6);
+        description_adder.save_image(output_image_address);
 
         return 0;
     }
