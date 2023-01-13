@@ -18,11 +18,30 @@ Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_pla
 </div>
 %end
 
-<center style="padding-bottom: 7rem">
+
+<center style="padding-bottom: 3rem">
     <a href="/?index_file={{index_file}}">
 
     <input type="button" value="Go back" />
     </a>
 </center>
+
+% if success and annotated_photo:
+
+<center style="padding-bottom: 1rem">
+Annotated photo<br>
+</center>
+<div class="container" style="width:50%;padding-bottom:3rem">
+        <img src="{{annotated_photo}}"
+        width="100%"
+        title="Annotated Photo"
+        >
+
+</div>
+%else:
+<center style="padding-bottom: 4rem">
+
+</center>
+%end
 
 % include('footer.tpl')

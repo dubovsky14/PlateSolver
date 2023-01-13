@@ -8,9 +8,10 @@ from timeit import default_timer as timer
 
 sys.path.append("../python")
 from plate_solving_wrapper import plate_solve, annotate_photo
-from tools.helper_functions import convert_angle_to_string, get_list_of_index_files
+from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp
 
 app = Bottle()
+clean_up_temp("temp/annotated_images/")
 
 @app.route('/')
 @view('index')
@@ -28,6 +29,17 @@ def show_index():
 @app.route('/static/css/<filename:re:.*\.css>')
 def server_static_css(filename):
     return static_file(filename, root='static/css')
+
+@app.route('/temp/annotated_images/<filename:re:.*\.jpg>')
+def server_static_css(filename):
+    return static_file(filename, root='temp/annotated_images')
+
+#@app.route('/temp/annotated_images/<filename:re:.*\.jpg>')
+#def serve_plugin_txt_file(filename):
+#    with open("temp/annotated_images/" + filename) as f:
+#        stat_art = f.read()
+#    return stat_art
+
 
 @app.route('/upload', method='POST')
 @view('show_result')
@@ -66,11 +78,14 @@ def do_upload():
     else:
         success = False
 
-    ANNOTATE = True
+    ANNOTATE = True and success
+    time_annotation_begin = timer()
     if (ANNOTATE):
         annotate_photo("../data/catalogue.bin", "../data/catalogue_names.bin",
                         FILE_ADDRESS, "../data/deep_sky_objects/", RA, dec, rot*(3.14159/180), width*(3.14159/180),
-                        "temp/annotated_images/" + upload.filename, 1400)
+                        "temp/annotated_images/" + name + ".jpg", 1400)
+    time_annotation_end = timer()
+    print("Photo annotation took " + str(time_end-time_start) + " seconds")
 
     context = {
             "success" : success,
@@ -81,6 +96,7 @@ def do_upload():
             "height" :  str_height,
             "time_to_platesolve"  : (time_end-time_start),
             "index_file" : index_file,
+            "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else ""
     }
 
     os.remove(FILE_ADDRESS )

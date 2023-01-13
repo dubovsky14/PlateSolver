@@ -43,3 +43,9 @@ def get_sorted_index_files(index_files : list) -> None:
         for index_file in index_files_map[N]:
             result.append(index_file)
     return result
+
+def clean_up_temp(folder : str) -> None:
+    files=os.listdir(folder)
+    for item in files:
+        if item.endswith(".jpg"):
+            os.remove(folder + "/" + item)
