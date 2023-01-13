@@ -29,13 +29,15 @@ Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_pla
 % if success and annotated_photo:
 
 <center style="padding-bottom: 1rem">
-Annotated photo<br>
+<h5>Annotated photo</h5>
 </center>
 <div class="container" style="width:50%;padding-bottom:3rem">
+        <a href="{{annotated_photo}}">
         <img src="{{annotated_photo}}"
         width="100%"
         title="Annotated Photo"
         >
+        </a>
 
 </div>
 %else:

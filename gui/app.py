@@ -19,10 +19,13 @@ def show_index():
     index_files = get_list_of_index_files("../data/")
     selected_index_file = request.query.index_file
     selected_index_file = selected_index_file if selected_index_file in index_files else ""
+    annotate_default = bool(request.query.annotate_default)
+    print("Annotate default: " + str(annotate_default))
 
     context =   {
                     "index_files" : index_files,
-                    "selected_index_file" : selected_index_file
+                    "selected_index_file" : selected_index_file,
+                    "annotate_default" : annotate_default,
                 }
     return context
 
@@ -33,13 +36,6 @@ def server_static_css(filename):
 @app.route('/temp/annotated_images/<filename:re:.*\.jpg>')
 def server_static_css(filename):
     return static_file(filename, root='temp/annotated_images')
-
-#@app.route('/temp/annotated_images/<filename:re:.*\.jpg>')
-#def serve_plugin_txt_file(filename):
-#    with open("temp/annotated_images/" + filename) as f:
-#        stat_art = f.read()
-#    return stat_art
-
 
 @app.route('/upload', method='POST')
 @view('show_result')
@@ -78,7 +74,7 @@ def do_upload():
     else:
         success = False
 
-    ANNOTATE = True and success
+    ANNOTATE = request.forms.get("checkbox_annotate")
     time_annotation_begin = timer()
     if (ANNOTATE):
         annotate_photo("../data/catalogue.bin", "../data/catalogue_names.bin",
