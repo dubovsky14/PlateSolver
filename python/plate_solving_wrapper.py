@@ -22,3 +22,7 @@ def plate_solve(star_catalogue : str, hash_file : str, photo_address : str) -> t
         return None
     return result
 
+def annotate_photo(star_catalogue_ra_dec : str, star_catalogue_names : str, original_photo_address : str, other_catalogues_folder : str,
+                    ra_center : float, dec_center : float, rotation : float, angular_width : float,
+                    output_photo_address : str, output_width_pixels : int) -> None:
+    pass
