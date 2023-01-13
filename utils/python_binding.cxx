@@ -5,9 +5,54 @@
 #include <iostream>
 
 # include "../PlateSolver/PlateSolverTool.h"
+# include "../PlateSolver/PhotoAnnotator.h"
 
 using namespace std;
 using namespace PlateSolver;
+
+static PyObject *photoAnnotation_wrapper(PyObject *self, PyObject *args) {
+    // Parse Input
+    const char *char_star_catalogue_numbers, *char_star_catalogue_names, *char_photo_input;
+    const char *char_other_catalogues_folder, *char_photo_output;
+    float ra, dec, rot, angular_width;
+    int image_width_pixels;
+
+    if (!PyArg_ParseTuple(args, "sssssffffi",
+                                        &char_star_catalogue_numbers,
+                                        &char_star_catalogue_names,
+                                        &char_photo_input,
+                                        &char_other_catalogues_folder,
+                                        &char_photo_output,
+                                        &ra,
+                                        &dec,
+                                        &rot,
+                                        &angular_width,
+                                        &image_width_pixels
+                                        ))
+    {
+        return nullptr;
+    };
+
+    try{
+
+        const string star_catalogue_numbers(char_star_catalogue_numbers);
+        const string star_catalogue_names(char_star_catalogue_names);
+        const string photo_input(char_photo_input);
+        const string other_catalogues_folder(char_other_catalogues_folder);
+        const string photo_output(char_photo_output);
+
+        PhotoAnnotator photo_annotator(star_catalogue_numbers, star_catalogue_names, other_catalogues_folder);
+        photo_annotator.annotate_photo(photo_input, photo_output, image_width_pixels, ra, dec, rot, angular_width);
+
+        return Py_BuildValue("");
+    }
+    catch (const string &e) {
+        const char *error = e.c_str();
+        return Py_BuildValue("s", error);
+    }
+
+    return Py_BuildValue("fffff", 0,0,0,0,0);
+}
 
 static PyObject *plateSolving_wrapper(PyObject *self, PyObject *args) {
     // Parse Input
@@ -43,6 +88,7 @@ static PyObject *plateSolving_wrapper(PyObject *self, PyObject *args) {
 
 static PyMethodDef plateSolvingMethods[] = {
         {"plateSolving", plateSolving_wrapper, METH_VARARGS, " "},
+        {"photoAnnotation", photoAnnotation_wrapper, METH_VARARGS, " "},
         {nullptr, nullptr, 0, nullptr}};
 
 static struct PyModuleDef plateSolvingModule = {

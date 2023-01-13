@@ -7,7 +7,7 @@ import os, sys
 from timeit import default_timer as timer
 
 sys.path.append("../python")
-from plate_solving_wrapper import plate_solve
+from plate_solving_wrapper import plate_solve, annotate_photo
 from tools.helper_functions import convert_angle_to_string, get_list_of_index_files
 
 app = Bottle()
@@ -48,11 +48,17 @@ def do_upload():
     plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
     time_end = timer()
 
-    RA      = convert_angle_to_string(plate_solving_result[0], "h")     if plate_solving_result else None
-    dec     = convert_angle_to_string(plate_solving_result[1])          if plate_solving_result else None
-    rot     = convert_angle_to_string(plate_solving_result[2])          if plate_solving_result else None
-    width   = convert_angle_to_string(plate_solving_result[3])          if plate_solving_result else None
-    height  = convert_angle_to_string(plate_solving_result[4])          if plate_solving_result else None
+    RA      = plate_solving_result[0]
+    dec     = plate_solving_result[1]
+    rot     = plate_solving_result[2]
+    width   = plate_solving_result[3]
+    height  = plate_solving_result[4]
+
+    str_RA      = convert_angle_to_string(RA    , "h")     if plate_solving_result else None
+    str_dec     = convert_angle_to_string(dec   )          if plate_solving_result else None
+    str_rot     = convert_angle_to_string(rot   )          if plate_solving_result else None
+    str_width   = convert_angle_to_string(width )          if plate_solving_result else None
+    str_height  = convert_angle_to_string(height)          if plate_solving_result else None
 
 
     if plate_solving_result:
@@ -60,13 +66,19 @@ def do_upload():
     else:
         success = False
 
+    ANNOTATE = True
+    if (ANNOTATE):
+        annotate_photo("../data/catalogue.bin", "../data/catalogue_names.bin",
+                        FILE_ADDRESS, "../data/deep_sky_objects/", RA, dec, rot*(3.14159/180), width*(3.14159/180),
+                        "temp/annotated_images/" + upload.filename, 1400)
+
     context = {
             "success" : success,
-            "RA" :      RA,
-            "dec" :     dec,
-            "rot" :     rot,
-            "width" :   width,
-            "height" :  height,
+            "RA" :      str_RA,
+            "dec" :     str_dec,
+            "rot" :     str_rot,
+            "width" :   str_width,
+            "height" :  str_height,
             "time_to_platesolve"  : (time_end-time_start),
             "index_file" : index_file,
     }
