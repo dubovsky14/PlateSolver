@@ -37,7 +37,6 @@ DescriptionAdder::DescriptionAdder(cv::Mat *image, float ra_center, float dec_ce
 void DescriptionAdder::add_star_description_pixel_coor(int xpos, int ypos, const std::string &label)   {
     const int ypos_text = -ypos - 0.015*m_height;
     unsigned int const text_length_pixels = 0.01*m_width*label.length();
-    cout << "offset = " << text_length_pixels << endl;
     const int xpos_text = xpos - text_length_pixels/2;
 
     putText(*m_image, //target image
@@ -80,8 +79,6 @@ void DescriptionAdder::add_star_description(const StarDatabaseHandler &star_data
 
         // skip stars outside of the sensor
         if (pos_x < 0 || pos_x > m_width || pos_y > 0 || -pos_y > m_height) continue;
-
-        cout << pos_x << "\t" << pos_y << "\t" << star_name << endl;
 
         const float magnitude = get<1>(star);
         add_star_description_pixel_coor(pos_x, pos_y, star_name);

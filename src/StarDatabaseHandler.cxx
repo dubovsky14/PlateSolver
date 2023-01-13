@@ -9,6 +9,22 @@ using namespace std;
 using namespace PlateSolver;
 
 StarDatabaseHandler::StarDatabaseHandler(const std::string &star_catalogue_file)   {
+    load_csv_or_number_bin_file(star_catalogue_file);
+}
+
+StarDatabaseHandler::StarDatabaseHandler(const std::string &star_catalogue_bin_file_numbers, const std::string &star_catalogue_bin_file_names)   {
+    if (!EndsWith(star_catalogue_bin_file_numbers, ".bin")) {
+        throw std::string("StarDatabaseHandler::the first argument in 2-arguments constructor is supposed to be .bin file!");
+    }
+    load_csv_or_number_bin_file(star_catalogue_bin_file_numbers);
+    m_catalogue_file_names = make_shared<ifstream>(star_catalogue_bin_file_names, std::ios::binary | std::ios::out);
+    m_catalogue_file_names->read(reinterpret_cast<char *>(&m_max_length_name), sizeof(m_max_length_name));
+    m_number_of_star_names = m_max_length_name != 0 ?
+                            (get_file_size(star_catalogue_bin_file_names)-sizeof(m_max_length_name))/m_max_length_name : 0;
+}
+
+
+void StarDatabaseHandler::load_csv_or_number_bin_file(const std::string &star_catalogue_file)  {
     if (EndsWith(star_catalogue_file, ".csv")) {
         string line;
         ifstream input_file (star_catalogue_file);
@@ -77,10 +93,25 @@ void StarDatabaseHandler::get_star_info(unsigned int star_id, float *RA, float *
 };
 
 std::string StarDatabaseHandler::get_star_name(unsigned int star_id)    const {
-    if (star_id >= m_vector_name.size()) {
-        throw std::string("Requested star ID exceeds the number of stars in the database.");
+    if (m_catalogue_file_names == nullptr)  {
+        if (star_id >= m_vector_name.size()) {
+            return "";
+        }
+        return m_vector_name[star_id];
     }
-    return m_vector_name[star_id];
+    else {
+        if (star_id >= m_number_of_star_names)  {
+            return "";
+        }
+        char name_char[m_max_length_name];
+        m_catalogue_file_names->seekg(sizeof(m_max_length_name) + star_id*m_max_length_name);
+        m_catalogue_file_names->read(reinterpret_cast<char *>(&name_char), sizeof(name_char));
+        string result;
+        for (unsigned int i_char = 0; i_char < m_max_length_name; i_char++) result = result + name_char[i_char];
+        StripString(&result);
+        return result;
+
+    }
 };
 
 float StarDatabaseHandler::get_star_ra(unsigned int star_id) const  {

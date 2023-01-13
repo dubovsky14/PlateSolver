@@ -52,7 +52,7 @@ int main(int argc, const char **argv)   {
         Mat resized_image = get_resized_image(original_image, width_pixels);
 
         bench_mark("image loaded and rescaled");
-        StarDatabaseHandler star_database_handler("../data/catalogue.csv");
+        StarDatabaseHandler star_database_handler("../data/catalogue.bin","../data/catalogue_names.bin");
         bench_mark("catalogue loaded");
         DescriptionAdder    description_adder(&resized_image, RA, dec, rot, width);
         const float c = width_pixels/1920.;
