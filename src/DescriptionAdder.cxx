@@ -80,7 +80,6 @@ void DescriptionAdder::add_star_description(const StarDatabaseHandler &star_data
         // skip stars outside of the sensor
         if (pos_x < 0 || pos_x > m_width || pos_y > 0 || -pos_y > m_height) continue;
 
-        const float magnitude = get<1>(star);
         add_star_description_pixel_coor(pos_x, pos_y, star_name);
         plotted_stars++;
         if (plotted_stars >= n_stars)   return;

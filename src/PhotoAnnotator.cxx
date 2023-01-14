@@ -6,6 +6,8 @@
 
 #include<opencv4/opencv2/highgui/highgui.hpp>
 #include<opencv4/opencv2/opencv.hpp>
+#include <filesystem>
+#include <iostream>
 
 using namespace std;
 using namespace PlateSolver;
@@ -23,7 +25,11 @@ PhotoAnnotator::PhotoAnnotator( const std::string &star_catalogue_file_numbers,
         m_star_database_handler = make_shared<StarDatabaseHandler>(star_catalogue_file_numbers);
     }
 
-    // TODO: Add other catalogues
+    for (const auto & entry : filesystem::directory_iterator(other_catalogues_folder)) {
+        cout << "Adding catalogue: " << entry.path() << endl;
+        m_deep_sky_objects_databases.push_back(make_shared<StarDatabaseHandler>(entry.path()));
+    }
+
 };
 
 void PhotoAnnotator::annotate_photo(const std::string &input_photo_address, const std::string &output_photo_address,
@@ -35,6 +41,11 @@ void PhotoAnnotator::annotate_photo(const std::string &input_photo_address, cons
 
     DescriptionAdder description_adder(&resized_image, RA, dec, rot, angular_width);
     description_adder.add_star_description(*m_star_database_handler, 8);
+
+    for (const auto &deep_sky_database : m_deep_sky_objects_databases)  {
+        description_adder.add_star_description(*deep_sky_database, 8);
+    }
+
 
     description_adder.save_image(output_photo_address);
 };
