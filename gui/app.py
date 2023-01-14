@@ -56,11 +56,11 @@ def do_upload():
     plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
     time_end = timer()
 
-    RA      = plate_solving_result[0]
-    dec     = plate_solving_result[1]
-    rot     = plate_solving_result[2]
-    width   = plate_solving_result[3]
-    height  = plate_solving_result[4]
+    RA      = plate_solving_result[0] if plate_solving_result else None
+    dec     = plate_solving_result[1] if plate_solving_result else None
+    rot     = plate_solving_result[2] if plate_solving_result else None
+    width   = plate_solving_result[3] if plate_solving_result else None
+    height  = plate_solving_result[4] if plate_solving_result else None
 
     str_RA      = convert_angle_to_string(RA    , "h")     if plate_solving_result else None
     str_dec     = convert_angle_to_string(dec   )          if plate_solving_result else None
@@ -74,7 +74,7 @@ def do_upload():
     else:
         success = False
 
-    ANNOTATE = request.forms.get("checkbox_annotate")
+    ANNOTATE = request.forms.get("checkbox_annotate") and success
     time_annotation_begin = timer()
     if (ANNOTATE):
         annotate_photo("../data/catalogue.bin", "../data/catalogue_names.bin",

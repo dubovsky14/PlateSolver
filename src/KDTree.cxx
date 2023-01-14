@@ -45,7 +45,6 @@ KDTree::KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size) 
     m_input_file = make_shared<ifstream>(kd_tree_binary_file, std::ios::binary | std::ios::out);
     m_chache_size = cache_size;
     m_input_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));
-    cout << "Root node: " << m_root_node_index << endl;
 };
 
 void KDTree::add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices) {
