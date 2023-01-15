@@ -9,6 +9,7 @@
 
 #include<cmath>
 #include<map>
+#include<chrono>
 #include<iostream>
 
 using namespace std;
@@ -149,19 +150,33 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     cout << "Creating index file, FOV = " << convert_to_deg_min_sec(FOV_angle*180/M_PI) << endl;
     const float step_size_in_FOVs = 0.3;
 
+
+    const auto time_start = chrono::high_resolution_clock::now();
     index_sky_region(0,90,FOV_angle, &result);
     const float dec_step = (180/M_PI)*FOV_angle*step_size_in_FOVs;
     for (float declination = 90; declination > -90; declination -= dec_step)   {
         const float circumference = 2*M_PI*cos(declination*(M_PI/180));
         const int n_steps = circumference/(FOV_angle*step_size_in_FOVs);
         if (n_steps == 0)   continue;
-        cout << "declination : " << declination << endl;
+        cout << "declination : " << declination;
         const float RA_step_size = 24./n_steps;
         for (float right_ascension = 0; right_ascension < 24; right_ascension += RA_step_size)   {
             index_sky_region(right_ascension, declination,FOV_angle, &result);
             dump_hash_vector_to_outfile(result);
             result.clear();
         }
+        const auto duration_from_start = chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now()-time_start);
+        const float fraction_remaining = (sin(declination*M_PI/180)+1)/2;
+        if (fraction_remaining != 1)    {
+            cout << "\t\tcurrent duration = " << duration_from_start.count() << "\t\t";
+            const float time_to_end = duration_from_start.count()*fraction_remaining/(1-fraction_remaining);
+            const unsigned int hours   = time_to_end/3600;
+            const unsigned int minutes = (time_to_end - hours*3600)/60;
+            const unsigned int seconds = time_to_end - hours*3600 - minutes*60;
+            cout << "\t\testimated time to end: " << hours << ":" << minutes << ":" << seconds;
+        }
+
+        cout << endl;
     }
 
 };
