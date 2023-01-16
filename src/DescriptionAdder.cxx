@@ -39,6 +39,12 @@ void DescriptionAdder::add_star_description_pixel_coor(int xpos, int ypos, const
     unsigned int const text_length_pixels = 0.01*m_width*label.length();
     const int xpos_text = xpos - text_length_pixels/2;
 
+    if (overlap_with_already_added(xpos_text, ypos_text))    {
+        return;
+    };
+    m_coordinates_of_added_descriptions.push_back(tuple<float,float>(xpos_text,ypos_text));
+
+
     putText(*m_image, //target image
             label, //text
             cv::Point(xpos_text, ypos_text), //top-left position
@@ -89,4 +95,14 @@ void DescriptionAdder::add_star_description(const StarDatabaseHandler &star_data
 
 void DescriptionAdder::save_image(const std::string &output_address)    {
     imwrite(output_address, *m_image);
+};
+
+bool DescriptionAdder::overlap_with_already_added(float x, float y) {
+    for (const std::tuple<float,float> &already_added : m_coordinates_of_added_descriptions)    {
+        if  (   abs(get<0>(already_added) - x) < 0.125*m_width    &&
+                abs(get<1>(already_added) - y) < 0.02*m_height)    {
+            return true;
+        }
+    }
+    return false;
 };

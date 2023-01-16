@@ -40,11 +40,12 @@ void PhotoAnnotator::annotate_photo(const std::string &input_photo_address, cons
     Mat resized_image = get_resized_image(original_image, new_photo_width_pixels);
 
     DescriptionAdder description_adder(&resized_image, RA, dec, rot, angular_width);
-    description_adder.add_star_description(*m_star_database_handler, 8);
 
     for (const auto &deep_sky_database : m_deep_sky_objects_databases)  {
         description_adder.add_star_description(*deep_sky_database, 8);
     }
+
+    description_adder.add_star_description(*m_star_database_handler, 8);
 
 
     description_adder.save_image(output_photo_address);

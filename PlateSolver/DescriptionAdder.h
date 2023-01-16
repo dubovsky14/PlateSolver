@@ -40,5 +40,9 @@ namespace PlateSolver   {
             float m_angular_width = 0;
             float m_angular_height = 0;
             std::shared_ptr<RaDecToPixelCoordinatesConvertor> m_ra_dec_to_pix_convertor = nullptr;
+
+            std::vector<std::tuple<float,float> > m_coordinates_of_added_descriptions;
+
+            bool overlap_with_already_added(float x, float y);
     };
 }
