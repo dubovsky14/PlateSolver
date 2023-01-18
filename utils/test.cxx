@@ -55,7 +55,6 @@ int main(int argc, const char **argv)   {
         StarDatabaseHandler star_database_handler("../data/catalogue.bin","../data/catalogue_names.bin");
         bench_mark("catalogue loaded");
         DescriptionAdder    description_adder(&resized_image, RA, dec, rot, width);
-        const float c = width_pixels/1920.;
         description_adder.add_star_description(star_database_handler, 8);
         description_adder.save_image(output_image_address);
         bench_mark("image saved");

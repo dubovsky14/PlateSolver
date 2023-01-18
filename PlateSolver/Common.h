@@ -25,7 +25,7 @@ namespace PlateSolver   {
     // if vec2 can be obtained by anti-clock wise rotation of vec1 by (0,pi), the result is positive, otherwise negative
     float get_angle(float vec1_x, float vec1_y, float vec2_x, float vec2_y);
 
-    void bench_mark(const std::string &message);
+    std::string bench_mark(const std::string &message);
     static auto last_time = std::chrono::high_resolution_clock::now();
 
     long long int get_file_size(const std::string &file_address);

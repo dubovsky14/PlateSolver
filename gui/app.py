@@ -34,8 +34,16 @@ def server_static_css(filename):
     return static_file(filename, root='static/css')
 
 @app.route('/temp/annotated_images/<filename:re:.*\.jpg>')
-def server_static_css(filename):
+def server_static_jpg(filename):
     return static_file(filename, root='temp/annotated_images')
+
+@app.route('/log')
+def server_log():
+    result = ""
+    with open("temp/log.txt") as f:
+        for line in f:
+            result = result + line + "</br>"
+    return result
 
 @app.route('/upload', method='POST')
 @view('show_result')

@@ -6,6 +6,7 @@
 
 # include "../PlateSolver/PlateSolverTool.h"
 # include "../PlateSolver/PhotoAnnotator.h"
+#include "../PlateSolver/Logger.h"
 
 using namespace std;
 using namespace PlateSolver;
@@ -56,6 +57,8 @@ static PyObject *photoAnnotation_wrapper(PyObject *self, PyObject *args) {
 
 static PyObject *plateSolving_wrapper(PyObject *self, PyObject *args) {
     // Parse Input
+    Logger::set_log_file("temp/log.txt");
+    Logger::enable_logging();
     const char *char_catalogue, *char_hash_file, *char_photo;
     if (!PyArg_ParseTuple(args, "sss", &char_catalogue, &char_hash_file, &char_photo))
     {

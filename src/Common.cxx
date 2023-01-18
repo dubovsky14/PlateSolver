@@ -55,12 +55,12 @@ float PlateSolver::get_angle(float vec1_x, float vec1_y, float vec2_x, float vec
     }
 };
 
-void PlateSolver::bench_mark(const std::string &message) {
+string PlateSolver::bench_mark(const std::string &message) {
 
     auto time_now = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(time_now - last_time);
-    cout << "Bench marking:" << message << "\nTime from previous bench mark: " << duration.count()/1000. << " s\n\n";
     last_time = time_now;
+    return "Bench marking: " + message + "\tTime from previous bench mark: " + std::to_string(duration.count()/1000.);
 }
 
 long long int PlateSolver::get_file_size(const std::string &file_address) {

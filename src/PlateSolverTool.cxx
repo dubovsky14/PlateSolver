@@ -8,6 +8,7 @@
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/GeometricTransformations.h"
 #include "../PlateSolver/StarPlotter.h"
+#include "../PlateSolver/Logger.h"
 
 
 #include<vector>
@@ -22,6 +23,8 @@ using namespace std;
 
 
 PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_catalogue)  {
+    Logger::log_message("\n\n");
+    Logger::log_message(bench_mark("Going to read catalogue and declare all handlers"));
     m_star_database_handler = make_shared<StarDatabaseHandler>(stars_catalogue);
     m_hash_finder           = make_shared<HashFinder>(hash_file);
     m_star_position_handler = make_shared<StarPositionHandler>(*m_star_database_handler);
@@ -29,13 +32,16 @@ PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_ca
 };
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &jpg_file) {
+    Logger::log_message(bench_mark("Going to load the image " + jpg_file));
     m_pixels = load_bw_image_to_uchar(jpg_file, &m_image_width_pixels);
-
+    Logger::log_message(bench_mark("Image loaded: " + jpg_file));
     StarFinder star_finder(m_pixels, m_image_width_pixels);
     m_image_height_pixels = m_pixels.size()/m_image_width_pixels;
 
     const float brightness_threshold = star_finder.get_threshold(0.0005);
+    Logger::log_message(bench_mark("Threshold calculated."));
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
+    Logger::log_message(bench_mark("Stars positions from photo calculated"));
 
     const vector<unsigned int> stars_to_consider_vector{8,10};    // in most of the cases hashes built from 6 stars are enough to plate-solve
     unsigned int previous_n_stars = 0;
@@ -47,14 +53,21 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
                     (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
                 );} );
 
+        Logger::log_message(bench_mark("Hashes extracted and sorted. Using " + to_string(stars_to_consider) + " stars"));
         const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
         std::vector<std::tuple<unsigned int, unsigned int,float> > ordering_by_distance;
         const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,5, &ordering_by_distance);
+        Logger::log_message(bench_mark("Similar hashes extracted. "));
 
 
 
         vector<tuple<float,float,float,float,float> > valid_hypotheses;
+        unsigned int i_attempt = 0;
         for (const tuple<unsigned int, unsigned int,float> &indexes_and_distance : ordering_by_distance)    {
+            i_attempt++;
+            if (i_attempt > 20) {
+                break;  // in most of the cases (more than 90%), the first hash is the correct one, if it's not among first 20, almost certainly it's not there at all
+            }
             const unsigned int i_hash_photo     = get<0>(indexes_and_distance);
             const unsigned int i_hash_similar   = get<1>(indexes_and_distance);
             const unsigned int starA_index_photo = get<1>(hashes_with_indices_from_photo[i_hash_photo]);
@@ -74,9 +87,11 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
 
             const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
             if (valid_hypotesis)    {
+                Logger::log_message(bench_mark("Correct hypothesis found after " + to_string(i_attempt) + " attempts"));
                 return hypothesis_coordinates;
             }
         }
+        Logger::log_message(bench_mark("No correct hypothesis was found for " + to_string(stars_to_consider) + " stars, " + to_string(i_attempt) + " hashes have been tried."));
     }
 
     return tuple<float,float,float,float,float>(0,0,0,0,0);
