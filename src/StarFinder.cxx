@@ -61,8 +61,8 @@ std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::
     map<tuple<unsigned int, unsigned int>, char> visited_pixels;
 
     vector<tuple<unsigned int, unsigned int> >  this_cluster;
-    for (unsigned int x_pos = 0; x_pos < m_width; x_pos++)    {
-        for (unsigned int y_pos = 0; y_pos < m_height; y_pos++)    {
+    for (unsigned int y_pos = 0; y_pos < m_height; y_pos++)    {
+        for (unsigned int x_pos = 0; x_pos < m_width; x_pos++)    {
             fill_cluster(x_pos, y_pos, &this_cluster, threshold, &visited_pixels);
             if (this_cluster.size())    {
                 result.push_back(this_cluster);
@@ -84,13 +84,12 @@ void StarFinder::fill_cluster(  unsigned int x_pos, unsigned int y_pos,
     }
     (*visited_pixels)[this_pixel] = 0;
     current_cluster->push_back(this_pixel);
-
-    for (int x_shift = -1; x_shift <= 1; x_shift++) {
-        int x_pos_new = x_pos + x_shift;
-        if (x_pos_new < 0 || (unsigned int) x_pos_new >= m_width) continue;
-        for (int y_shift = -1; y_shift <= 1; y_shift++) {
-            int y_pos_new = y_pos + y_shift;
-            if (y_pos_new < 0 || (unsigned int) y_pos_new >= m_height) continue;
+    for (int y_shift = -1; y_shift <= 1; y_shift++) {
+        int y_pos_new = y_pos + y_shift;
+        if (y_pos_new < 0 || (unsigned int) y_pos_new >= m_height) continue;
+        for (int x_shift = -1; x_shift <= 1; x_shift++) {
+            int x_pos_new = x_pos + x_shift;
+            if (x_pos_new < 0 || (unsigned int) x_pos_new >= m_width) continue;
             if (x_shift == 0 && y_shift ==0)    continue;
             fill_cluster(x_pos_new, y_pos_new, current_cluster, threshold, visited_pixels);
         }
