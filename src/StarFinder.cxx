@@ -9,12 +9,15 @@
 
 using namespace PlateSolver;
 using namespace std;
+using namespace cv;
 
-StarFinder::StarFinder(const std::vector<unsigned char> &pixels, unsigned int pixels_per_line)  {
+
+StarFinder::StarFinder(const std::string &photo_address)    {
     m_histogram.resize(256);
-    m_pixels = pixels;
-    m_width  = pixels_per_line;
-    m_height = pixels.size()/m_width;
+    Mat original_image = imread(photo_address);
+    cvtColor(original_image, m_image, COLOR_BGR2GRAY);
+    m_width = m_image.cols;
+    m_height = m_image.rows;
     fill_histogram();
 };
 
@@ -40,13 +43,15 @@ void StarFinder::reset_histogram()  {
 };
 
 void StarFinder::fill_histogram()    {
-    for (unsigned char pixel : m_pixels)    {
-        m_histogram[pixel]++;
+    for (unsigned int y_pos = 0; y_pos < m_height; y_pos++)    {
+        for (unsigned int x_pos = 0; x_pos < m_width; x_pos++)    {
+            m_histogram[read_pixel(x_pos, y_pos)]++;
+        }
     }
 }
 
 float   StarFinder::get_threshold(float part)   const   {
-    const unsigned int n_birgther_pixels = part*m_pixels.size();
+    const unsigned int n_birgther_pixels = part*(m_image.rows)*(m_image.cols);
     unsigned int current_pixels = 0;
 
     for (unsigned int i_threshold = m_histogram.size() - 1; i_threshold != 0; i_threshold--)    {

@@ -33,13 +33,13 @@ PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_ca
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &jpg_file) {
     Logger::log_message(bench_mark("Going to load the image " + jpg_file));
-    m_pixels = load_bw_image_to_uchar(jpg_file, &m_image_width_pixels);
-    Logger::log_message(bench_mark("Image loaded: " + jpg_file));
-    StarFinder star_finder(m_pixels, m_image_width_pixels);
-    m_image_height_pixels = m_pixels.size()/m_image_width_pixels;
+    StarFinder star_finder(jpg_file);
+    Logger::log_message(bench_mark("Image loaded " + jpg_file));
+    m_image_height_pixels   = star_finder.get_height();
+    m_image_width_pixels    = star_finder.get_width();
 
     const float brightness_threshold = star_finder.get_threshold(0.0005);
-    Logger::log_message(bench_mark("Threshold calculated."));
+    Logger::log_message(bench_mark("Threshold calculated: " + to_string(brightness_threshold)));
     vector<tuple<float,float,float> > stars = star_finder.get_stars(brightness_threshold);
     Logger::log_message(bench_mark("Stars positions from photo calculated"));
 

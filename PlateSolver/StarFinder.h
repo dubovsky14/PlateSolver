@@ -1,13 +1,17 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <tuple>
 #include <map>
+
+#include<opencv4/opencv2/highgui/highgui.hpp>
+#include<opencv4/opencv2/opencv.hpp>
 
 namespace PlateSolver   {
     class StarFinder    {
         public:
-            StarFinder(const std::vector<unsigned char> &pixels, unsigned int pixels_per_line);
+            StarFinder(const std::string &photo_address);
 
             // returns vector of tuples<x-position, y-position, intensity>, threshold is the brightness threshold - pixels brighter than it will be considered to form stars
             std::vector<std::tuple<float, float, float> >   get_stars(float threshold, bool invert_y_axis = true);
@@ -21,12 +25,16 @@ namespace PlateSolver   {
             // 1st index = index of cluster, 2nd index = index of pixel, value = tuple<x_pixel, y_pixel>
             std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > get_clusters(float threshold);
 
+            unsigned int get_width()    const {return m_image.cols;};
+            unsigned int get_height()   const {return m_image.rows;};
+
         private:
-            std::vector<unsigned char>  m_pixels;
+            cv::Mat                     m_image;
+
             unsigned int                m_height;
             unsigned int                m_width;
             inline unsigned char        read_pixel(unsigned int index_x, unsigned int index_y) const  {
-                return m_pixels[index_x + index_y*m_width];
+                return m_image.at<uchar>(index_y, index_x);
             };
 
             void    reset_histogram();
