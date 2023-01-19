@@ -26,7 +26,6 @@ PhotoAnnotator::PhotoAnnotator( const std::string &star_catalogue_file_numbers,
     }
 
     for (const auto & entry : filesystem::directory_iterator(other_catalogues_folder)) {
-        cout << "Adding catalogue: " << entry.path() << endl;
         m_deep_sky_objects_databases.push_back(make_shared<StarDatabaseHandler>(entry.path()));
     }
 
@@ -46,7 +45,5 @@ void PhotoAnnotator::annotate_photo(const std::string &input_photo_address, cons
     }
 
     description_adder.add_star_description(*m_star_database_handler, 8);
-
-
     description_adder.save_image(output_photo_address);
 };

@@ -22,7 +22,6 @@ static PyObject *benchmark_wrapper(PyObject *self, PyObject *args) {
     try{
         const string message = bench_mark(string(char_message));
         Logger::log_message(message);
-        cout << message << endl;
         return Py_BuildValue("");
     }
     catch (const string &e) {
