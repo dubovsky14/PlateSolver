@@ -9,7 +9,7 @@ from timeit import default_timer as timer
 sys.path.append("../python")
 from plate_solving_wrapper import plate_solve, annotate_photo
 import cpp_logging_wrapper
-from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp
+from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp, angular_width_to_effective_focal_length
 
 app = Bottle()
 clean_up_temp("temp/annotated_images/")
@@ -82,7 +82,7 @@ def do_upload():
     str_rot     = convert_angle_to_string(rot   )          if plate_solving_result else None
     str_width   = convert_angle_to_string(width )          if plate_solving_result else None
     str_height  = convert_angle_to_string(height)          if plate_solving_result else None
-
+    effective_focal_length = angular_width_to_effective_focal_length(max(width*3.14159/180,height*3.14159/180))
 
     if plate_solving_result:
         success = plate_solving_result[4] != 0
@@ -111,7 +111,8 @@ def do_upload():
             "height" :  str_height,
             "time_to_platesolve"  : (time_plate_solving_end-time_plate_solving_start),
             "index_file" : index_file,
-            "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else ""
+            "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else "",
+            "efective_focal_length" : effective_focal_length,
     }
 
     time_end = timer()

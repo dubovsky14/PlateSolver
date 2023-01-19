@@ -13,6 +13,7 @@ Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_pla
             <tr> <td> Declination </td><td> {{dec}}</td> </tr>
             <tr> <td> Camera rotation </td><td> {{rot}}</td> </tr>
             <tr> <td> Photo angular size </td><td>{{width}} x {{height}} </td> </tr>
+            <tr> <td> Eff. focal length: </td><td>{{str(round(efective_focal_length,1))}} mm </td> </tr>
         </tbody>
     </table>
 </div>

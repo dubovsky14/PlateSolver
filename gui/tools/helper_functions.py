@@ -1,4 +1,5 @@
 import os
+from math import tan
 
 def convert_angle_to_string(angle_floating_point : float, degree_symbol : str = "°") -> str:
     """
@@ -49,3 +50,6 @@ def clean_up_temp(folder : str) -> None:
     for item in files:
         if item.endswith(".jpg"):
             os.remove(folder + "/" + item)
+
+def angular_width_to_effective_focal_length(angular_width_radians : float) -> float:
+    return (36/2)/tan(angular_width_radians/2)
