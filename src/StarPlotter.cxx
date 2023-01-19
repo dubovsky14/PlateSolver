@@ -1,6 +1,8 @@
 #include "../PlateSolver/StarPlotter.h"
-#include "../PlateSolver/ImageLoader.h"
 #include "../PlateSolver/Common.h"
+
+#include<opencv4/opencv2/highgui/highgui.hpp>
+#include<opencv4/opencv2/opencv.hpp>
 
 #include <string>
 #include <tuple>
@@ -33,6 +35,15 @@ void StarPlotter::AddStarsFromDatabase(const std::vector<std::tuple<float,float,
 
 void StarPlotter::Save(const std::string &output_name)  {
     dump_to_picture(output_name, m_pixels, m_image_width);
+};
+
+void StarPlotter::dump_to_picture(const std::string &image_address, const std::vector<unsigned char> &pixels, unsigned int pixels_per_line)    {
+    int width(pixels_per_line), height(pixels.size()/pixels_per_line);
+    cv::Mat image = cv::Mat::zeros(height, width,0);
+    for (unsigned int i_pixel = 0; i_pixel < pixels.size(); i_pixel++)  {
+        image.at<uchar>(i_pixel/width,i_pixel % width) = pixels[i_pixel];
+    }
+    cv::imwrite(image_address, image);
 };
 
 void StarPlotter::draw_circle(float x, float y, float outer_radius, float inner_radius, unsigned char color)  {

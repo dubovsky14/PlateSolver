@@ -1,6 +1,5 @@
 #include "../PlateSolver/PlateSolverTool.h"
 
-#include "../PlateSolver/ImageLoader.h"
 #include "../PlateSolver/AsterismHasher.h"
 #include "../PlateSolver/StarFinder.h"
 #include "../PlateSolver/Common.h"

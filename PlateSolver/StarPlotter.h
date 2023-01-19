@@ -15,6 +15,8 @@ namespace PlateSolver   {
 
             void Save(const std::string &output_name);
 
+            static void dump_to_picture(const std::string &image_address, const std::vector<unsigned char> &pixels, unsigned int pixels_per_line);
+
         private:
             std::vector<unsigned char> m_pixels;
 
@@ -28,4 +30,6 @@ namespace PlateSolver   {
                 m_pixels[pixel_index] = color;
             };
     };
+
+
 }
