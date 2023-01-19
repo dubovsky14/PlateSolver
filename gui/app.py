@@ -51,6 +51,7 @@ def server_log():
 @app.route('/upload', method='POST')
 @view('show_result')
 def do_upload():
+    time_start = timer()
     cpp_logging_wrapper.log_message("\n\n")
     cpp_logging_wrapper.benchmark("Starting to process the request")
     index_file = request.forms.get("index_file")
@@ -64,11 +65,11 @@ def do_upload():
         os.remove(FILE_ADDRESS )
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
 
-    cpp_logging_wrapper.benchmark("Going to run plate solving")
-    time_start = timer()
+    cpp_logging_wrapper.benchmark("Data from request are loaded.")
+    time_plate_solving_start = timer()
     catalogue_file = "../data/catalogue.bin" if os.path.exists("../data/catalogue.bin" ) else "../data/catalogue.csv"
     plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
-    time_end = timer()
+    time_plate_solving_end = timer()
 
     RA      = plate_solving_result[0] if plate_solving_result else None
     dec     = plate_solving_result[1] if plate_solving_result else None
@@ -108,11 +109,13 @@ def do_upload():
             "rot" :     str_rot,
             "width" :   str_width,
             "height" :  str_height,
-            "time_to_platesolve"  : (time_end-time_start),
+            "time_to_platesolve"  : (time_plate_solving_end-time_plate_solving_start),
             "index_file" : index_file,
             "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else ""
     }
 
+    time_end = timer()
+    cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
     return context
 
 if __name__ == "__main__":
