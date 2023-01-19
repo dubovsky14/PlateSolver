@@ -1,4 +1,5 @@
 bin
 data
 .vscode
+gui/temp
 ***/__pycache__

@@ -22,7 +22,6 @@ using namespace std;
 
 
 PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_catalogue)  {
-    Logger::log_message("\n\n");
     Logger::log_message(bench_mark("Going to read catalogue and declare all handlers"));
     m_star_database_handler = make_shared<StarDatabaseHandler>(stars_catalogue);
     m_hash_finder           = make_shared<HashFinder>(hash_file);

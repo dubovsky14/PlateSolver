@@ -47,3 +47,11 @@ target_link_libraries( plateSolvingm PRIVATE Python3::Python ${Python3_LIBRARIES
 set_target_properties( plateSolvingm PROPERTIES
    PREFIX ""
    OUTPUT_NAME "plateSolving" )
+
+# Build the Python module around the C++ shared library.
+add_library( cppLogger SHARED utils/python_binding_logger.cxx )
+add_dependencies(cppLogger PlateSolver)
+target_link_libraries( cppLogger PRIVATE Python3::Python ${Python3_LIBRARIES}  PlateSolver ${OpenCV_LIBS})
+set_target_properties( cppLogger PROPERTIES
+   PREFIX ""
+   OUTPUT_NAME "cppLogger" )

@@ -8,10 +8,13 @@ from timeit import default_timer as timer
 
 sys.path.append("../python")
 from plate_solving_wrapper import plate_solve, annotate_photo
+import cpp_logging_wrapper
 from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp
 
 app = Bottle()
 clean_up_temp("temp/annotated_images/")
+cpp_logging_wrapper.set_log_file("temp/log.txt", False)
+cpp_logging_wrapper.enable_logging()
 
 @app.route('/')
 @view('index')
@@ -48,6 +51,8 @@ def server_log():
 @app.route('/upload', method='POST')
 @view('show_result')
 def do_upload():
+    cpp_logging_wrapper.log_message("\n\n")
+    cpp_logging_wrapper.benchmark("Starting to process the request")
     index_file = request.forms.get("index_file")
     upload     = request.files.get('upload')
     name, ext = os.path.splitext(upload.filename)
@@ -59,6 +64,7 @@ def do_upload():
         os.remove(FILE_ADDRESS )
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
 
+    cpp_logging_wrapper.benchmark("Going to run plate solving")
     time_start = timer()
     catalogue_file = "../data/catalogue.bin" if os.path.exists("../data/catalogue.bin" ) else "../data/catalogue.csv"
     plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
@@ -82,6 +88,7 @@ def do_upload():
     else:
         success = False
 
+    cpp_logging_wrapper.benchmark("Going to annotate photo")
     ANNOTATE = request.forms.get("checkbox_annotate") and success
     time_annotation_begin = timer()
     if (ANNOTATE):
@@ -89,7 +96,10 @@ def do_upload():
                         FILE_ADDRESS, "../data/deep_sky_objects/", RA, dec, rot*(3.14159/180), width*(3.14159/180),
                         "temp/annotated_images/" + name + ".jpg", 1400)
     time_annotation_end = timer()
-    print("Photo annotation took " + str(time_end-time_start) + " seconds")
+    cpp_logging_wrapper.benchmark("Photo annotation finished")
+
+    os.remove(FILE_ADDRESS )
+    cpp_logging_wrapper.benchmark("File removed")
 
     context = {
             "success" : success,
@@ -102,8 +112,6 @@ def do_upload():
             "index_file" : index_file,
             "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else ""
     }
-
-    os.remove(FILE_ADDRESS )
 
     return context
 
