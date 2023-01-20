@@ -66,6 +66,7 @@ def do_upload():
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
 
     cpp_logging_wrapper.benchmark("Data from request are loaded.")
+    cpp_logging_wrapper.log_message("Going to use index file " + index_file)
     time_plate_solving_start = timer()
     catalogue_file = "../data/catalogue.bin" if os.path.exists("../data/catalogue.bin" ) else "../data/catalogue.csv"
     plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
@@ -82,7 +83,7 @@ def do_upload():
     str_rot     = convert_angle_to_string(rot   )          if plate_solving_result else None
     str_width   = convert_angle_to_string(width )          if plate_solving_result else None
     str_height  = convert_angle_to_string(height)          if plate_solving_result else None
-    effective_focal_length = angular_width_to_effective_focal_length(max(width*3.14159/180,height*3.14159/180))
+    effective_focal_length = angular_width_to_effective_focal_length(max(width*3.14159/180,height*3.14159/180)) if plate_solving_result else None
 
     if plate_solving_result:
         success = plate_solving_result[4] != 0
