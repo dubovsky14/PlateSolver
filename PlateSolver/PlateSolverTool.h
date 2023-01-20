@@ -17,19 +17,59 @@ namespace   PlateSolver {
         public:
             PlateSolverTool() = delete;
 
+            /**
+             * @brief Construct a new Plate Solver Tool object
+             *
+             * @param hash_file address of the file with asterism hashes: 3 types are supported: .txt (.csv), .bin or .kdtree
+             * @param stars_catalogue address of the star catalogue - either .csv or .bin file
+             */
             PlateSolverTool(const std::string &hash_file, const std::string &stars_catalogue);
 
-            // returns : [RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]
+            /**
+             * @brief Calculate celestial coordinates of the center of the photo
+             *
+             * @param jpg_file - address of the jpg file to plate solve
+             * @return std::tuple<float,float,float,float,float> :[RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]
+             */
             std::tuple<float,float,float,float,float> plate_solve(const std::string &jpg_file);
 
-            // returns : [RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]
+            /**
+             * @brief Get coordinates of the picture if the hypothesis is correct
+             *
+             * @param pos_x_starA   x coordinate of the starA from the photo
+             * @param pos_y_starA   y coordinate of the starA from the photo
+             * @param id_starA      id (from the catalogue file) of the starA
+             * @param pos_x_starB   x coordinate of the starb from the photo
+             * @param pos_y_starB   y coordinate of the starb from the photo
+             * @param id_starB      id (from the catalogue file) of the starb
+             * @param image_width   width of the photo in pixels
+             * @param image_height  height of the photo in pixels
+             * @return std::tuple<float,float,float,float,float>
+             */
             std::tuple<float,float,float,float,float> get_hypothesis_coordinates(   float pos_x_starA, float pos_y_starA, unsigned int id_starA,
                                                                                     float pos_x_starB, float pos_y_starB, unsigned int id_starB,
                                                                                     float image_width, float image_height);
 
-            // Calculate asterism hashes from all combinations of the "nstars" leading stars and return them in vector with the indices of stars A,B,C and D
+            /**
+             * @brief Return vector of asterism hashes and indices of the stars from photo
+             *
+             * @param stars - vector of tuples <x pixel position, y pixel position, magnitude>
+             * @param nstars - number of stars to consider
+             * @param min_star4_index - minimal index of star 4 - can be used to get for example when plate solving for 8 brightest stars fails and you have to calculate the missing hashes using 10 stars (not calculating again for example hash of stars 1,2,3,4)
+             * @return std::vector<AsterismHashWithIndices> - vector of asterism hashes and the corresponding stars indices
+             */
             static std::vector<AsterismHashWithIndices> get_hashes_with_indices(const std::vector<std::tuple<float,float,float> > &stars, unsigned nstars, unsigned int min_star4_index = 0);
 
+            /**
+             * @brief Return true if hypothesis is correct
+             *
+             * @param stars_from_photo pixel coordinates and magnitudes of the stars from the photo
+             * @param hypothesis_coordinates [RA, dec, rotation, width in radians, height in radians]
+             * @param image_width_pixels
+             * @param image_height_pixels
+             * @return true hypothesis is valid
+             * @return false hypothesis is not valid
+             */
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,float> > &stars_from_photo,
                                         const std::tuple<float,float,float,float,float> &hypothesis_coordinates,
                                         float image_width_pixels, float image_height_pixels);

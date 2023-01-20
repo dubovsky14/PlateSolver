@@ -88,7 +88,7 @@ void StarDatabaseHandler::get_star_info(unsigned int star_id, float *RA, float *
         *mag = m_vector_mag[star_id];
     }
     if (name)    {
-        *name = m_vector_name[star_id];
+        *name = get_star_name(star_id);
     }
 };
 

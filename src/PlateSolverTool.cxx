@@ -200,6 +200,7 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
                                                                         float pos_x_starB, float pos_y_starB, unsigned int id_starB,
                                                                         float image_width, float image_height)    {
 
+    // Get RA and dec of stars A, B
     const float RA_starA  = m_star_database_handler->get_star_ra(id_starA);
     const float dec_starA = m_star_database_handler->get_star_dec(id_starA);
     const float RA_starB  = m_star_database_handler->get_star_ra(id_starB);
@@ -208,24 +209,28 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     const Vector3D starA_vector = Vector3D::get_vector_unity_from_ra_dec(RA_starA, dec_starA);
     const Vector3D starB_vector = Vector3D::get_vector_unity_from_ra_dec(RA_starB, dec_starB);
 
+    // Calculate angle between the stars from A and B. Knowing this angle and pixel distance between the stars, calculate what is the angle covered by one pixel
     const float angle_A_B = Vector3D::get_angle(starA_vector, starB_vector);
     const float pixel_distance_A_B = sqrt( pow2(pos_x_starA - pos_x_starB) + pow2(pos_y_starA - pos_y_starB) );
-
     const float angle_per_pixel = angle_A_B/pixel_distance_A_B;
 
-    // result
+    // knowing angle per pixel, calculate angulaw width and height
     const float result_width_angle  = angle_per_pixel*image_width;
     const float result_height_angle = angle_per_pixel*image_height;
 
+    // now we know angular width and height of the photo and coordinates of star A and B,
+    // let's check what would be pixel coordinates of stars A and B if "up" direction of photo was pointing to north pole
+    // we can later use this information to get the camera rotation
     RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( RA_starA, dec_starA, 0,angle_per_pixel, m_image_width_pixels, m_image_height_pixels);
     vector<tuple<float,float> > pixel_coordinates(2);
     pixel_coordinates[0] = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(starA_vector, ZeroZeroPoint::center);
     pixel_coordinates[1] = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(starB_vector, ZeroZeroPoint::center);
 
-    // result
+    // calculate the came rotation (0 means "up" is towards north pole)
     const float rotation = get_angle(   pos_x_starB - pos_x_starA, pos_y_starB - pos_y_starA,
                                         get<0>(pixel_coordinates[1]), get<1>(pixel_coordinates[1]));
 
+    // knowing camera rotation, RA and dec of star A and angular width/height, let's calculate RA and dec of the center of the photo
     PixelCoordinatesToRaDecConvertor convertor_center_in_starA(RA_starA, dec_starA, rotation, angle_per_pixel, image_width, image_height);
     const tuple<float,float> RA_dec_center = convertor_center_in_starA.convert_to_ra_dec(
         image_width/2-pos_x_starA,      // coordinates of the center of the image with respect to starA
