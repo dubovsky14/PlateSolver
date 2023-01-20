@@ -12,16 +12,6 @@
 using namespace PlateSolver;
 using namespace std;
 
-std::vector<Vector3D> PlateSolver::get_rotated_axes(const Vector3D &reference_axis)  {
-    const Vector3D rotated_x_axis = reference_axis;
-    const Vector3D rotated_y_axis = (reference_axis.x() == 0 && reference_axis.y() == 0) ?
-                                    Vector3D(1,0,0) :   // if reference axis is z-axis (it's arbitrary choice, so I took x-axis)
-                                    (Vector3D(0,0,1)*reference_axis);
-    const Vector3D rotated_z_axis = rotated_x_axis*rotated_y_axis;
-
-    return vector<Vector3D>{rotated_x_axis, rotated_y_axis, rotated_z_axis};
-};
-
 
 PixelCoordinatesToRaDecConvertor::PixelCoordinatesToRaDecConvertor( float center_RA, float center_dec, float rotation, float angle_per_pixel,
                                                                     float width_in_pixels, float height_in_pixels)  {

@@ -31,20 +31,64 @@ namespace PlateSolver   {
 
     };
 
+    /**
+     * @brief Class implementing k-dimensional binary tree, which can be used to search for the nearest neighbors of a point
+     *
+     */
     class KDTree    {
         public:
+            /**
+             * @brief Construct a new KDTree object
+             *
+             * @param n_points approximate number of points that will be added (cannot be exceeded by any amount, but the performance will be slightly suboptimal)
+             */
             KDTree(unsigned int n_points);
 
+            /**
+             * @brief Construct a new KDTree object from a binary file previously created by "save_to_file" method
+             *
+             * @param kd_tree_binary_file - binary file where the kd-tree is stored
+             * @param cache_size - how many nodes should be stored in memory cache (the rest will be read from disk when looking for neighbors)
+             */
             KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size = 100000);
 
+            /**
+             * @brief Add point to the tree
+             *
+             * @param coordinates coordinates of the point in 4-dimensional space
+             * @param star_indices indices of the stars describing this point (additional data that have to be stored)
+             */
             void add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
 
+            /**
+             * @brief Find all node conditions and create a tree structure for the tree
+             *
+             */
             void create_tree_structure();
 
+            /**
+             * @brief Get the k nearest neighbors to the query point
+             *
+             * @param query_point coordinates of the query point
+             * @param n_points how many closest neighbors do you want
+             * @return std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > coordinates (hashes) and indices of the stars A,B,C and D from this point
+             */
             std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points);
 
+            /**
+             * @brief Get indices of the k nearest neighbors
+             *
+             * @param query_point  coordinates of the query point
+             * @param n_points how many closest neighbors do you want
+             * @return std::vector<unsigned int> - indices of the nodes (leafs) of the nearest neighbors
+             */
             std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points);
 
+            /**
+             * @brief Save the kd-tree to a binary file
+             *
+             * @param output_file_address  address of the output binary file
+             */
             void save_to_file(const std::string &output_file_address)   const;
 
         private:

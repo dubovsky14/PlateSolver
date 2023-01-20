@@ -7,9 +7,11 @@
 
 
 namespace PlateSolver   {
-    // return vector of 3 elements corresponding to rotated x,y and z axis, where X = reference axis and Z points to north celestial pole
-    std::vector<Vector3D> get_rotated_axes(const Vector3D &reference_axis);
 
+    /**
+     * @brief There are two possibilities of pixel coordinate system: either the [0,0] point is the top left corner of the photo (ZeroZeroPoint::upper_left)  or center of the picture (ZeroZeroPoint::center)
+     *
+     */
     enum class ZeroZeroPoint {center, upper_left};
 
     // Class responsible for conversion of pixel coordinates into RA-dec coordinates.
