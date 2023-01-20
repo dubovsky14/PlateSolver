@@ -217,9 +217,6 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     const float result_width_angle  = angle_per_pixel*image_width;
     const float result_height_angle = angle_per_pixel*image_height;
 
-    //const vector<tuple<float,float>> pixel_coordinates = NightSkyIndexer::convert_star_coordinates_to_pixels_positions(vector<Vector3D>({starA_vector, starB_vector}), starA_vector);
-
-
     RaDecToPixelCoordinatesConvertor ra_dec_to_pixel_convertor( RA_starA, dec_starA, 0,angle_per_pixel, m_image_width_pixels, m_image_height_pixels);
     vector<tuple<float,float> > pixel_coordinates(2);
     pixel_coordinates[0] = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(starA_vector, ZeroZeroPoint::center);

@@ -34,10 +34,10 @@ float PlateSolver::vec_size(float x, float y)   {
     return sqrt(pow2(x) + pow2(y));
 };
 
-std::vector<AsterismHash> PlateSolver::extract_hashes(const std::vector<AsterismHashWithIndices> &asterisms_and_hashes)  {
-    std::vector<AsterismHash> result(asterisms_and_hashes.size());
-    for (unsigned int i_hash = 0; i_hash < asterisms_and_hashes.size(); i_hash++)   {
-        result[i_hash] = get<0>(asterisms_and_hashes[i_hash]);
+std::vector<AsterismHash> PlateSolver::extract_hashes(const std::vector<AsterismHashWithIndices> &asterisms_and_hashes_and_indices)  {
+    std::vector<AsterismHash> result(asterisms_and_hashes_and_indices.size());
+    for (unsigned int i_hash = 0; i_hash < asterisms_and_hashes_and_indices.size(); i_hash++)   {
+        result[i_hash] = get<0>(asterisms_and_hashes_and_indices[i_hash]);
     }
     return result;
 };
