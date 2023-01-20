@@ -76,17 +76,7 @@ Once you have the csv file with the stars positions, you can produce hash files.
 
 The focal length should approximately match effective focal length of the photos that you would like to plate solve.
 Deviation up to 50% is usually fine, but larger deviations can lead to failures in the plate-solving.
-
-Output file can be one of these three types:
-
-1) text file (extension ```.txt``` or ```.csv```). This is slowest to read, but you can open it in any text editor and check the hashes. Useful for visualization/debugging. Each line consists of 8 numbers: hash composed of 4 floats followed by indices (unsigned ints) of stars A, B, C and D.
-
-2) binary file (extension ```.bin``` ) - similar structure to the text file, but the file already is in binary form, so it's smaller and faster to read.
-
-3) kd-tree (extension ```.kdtree```) - improved binary file - it's larger, but contains additional indices allowing the code to perform kd-tree nearest neighbors search. Hash extraction is more than 100 times faster compared to normal binary or text file, but the file is 50% larger in size.
-
-
-If the space is not an issue (usually it's not), it's recommended to use ```.kdtree``` extension, since it allows for significantly faster searches.
+The extension of the hash file must be ```.kdtree```.
 
 
 How to plate-solve your photo using terminal:

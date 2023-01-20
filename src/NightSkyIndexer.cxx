@@ -25,31 +25,17 @@ NightSkyIndexer::NightSkyIndexer(shared_ptr<const StarPositionHandler> star_posi
 };
 
 void NightSkyIndexer::create_index_file(const string &index_file, float focal_length)  {
-    if  (EndsWith(index_file, ".txt") || EndsWith(index_file, ".csv"))  m_output_type = OutputType::text_file;
-    else if (EndsWith(index_file, ".bin"))                              m_output_type = OutputType::binary_file;
-    else if (EndsWith(index_file, ".kdtree"))                           m_output_type = OutputType::kd_tree_file;
-    else {
+    if (!EndsWith(index_file, ".kdtree")) {
         throw std::string("Unknown file extension. See README for more information.");
     }
 
-    if (m_output_type == OutputType::binary_file)   {
-        m_output_hash_file = make_shared<ofstream>(index_file, std::ios::binary | std::ios::out);
-    }
-    if (m_output_type == OutputType::text_file)   {
-        m_output_hash_file = make_shared<ofstream>(index_file);
-    }
-    if (m_output_type == OutputType::kd_tree_file)   {
-        m_output_kd_tree = make_shared<KDTree>(10000000);
-    }
+    m_output_kd_tree = make_shared<KDTree>(10000000);
 
     loop_over_night_sky(focal_length);
-    if (m_output_hash_file) {
-        m_output_hash_file->close();
-    }
-    if (m_output_kd_tree)   {
-        m_output_kd_tree->create_tree_structure();
-        m_output_kd_tree->save_to_file(index_file);
-    }
+
+    m_output_kd_tree->create_tree_structure();
+    m_output_kd_tree->save_to_file(index_file);
+
 };
 
 void NightSkyIndexer::focal_length_to_field_of_view(float focal_length_mm, float *width_radians, float *height_radians)    {
@@ -184,24 +170,13 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
 void NightSkyIndexer::dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector) {
     for (const auto &x : hash_vector)   {
         const std::tuple<float,float,float,float> hash = get<0>(x);
-        const unsigned int star_ids[4] = {get<1>(x), get<2>(x), get<3>(x), get<4>(x), };
         const unsigned int id_starA = get<1>(x);
         const unsigned int id_starB = get<2>(x);
         const unsigned int id_starC = get<3>(x);
         const unsigned int id_starD = get<4>(x);
 
-        if (m_output_type == OutputType::binary_file)   {
-            m_output_hash_file->write(reinterpret_cast<const char *>(&hash), sizeof(hash));
-            m_output_hash_file->write(reinterpret_cast<const char *>(star_ids), sizeof(star_ids));
-        }
-        if (m_output_type == OutputType::text_file)   {
-            *m_output_hash_file << get<0>(hash) << "," << get<1>(hash) << ","  << get<2>(hash) << ","  << get<3>(hash) << ",";
-            *m_output_hash_file << id_starA << "," << id_starB << "," << id_starC << "," << id_starD << endl;
-        }
-        if (m_output_type == OutputType::kd_tree_file)   {
-            std::tuple<unsigned int,unsigned int,unsigned int,unsigned int> star_id_tuple(id_starA,id_starB,id_starC,id_starD);
-            m_output_kd_tree->add_point(hash, star_id_tuple);
+        std::tuple<unsigned int,unsigned int,unsigned int,unsigned int> star_id_tuple(id_starA,id_starB,id_starC,id_starD);
+        m_output_kd_tree->add_point(hash, star_id_tuple);
 
-        }
     }
 };

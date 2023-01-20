@@ -19,10 +19,6 @@ add_executable(create_hash_file "utils/create_hash_file.cxx")
 add_dependencies(create_hash_file PlateSolver)
 target_link_libraries(create_hash_file PlateSolver ${OpenCV_LIBS})
 
-add_executable(convert_binary_to_kd_tree "utils/convert_binary_to_kd_tree.cxx")
-add_dependencies(convert_binary_to_kd_tree PlateSolver)
-target_link_libraries(convert_binary_to_kd_tree PlateSolver ${OpenCV_LIBS})
-
 add_executable(plate_solve "utils/plate_solve.cxx")
 add_dependencies(plate_solve PlateSolver)
 target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})
@@ -34,11 +30,6 @@ target_link_libraries(convert_catalogue_csv_to_bin PlateSolver ${OpenCV_LIBS})
 add_executable(test "utils/test.cxx")
 add_dependencies(test PlateSolver)
 target_link_libraries(test PlateSolver ${OpenCV_LIBS})
-
-
-add_executable(convert_text_hash_file_to_binary "utils/convert_text_hash_file_to_binary.cxx")
-add_dependencies(convert_text_hash_file_to_binary PlateSolver)
-target_link_libraries(convert_text_hash_file_to_binary PlateSolver ${OpenCV_LIBS})
 
 # Build the Python module around the C++ shared library.
 add_library( plateSolvingm SHARED utils/python_binding.cxx )
