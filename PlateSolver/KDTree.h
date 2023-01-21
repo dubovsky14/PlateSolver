@@ -106,8 +106,6 @@ namespace PlateSolver   {
 
             CoordinateDataType get_median_and_its_index_from_sample(const std::vector<unsigned int> &sub_indices, short coordinate, unsigned int *median_index = nullptr)   const;
 
-            unsigned int m_nodes_built = 0;
-
             static float get_distance(const CoordinateDataType *x1, const CoordinateDataType *x2);
 
             void scan_children_nodes(   unsigned int node_index,

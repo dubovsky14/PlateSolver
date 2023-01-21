@@ -11,14 +11,14 @@ ADD CMakeLists.txt CMakeLists.txt
 
 #index files and star catalogue
 ADD data/catalogue.csv  data/catalogue.csv
-ADD data/index_file_200mm.bin  data/index_file_200mm.bin
-ADD data/index_file_300mm.bin  data/index_file_300mm.bin
-ADD data/index_file_400mm.bin  data/index_file_400mm.bin
-ADD data/index_file_600mm.bin  data/index_file_600mm.bin
-ADD data/index_file_840mm.bin  data/index_file_840mm.bin
-ADD data/index_file_1000mm.bin  data/index_file_1000mm.bin
-ADD data/index_file_1200mm.bin  data/index_file_1200mm.bin
-ADD data/index_file_1400mm.bin  data/index_file_1400mm.bin
+ADD data/index_file_200mm.kdtree  data/index_file_200mm.kdtree
+ADD data/index_file_300mm.kdtree  data/index_file_300mm.kdtree
+ADD data/index_file_400mm.kdtree  data/index_file_400mm.kdtree
+ADD data/index_file_600mm.kdtree  data/index_file_600mm.kdtree
+ADD data/index_file_840mm.kdtree  data/index_file_840mm.kdtree
+ADD data/index_file_1000mm.kdtree  data/index_file_1000mm.kdtree
+ADD data/index_file_1200mm.kdtree  data/index_file_1200mm.kdtree
+ADD data/index_file_1400mm.kdtree  data/index_file_1400mm.kdtree
 
 
 WORKDIR ./bin

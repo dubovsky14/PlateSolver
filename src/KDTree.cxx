@@ -122,10 +122,6 @@ std::vector<unsigned int> KDTree::get_k_nearest_neighbors_indices(const PointCoo
 
 
 int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_index) {
-
-    if (m_nodes_built % 1000000 == 0) cout << "Built " << m_nodes_built << " / " << m_points_in_tree.size() << " nodes\n";
-    m_nodes_built++;
-
     const bool has_parent = parent_index >= 0;
     short index_for_splitting = has_parent ? (m_points_in_tree[parent_index].m_index_for_splitting + 1) % 4 : 0;
 
@@ -283,7 +279,7 @@ PointInKDTree KDTree::get_point_in_tree(unsigned int node_index) const   {
         }
 
         PointInKDTree result;
-        m_input_file->seekg(sizeof(m_root_node_index) + node_index*sizeof(result));
+        m_input_file->seekg(sizeof(m_root_node_index) + (unsigned long long)(node_index)*sizeof(result));
         m_input_file->read(reinterpret_cast<char *>(&result), sizeof(result));
 
         if (m_index_to_node_map.size() < m_chache_size) {
