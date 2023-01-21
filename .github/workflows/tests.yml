@@ -38,6 +38,7 @@ jobs:
         with:
           name: artifact-linux-build
       - run:  |
+              ls -al
               chmod u+x bin/plate_solve
               cd CI_tests/data
               ./../../bin/plate_solve index_file_200mm.kdtree catalogue.bin photos/witch_head_small_200mm.jpg
