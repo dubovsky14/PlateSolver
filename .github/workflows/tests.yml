@@ -33,13 +33,15 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '14'
-      - run: mkdir bin
+      - run: |
+            mkdir bin
+            sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
       - uses: actions/download-artifact@v3
         with:
           name: artifact-linux-build
           path: bin/.
       - run:  |
-              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               chmod u+x bin/plate_solve
               cd CI_tests/data
               ./../../bin/plate_solve index_file_200mm.kdtree catalogue.bin photos/witch_head_small_200mm.jpg
+        name: plate-solve
