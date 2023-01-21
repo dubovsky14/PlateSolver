@@ -39,8 +39,7 @@ jobs:
           name: artifact-linux-build
           path: bin/.
       - run:  |
-              ls -al
-              ls -al bin
+              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               chmod u+x bin/plate_solve
               cd CI_tests/data
               ./../../bin/plate_solve index_file_200mm.kdtree catalogue.bin photos/witch_head_small_200mm.jpg
