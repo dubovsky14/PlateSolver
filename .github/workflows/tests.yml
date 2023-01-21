@@ -33,12 +33,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '14'
+      - run: mkdir bin
       - uses: actions/download-artifact@v3
-        name: Download linux build
         with:
           name: artifact-linux-build
+          path: bin/.
       - run:  |
               ls -al
+              ls -al bin
               chmod u+x bin/plate_solve
               cd CI_tests/data
               ./../../bin/plate_solve index_file_200mm.kdtree catalogue.bin photos/witch_head_small_200mm.jpg
