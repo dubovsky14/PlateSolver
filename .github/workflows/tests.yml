@@ -1,0 +1,30 @@
+name: build-linux
+on: [push]
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run:  |
+              sudo apt-get install python3-dev gcc cmake
+              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+              mkdir bin
+              cd bin
+              cmake ../.
+              make
+        name: upload_artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-linux-build
+          path: |
+                  bin/plateSolving
+                  bin/cppLogger
+                  bin/plate_solve
+                  bin/create_hash_file
+                  bin/convert_catalogue_csv_to_bin
+          retention-days: 1
