@@ -45,3 +45,24 @@ jobs:
               cd CI_tests/data
               ./../../bin/plate_solve index_file_200mm.kdtree catalogue.bin photos/witch_head_small_200mm.jpg
         name: plate-solve
+
+
+  python-plate-solve-and-compare-witch-head:
+    runs-on: ubuntu-latest
+    needs: [build-linux]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+            mkdir bin
+            sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact-linux-build
+          path: bin/.
+      - run:  |
+              cd CI_tests/
+              python3 python/test_plate_solving.py data/catalogue.bin data/index_file_200mm.kdtree data/photos/witch_head_small_200mm.jpg 5.091,-9.264,-90.869,10.34,6.9
+        name: plate-solve
