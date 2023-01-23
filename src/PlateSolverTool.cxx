@@ -58,8 +58,6 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
         Logger::log_message(bench_mark("Similar hashes extracted. "));
 
 
-
-        vector<tuple<float,float,float,float,float> > valid_hypotheses;
         unsigned int i_attempt = 0;
         for (const tuple<unsigned int, unsigned int,float> &indexes_and_distance : ordering_by_distance)    {
             i_attempt++;
@@ -83,11 +81,20 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
                                                                             xpos_starB, ypos_starB, starB_database_index,
                                                                             m_image_width_pixels, m_image_height_pixels);
 
+
             const bool valid_hypotesis = validate_hypothesis(stars, hypothesis_coordinates, m_image_width_pixels, m_image_height_pixels);
             if (valid_hypotesis)    {
                 Logger::log_message(bench_mark("Correct hypothesis found after " + to_string(i_attempt) + " attempts"));
                 return hypothesis_coordinates;
             }
+            if (i_attempt == 1) {
+                string message =    "The first hypothesis: RA = " + convert_to_deg_min_sec(get<0>(hypothesis_coordinates),"h")
+                                    + " dec = " + convert_to_deg_min_sec(get<1>(hypothesis_coordinates))
+                                    + " rot = " + convert_to_deg_min_sec((180/M_PI)*get<2>(hypothesis_coordinates))
+                                    + " width = " + convert_to_deg_min_sec((180/M_PI)*get<3>(hypothesis_coordinates));
+                Logger::log_message(message);
+            }
+
         }
         Logger::log_message(bench_mark("No correct hypothesis was found for " + to_string(stars_to_consider) + " stars, " + to_string(i_attempt) + " hashes have been tried."));
     }
@@ -107,7 +114,7 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     const float hypothesis_im_height= get<4>(hypothesis_coordinates);
     const float radians_per_pixel   = hypothesis_im_height/image_height_pixels;
 
-    // maximal allowed distance in pixels between the rea position of the star (from database) and the position from photo to be considered as "matched"
+    // maximal allowed distance in pixels between the position of the star (from database) and the position from photo to be considered as "matched"
     const float maximal_allowed_deviation2 = pow2(0.01*image_width_pixels);
 
     RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( hypothesis_RA, hypothesis_dec, -hypothesis_rot,

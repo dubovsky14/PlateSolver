@@ -44,7 +44,7 @@ namespace   PlateSolver {
              * @param id_starB      id (from the catalogue file) of the starb
              * @param image_width   width of the photo in pixels
              * @param image_height  height of the photo in pixels
-             * @return std::tuple<float,float,float,float,float>
+             * @return std::tuple<float,float,float,float,float> - RA [hours], dec [degrees], camera rotation [rad], angular width [rad], angular height [rad]
              */
             std::tuple<float,float,float,float,float> get_hypothesis_coordinates(   float pos_x_starA, float pos_y_starA, unsigned int id_starA,
                                                                                     float pos_x_starB, float pos_y_starB, unsigned int id_starB,
