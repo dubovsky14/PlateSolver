@@ -2,6 +2,7 @@
 
 <center style="padding-bottom: 2rem">
 Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_platesolve,3))}} s <br>
+Overall time of request processing: {{str(round(time_overall,3))}} s <br>
 </center>
 
 % if success:
