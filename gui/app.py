@@ -102,6 +102,8 @@ def do_upload():
 
     os.remove(FILE_ADDRESS )
     cpp_logging_wrapper.benchmark("File removed")
+    time_end = timer()
+    cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
 
     context = {
             "success" : success,
@@ -111,13 +113,12 @@ def do_upload():
             "width" :   str_width,
             "height" :  str_height,
             "time_to_platesolve"  : (time_plate_solving_end-time_plate_solving_start),
+            "time_overall"  : (time_end-time_start),
             "index_file" : index_file,
             "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else "",
             "efective_focal_length" : effective_focal_length,
     }
 
-    time_end = timer()
-    cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
     return context
 
 if __name__ == "__main__":
