@@ -221,7 +221,7 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     const float pixel_distance_A_B = sqrt( pow2(pos_x_starA - pos_x_starB) + pow2(pos_y_starA - pos_y_starB) );
     const float angle_per_pixel = angle_A_B/pixel_distance_A_B;
 
-    // knowing angle per pixel, calculate angulaw width and height
+    // knowing angle per pixel, calculate angular width and height
     const float result_width_angle  = angle_per_pixel*image_width;
     const float result_height_angle = angle_per_pixel*image_height;
 
@@ -234,11 +234,11 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
     pixel_coordinates[1] = ra_dec_to_pixel_convertor.convert_to_pixel_coordinates(starB_vector, ZeroZeroPoint::center);
 
     // calculate the came rotation (0 means "up" is towards north pole)
-    const float rotation = get_angle(   pos_x_starB - pos_x_starA, pos_y_starB - pos_y_starA,
-                                        get<0>(pixel_coordinates[1]), get<1>(pixel_coordinates[1]));
+    const float rotation_around_starA = get_angle(      pos_x_starB - pos_x_starA, pos_y_starB - pos_y_starA,
+                                                        get<0>(pixel_coordinates[1]), get<1>(pixel_coordinates[1]));
 
     // knowing camera rotation, RA and dec of star A and angular width/height, let's calculate RA and dec of the center of the photo
-    PixelCoordinatesToRaDecConvertor convertor_center_in_starA(RA_starA, dec_starA, rotation, angle_per_pixel, image_width, image_height);
+    PixelCoordinatesToRaDecConvertor convertor_center_in_starA(RA_starA, dec_starA, rotation_around_starA, angle_per_pixel, image_width, image_height);
     const tuple<float,float> RA_dec_center = convertor_center_in_starA.convert_to_ra_dec(
         image_width/2-pos_x_starA,      // coordinates of the center of the image with respect to starA
         -image_height/2-pos_y_starA,    // coordinates of the center of the image with respect to starA
@@ -247,6 +247,12 @@ tuple<float,float,float,float,float> PlateSolverTool::get_hypothesis_coordinates
 
     const float RA_center  = get<0>(RA_dec_center);
     const float dec_center = get<1>(RA_dec_center);
+
+    // now, finally we have to calculate the rotation again. For wide field photos, or positions close to north pole, the rotations around star A and around the center of image are quite different
+    RaDecToPixelCoordinatesConvertor convertor_image_center_zero_rot(RA_center, dec_center, 0, angle_per_pixel, image_width, image_height);
+    const tuple<float,float> starA_coordinates_rot0 = convertor_image_center_zero_rot.convert_to_pixel_coordinates(starA_vector, ZeroZeroPoint::center);
+    const tuple<float,float> starA_coordinates_photo(-image_width/2+pos_x_starA,image_height/2+pos_y_starA);
+    const float rotation = -get_angle(get<0>(starA_coordinates_rot0), get<1>(starA_coordinates_rot0),get<0>(starA_coordinates_photo), get<1>(starA_coordinates_photo));
 
     return tuple<float,float,float,float,float>(RA_center, dec_center, rotation, result_width_angle, result_height_angle);
 };
