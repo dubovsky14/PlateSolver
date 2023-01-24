@@ -33,6 +33,15 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     Logger::log_message(bench_mark("Going to load the image " + jpg_file));
     StarFinder star_finder(jpg_file);
     Logger::log_message(bench_mark("Image loaded " + jpg_file));
+    return plate_solve(star_finder);
+};
+
+tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const cv::Mat &photo) {
+    StarFinder star_finder(photo);
+    return plate_solve(star_finder);
+};
+
+tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const StarFinder &star_finder) {
     m_image_height_pixels   = star_finder.get_height();
     m_image_width_pixels    = star_finder.get_width();
 
