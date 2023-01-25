@@ -44,4 +44,9 @@ def plate_solve_and_annotate_photo( hash_file : str, star_catalogue_ra_dec : str
     It runs the plate-solving for the photo and create small annotated photo. The functionalities are exactly the same as when running plate_solve and annotate_photo functions one after another,
     however, this function is optimized for this case and certain operations, such as loading of input jpg, are performed only once, so that it's faster.
     """
-    return plateSolveAndAnnotate(hash_file, star_catalogue_ra_dec, star_catalogue_names, original_photo_address, other_catalogues_folder, output_photo_address, output_width_pixels)
+    result = plateSolveAndAnnotate(hash_file, star_catalogue_ra_dec, star_catalogue_names, original_photo_address, other_catalogues_folder, output_photo_address, output_width_pixels)
+    if (type(result) == str):
+        raise RuntimeError(result)
+    if (result[4] == 0):
+        return None
+    return result
