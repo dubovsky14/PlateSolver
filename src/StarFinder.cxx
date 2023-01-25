@@ -21,8 +21,16 @@ StarFinder::StarFinder(const std::string &photo_address)    {
     fill_histogram();
 };
 
+StarFinder::StarFinder(const cv::Mat &photo)    {
+    m_histogram.resize(256);
+    cvtColor(photo, m_image, COLOR_BGR2GRAY);
+    m_width = m_image.cols;
+    m_height = m_image.rows;
+    fill_histogram();
+};
+
 // vector of tuples<x-position, y-position, intensity>
-std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float threshold, bool invert_y_axis) {
+std::vector<std::tuple<float, float, float> >   StarFinder::get_stars(float threshold, bool invert_y_axis)  const {
     std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > clusters = get_clusters(threshold);
     sort(clusters.begin(), clusters.end(), [](const auto &a, const auto &b) {return a.size() > b.size();}  );
 
@@ -61,7 +69,7 @@ float   StarFinder::get_threshold(float part)   const   {
     return 0;
 };
 
-std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::get_clusters(float threshold)  {
+std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::get_clusters(float threshold)   const  {
     vector< vector<tuple<unsigned int, unsigned int> > >  result;
     map<tuple<unsigned int, unsigned int>, char> visited_pixels;
 
@@ -80,7 +88,7 @@ std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::
 
 void StarFinder::fill_cluster(  unsigned int x_pos, unsigned int y_pos,
                     std::vector<std::tuple<unsigned int, unsigned int> > *current_cluster,
-                    float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels){
+                    float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels)    const {
     if (read_pixel(x_pos, y_pos) < threshold)   return;
 
     tuple<unsigned int, unsigned int> this_pixel(x_pos,y_pos);

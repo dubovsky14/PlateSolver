@@ -18,6 +18,13 @@ namespace PlateSolver   {
              */
             StarFinder(const std::string &photo_address);
 
+            /**
+             * @brief Construct a new Star Finder object
+             *
+             * @param photo - cv matrix with (RBG) photo
+             */
+            StarFinder(const cv::Mat &photo);
+
             // returns vector of tuples<x-position, y-position, intensity>, threshold is the brightness threshold - pixels brighter than it will be considered to form stars
             /**
              * @brief Get the coordinates and brightnesses of the stars from the photo
@@ -26,7 +33,7 @@ namespace PlateSolver   {
              * @param invert_y_axis - false = standard computer graphics orientation, true = y -> (-y)
              * @return std::vector<std::tuple<float, float, float> > vector of tuple<x pixel coordinate, y pixel coordinate, number of pixels forming the stars>
              */
-            std::vector<std::tuple<float, float, float> >   get_stars(float threshold, bool invert_y_axis = true);
+            std::vector<std::tuple<float, float, float> >   get_stars(float threshold, bool invert_y_axis = true)   const;
 
             // get "histogram" from photography point of view -> return vector, where i-th element is count of the pixels with brightness "i"
             std::vector<unsigned int>   get_histogram() const {return m_histogram;};
@@ -42,7 +49,7 @@ namespace PlateSolver   {
              * @param threshold all pixels brighter than this will be considered to be part of a star
              * @return std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > = 1st index = index of cluster, 2nd index = index of pixel, value = tuple<x_pixel, y_pixel>
              */
-            std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > get_clusters(float threshold);
+            std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > get_clusters(float threshold)   const;
 
             // @brief width of the photo in pixels
             unsigned int get_width()    const {return m_image.cols;};
@@ -65,10 +72,10 @@ namespace PlateSolver   {
 
             void fill_cluster(  unsigned int x_pos, unsigned int y_pos,
                                 std::vector<std::tuple<unsigned int, unsigned int> > *current_cluster,
-                                float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels);
+                                float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels)    const;
 
-            void calculate_center_of_cluster(   float  *x_pos, float  *y_pos,
-                                                const std::vector<std::tuple<unsigned int, unsigned int> > &current_cluster);
+            static void calculate_center_of_cluster(float  *x_pos, float  *y_pos,
+                                                    const std::vector<std::tuple<unsigned int, unsigned int> > &current_cluster);
 
 
     };

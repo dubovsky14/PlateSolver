@@ -1,7 +1,13 @@
 % include('header.tpl')
 
 <center style="padding-bottom: 2rem">
-Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_platesolve,3))}} s <br>
+% if annotated_photo:
+    Plate-solving and photo annotation {{"finished" if success else "failed"}} in {{str(round(time_to_platesolve,3))}} s <br>
+% else:
+    Plate-solving {{"finished" if success else "failed"}} in {{str(round(time_to_platesolve,3))}} s <br>
+% end
+
+Overall time of request processing: {{str(round(time_overall,3))}} s <br>
 </center>
 
 % if success:

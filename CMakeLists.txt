@@ -27,10 +27,6 @@ add_executable(convert_catalogue_csv_to_bin "utils/convert_catalogue_csv_to_bin.
 add_dependencies(convert_catalogue_csv_to_bin PlateSolver)
 target_link_libraries(convert_catalogue_csv_to_bin PlateSolver ${OpenCV_LIBS})
 
-add_executable(test "utils/test.cxx")
-add_dependencies(test PlateSolver)
-target_link_libraries(test PlateSolver ${OpenCV_LIBS})
-
 # Build the Python module around the C++ shared library.
 add_library( plateSolvingm SHARED utils/python_binding.cxx )
 add_dependencies(plateSolvingm PlateSolver)

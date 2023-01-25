@@ -4,10 +4,11 @@
 #include "../PlateSolver/DescriptionAdder.h"
 #include "../PlateSolver/GraphicsFunctions.h"
 
-#include<opencv4/opencv2/highgui/highgui.hpp>
-#include<opencv4/opencv2/opencv.hpp>
 #include <filesystem>
 #include <iostream>
+
+#include<opencv4/opencv2/highgui/highgui.hpp>
+#include<opencv4/opencv2/opencv.hpp>
 
 using namespace std;
 using namespace PlateSolver;
@@ -36,7 +37,14 @@ void PhotoAnnotator::annotate_photo(const std::string &input_photo_address, cons
                                     unsigned int n_stars)    {
 
     Mat original_image = imread(input_photo_address);
-    Mat resized_image = get_resized_image(original_image, new_photo_width_pixels);
+    annotate_photo(original_image, output_photo_address, new_photo_width_pixels, RA, dec, rot, angular_width, n_stars);
+};
+
+void PhotoAnnotator::annotate_photo(const cv::Mat &input_photo, const std::string &output_photo_address,
+                                    unsigned int new_photo_width_pixels, float RA, float dec, float rot, float angular_width,
+                                    unsigned  int n_stars)  {
+
+    Mat resized_image = get_resized_image(input_photo, new_photo_width_pixels);
 
     DescriptionAdder description_adder(&resized_image, RA, dec, rot, angular_width);
 

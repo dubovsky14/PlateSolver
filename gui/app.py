@@ -7,7 +7,7 @@ import os, sys
 from timeit import default_timer as timer
 
 sys.path.append("../python")
-from plate_solving_wrapper import plate_solve, annotate_photo
+from plate_solving_wrapper import plate_solve, annotate_photo, plate_solve_and_annotate_photo
 import cpp_logging_wrapper
 from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp, angular_width_to_effective_focal_length
 
@@ -61,6 +61,7 @@ def do_upload():
         return 'File extension not allowed.'
     UPLOAD_FOLDER = "temp/uploads/"
     FILE_ADDRESS = UPLOAD_FOLDER + "/" + upload.filename
+    cpp_logging_wrapper.log_message("Input photo: " + upload.filename)
     if os.path.exists(FILE_ADDRESS ):
         os.remove(FILE_ADDRESS )
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
@@ -69,7 +70,15 @@ def do_upload():
     cpp_logging_wrapper.log_message("Going to use index file " + index_file)
     time_plate_solving_start = timer()
     catalogue_file = "../data/catalogue.bin" if os.path.exists("../data/catalogue.bin" ) else "../data/catalogue.csv"
-    plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
+
+    ANNOTATE = request.forms.get("checkbox_annotate")
+
+    if (ANNOTATE):
+        plate_solving_result = plate_solve_and_annotate_photo(  "../data/" + index_file,"../data/catalogue.bin", "../data/catalogue_names.bin",
+                                                                FILE_ADDRESS, "../data/deep_sky_objects/",
+                                                                "temp/annotated_images/" + name + ".jpg", 1400)
+    else:
+        plate_solving_result = plate_solve(catalogue_file, "../data/" + index_file, FILE_ADDRESS)
     time_plate_solving_end = timer()
 
     RA      = plate_solving_result[0] if plate_solving_result else None
@@ -90,18 +99,9 @@ def do_upload():
     else:
         success = False
 
-    cpp_logging_wrapper.benchmark("Going to annotate photo")
-    ANNOTATE = request.forms.get("checkbox_annotate") and success
-    time_annotation_begin = timer()
-    if (ANNOTATE):
-        annotate_photo("../data/catalogue.bin", "../data/catalogue_names.bin",
-                        FILE_ADDRESS, "../data/deep_sky_objects/", RA, dec, rot*(3.14159/180), width*(3.14159/180),
-                        "temp/annotated_images/" + name + ".jpg", 1400)
-    time_annotation_end = timer()
-    cpp_logging_wrapper.benchmark("Photo annotation finished")
-
     os.remove(FILE_ADDRESS )
-    cpp_logging_wrapper.benchmark("File removed")
+    time_end = timer()
+    cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
 
     context = {
             "success" : success,
@@ -111,13 +111,12 @@ def do_upload():
             "width" :   str_width,
             "height" :  str_height,
             "time_to_platesolve"  : (time_plate_solving_end-time_plate_solving_start),
+            "time_overall"  : (time_end-time_start),
             "index_file" : index_file,
             "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else "",
             "efective_focal_length" : effective_focal_length,
     }
 
-    time_end = timer()
-    cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
     return context
 
 if __name__ == "__main__":

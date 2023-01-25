@@ -5,12 +5,16 @@
 #include "../PlateSolver/Common.h"
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/StarPositionHandler.h"
+#include "../PlateSolver/StarFinder.h"
 
 
 #include<vector>
 #include<string>
 #include<tuple>
 #include<memory>
+
+#include<opencv4/opencv2/highgui/highgui.hpp>
+#include<opencv4/opencv2/opencv.hpp>
 
 namespace   PlateSolver {
     class PlateSolverTool   {
@@ -34,6 +38,14 @@ namespace   PlateSolver {
             std::tuple<float,float,float,float,float> plate_solve(const std::string &jpg_file);
 
             /**
+             * @brief Calculate celestial coordinates of the center of the photo
+             *
+             * @param photo - gray scale image as cv::Mat object
+             * @return std::tuple<float,float,float,float,float> :[RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]
+             */
+            std::tuple<float,float,float,float,float> plate_solve(const cv::Mat &photo);
+
+            /**
              * @brief Get coordinates of the picture if the hypothesis is correct
              *
              * @param pos_x_starA   x coordinate of the starA from the photo
@@ -44,7 +56,7 @@ namespace   PlateSolver {
              * @param id_starB      id (from the catalogue file) of the starb
              * @param image_width   width of the photo in pixels
              * @param image_height  height of the photo in pixels
-             * @return std::tuple<float,float,float,float,float>
+             * @return std::tuple<float,float,float,float,float> - RA [hours], dec [degrees], camera rotation [rad], angular width [rad], angular height [rad]
              */
             std::tuple<float,float,float,float,float> get_hypothesis_coordinates(   float pos_x_starA, float pos_y_starA, unsigned int id_starA,
                                                                                     float pos_x_starB, float pos_y_starB, unsigned int id_starB,
@@ -87,5 +99,7 @@ namespace   PlateSolver {
             std::vector<unsigned char> m_pixels;
             unsigned int m_image_width_pixels = 0;
             unsigned int m_image_height_pixels= 0;
+
+            std::tuple<float,float,float,float,float> plate_solve(const StarFinder &star_finder);
     };
 }
