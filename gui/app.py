@@ -61,6 +61,7 @@ def do_upload():
         return 'File extension not allowed.'
     UPLOAD_FOLDER = "temp/uploads/"
     FILE_ADDRESS = UPLOAD_FOLDER + "/" + upload.filename
+    cpp_logging_wrapper.log_message("Input photo: " + upload.filename)
     if os.path.exists(FILE_ADDRESS ):
         os.remove(FILE_ADDRESS )
     upload.save(UPLOAD_FOLDER) # appends upload.filename automatically
@@ -99,7 +100,6 @@ def do_upload():
         success = False
 
     os.remove(FILE_ADDRESS )
-    cpp_logging_wrapper.benchmark("File removed")
     time_end = timer()
     cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
 

@@ -121,7 +121,10 @@ static PyObject *plate_solve_and_annotate_wrapper(PyObject *self, PyObject *args
 
         PlateSolverTool plate_solver_tool(hash_file, star_catalogue_numbers);
 
+        Logger::log_message(bench_mark("Going to read the photo."));
         cv::Mat photo = cv::imread(photo_input_address);
+        Logger::log_message(bench_mark("Photo loaded."));
+
         const tuple<float, float, float, float, float> result = plate_solver_tool.plate_solve(photo);
         const float RA = get<0>(result);
         const float dec = get<1>(result);
@@ -130,8 +133,10 @@ static PyObject *plate_solve_and_annotate_wrapper(PyObject *self, PyObject *args
         const float height = (180 / M_PI) * get<4>(result);
 
 
+        Logger::log_message(bench_mark("Plate solving finished. Going to annotate photo."));
         PhotoAnnotator photo_annotator(star_catalogue_numbers, star_catalogue_names, other_catalogues_folder);
         photo_annotator.annotate_photo(photo, photo_output, image_width_pixels, RA, dec, get<2>(result),get<3>(result));
+        Logger::log_message(bench_mark("Photo annotation finished."));
 
         return Py_BuildValue("fffff", RA, dec, rot, width, height);
     }
