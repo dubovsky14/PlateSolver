@@ -10,6 +10,7 @@ sys.path.append("../python")
 from plate_solving_wrapper import plate_solve, annotate_photo, plate_solve_and_annotate_photo
 import cpp_logging_wrapper
 from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp, angular_width_to_effective_focal_length, get_target_coordinates
+from tools.target_coordinates_finder import find_target_coordinates
 
 app = Bottle()
 clean_up_temp("temp/annotated_images/")
@@ -146,6 +147,34 @@ def do_upload():
     }
 
     return context
+
+
+@app.route('/select_target')
+@view('select_target')
+def select_target():
+    context =   {
+
+    }
+    return context
+
+@app.route('/confirm_target', method='POST')
+@view('confirm_target')
+def confirm_target():
+    target_coordinates = (False,0,0)
+    target_name = request.forms.get("target_name")
+    for catalogue in ["../data/deep_sky_objects/Messier.csv", "../data/deep_sky_objects/Caldwell.csv"]:
+        target_coordinates = find_target_coordinates(catalogue, target_name)
+        if target_coordinates[0]:
+            break
+
+    context = {
+        "target_found" : target_coordinates[0],
+        "target_ra"    : convert_angle_to_string(target_coordinates[1],"h"),
+        "target_dec"   : convert_angle_to_string(target_coordinates[2]),
+    }
+
+    return context
+
 
 if __name__ == "__main__":
     app.run()

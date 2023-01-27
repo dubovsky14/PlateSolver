@@ -43,6 +43,8 @@
             </div>
         </div>
 
+        Do not know target coordinates? Find them <a href="/select_target">here</a>!
+
     </form>
 </center>
 
