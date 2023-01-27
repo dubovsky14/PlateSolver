@@ -26,6 +26,22 @@
 
         <input type="submit" value="Plate Solve" />
 
+        <p  style="padding-top: 3rem"></p>
+
+        <b>Select target coordinates (optional):</b> <br>
+
+        <p  style="padding-top: 1rem"></p>
+
+        <div style="display: table-row;width:100%" horizontal layout id="div_target_coordinates_selection">
+            <div style="display:table-cell;width: 50%;text-align:left" id="div_target_ra_selection">
+                <label for="target_ra">Right ascension:</label><br>
+                <input type="text" id="target_ra" name="target_ra" value="{{target_ra}}"><br>
+            </div>
+            <div style="display:table-cell;width: 50%;text-align:right" id="div_target_dec_selection">
+                <label for="target_dec">Declination:</label><br>
+                <input type="text" id="target_dec" name="target_dec" value="{{target_dec}}"><br>
+            </div>
+        </div>
 
     </form>
 </center>

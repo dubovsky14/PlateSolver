@@ -9,7 +9,7 @@ from timeit import default_timer as timer
 sys.path.append("../python")
 from plate_solving_wrapper import plate_solve, annotate_photo, plate_solve_and_annotate_photo
 import cpp_logging_wrapper
-from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp, angular_width_to_effective_focal_length
+from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp, angular_width_to_effective_focal_length, get_target_coordinates
 
 app = Bottle()
 clean_up_temp("temp/annotated_images/")
@@ -22,6 +22,14 @@ def show_index():
     index_files = get_list_of_index_files("../data/")
     selected_index_file = request.query.index_file
     selected_index_file = selected_index_file if selected_index_file in index_files else ""
+
+    target_ra = request.query.target_ra
+    target_dec = request.query.target_dec
+
+    if (not target_dec or not target_ra):
+        target_ra =  ""
+        target_dec = ""
+
     annotate_default = bool(request.query.annotate_default)
     print("Annotate default: " + str(annotate_default))
 
@@ -29,6 +37,8 @@ def show_index():
                     "index_files" : index_files,
                     "selected_index_file" : selected_index_file,
                     "annotate_default" : annotate_default,
+                    "target_ra" : target_ra,
+                    "target_dec" : target_dec,
                 }
     return context
 
@@ -54,6 +64,7 @@ def do_upload():
     time_start = timer()
     cpp_logging_wrapper.log_message("\n\n")
     cpp_logging_wrapper.benchmark("Starting to process the request")
+    valid_target,target_ra,target_dec = get_target_coordinates(request.forms.get("target_ra"), request.forms.get("target_dec"))
     index_file = request.forms.get("index_file")
     upload     = request.files.get('upload')
     name, ext = os.path.splitext(upload.filename)
@@ -114,7 +125,12 @@ def do_upload():
             "time_overall"  : (time_end-time_start),
             "index_file" : index_file,
             "annotated_photo" : "temp/annotated_images/" + name + ".jpg" if ANNOTATE else "",
-            "efective_focal_length" : effective_focal_length,
+            "effective_focal_length" : effective_focal_length,
+
+            "valid_target"  : valid_target,
+            "target_ra"     : convert_angle_to_string(target_ra,"h"),
+            "target_dec"    : convert_angle_to_string(target_dec),
+
     }
 
     return context
