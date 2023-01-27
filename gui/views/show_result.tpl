@@ -23,18 +23,28 @@ Overall time of request processing: {{str(round(time_overall,3))}} s <br>
         </tbody>
     </table>
 </div>
-%end
 
 % if valid_target:
 <center>Target:</center>
 <div class="container" style="width:50%">
     <table class='table table-sm result-table'>
         <tbody>
-            <tr> <td> Right ascension </td><td> {{target_ra}}</td> </tr>
-            <tr> <td> Declination </td><td> {{target_dec}}</td> </tr>
+            <tr> <td>  </td><td> Target: </td><td>target - photo:</td> </tr>
+            <tr>
+                    <td> Right ascension </td>
+                    <td> {{target_ra}} </td>
+                    <td style="color:{{"blue" if "-" in str_d_RA_target_photo else "red"}}">{{str_d_RA_target_photo}}</td>
+            </tr>
+            <tr>
+                    <td> Declination </td>
+                    <td> {{target_dec}}    </td>
+                    <td style="color:{{"blue" if "-" in str_d_dec_target_photo else "red"}}"> {{str_d_dec_target_photo}}</td>
+            </tr>
         </tbody>
     </table>
 </div>
+%end
+
 %end
 
 <center style="padding-bottom: 3rem">

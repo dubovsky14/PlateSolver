@@ -114,6 +114,17 @@ def do_upload():
     time_end = timer()
     cpp_logging_wrapper.log_message("Overall time of processing the request: " + str(round(time_end-time_start, 3)))
 
+    str_d_RA_target_photo = str_d_dec_target_photo = ""
+    if (success and valid_target):
+        str_d_dec_target_photo = ((target_dec-dec) > 0)*"+" + convert_angle_to_string(target_dec-dec)
+        d_ra = target_ra-RA
+        if (d_ra > 12):
+            d_ra = d_ra-24
+        if (d_ra < -12):
+            d_ra = 24+d_ra
+
+        str_d_RA_target_photo  = (d_ra > 0)*"+" + convert_angle_to_string(d_ra, "h")
+
     context = {
             "success" : success,
             "RA" :      str_RA,
@@ -130,7 +141,8 @@ def do_upload():
             "valid_target"  : valid_target,
             "target_ra"     : convert_angle_to_string(target_ra,"h"),
             "target_dec"    : convert_angle_to_string(target_dec),
-
+            "str_d_RA_target_photo"  : str_d_RA_target_photo,
+            "str_d_dec_target_photo" : str_d_dec_target_photo,
     }
 
     return context
