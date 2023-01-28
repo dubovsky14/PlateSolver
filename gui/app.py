@@ -10,7 +10,7 @@ sys.path.append("../python")
 from plate_solving_wrapper import plate_solve, annotate_photo, plate_solve_and_annotate_photo
 import cpp_logging_wrapper
 from tools.helper_functions import convert_angle_to_string, get_list_of_index_files, clean_up_temp, angular_width_to_effective_focal_length, get_target_coordinates
-from tools.target_coordinates_finder import find_target_coordinates
+from tools.target_coordinates_finder import find_target_coordinates, find_star_hd_catalogue
 
 app = Bottle()
 clean_up_temp("temp/annotated_images/")
@@ -166,6 +166,9 @@ def confirm_target():
         target_coordinates = find_target_coordinates(catalogue, target_name)
         if target_coordinates[0]:
             break
+
+    if "HD" in target_name.upper():
+        target_coordinates = find_star_hd_catalogue("../data/catalogue.csv", target_name)
 
     context = {
         "target_found" : target_coordinates[0],

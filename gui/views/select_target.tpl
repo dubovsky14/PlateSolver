@@ -4,7 +4,7 @@
     <form action="/confirm_target" method="post">
 
         <div id="div_target_name_selection">
-            <label for="target_name">Type the target name:</label><br>
+            <label for="target_name">Type the target catalogue name (i.e. "M42", "C5" e.t.c):</label><br>
             <input type="text" id="target_name" name="target_name"><br>
         </div>
 
