@@ -91,14 +91,19 @@ namespace PlateSolver   {
              */
             void save_to_file(const std::string &output_file_address)   const;
 
+            void get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const;
+
+            unsigned int get_number_of_points_in_tree() const   {return m_number_of_points_in_tree;}
+
         private:
 
             int m_root_node_index = -1;
 
             std::vector<PointInKDTree> m_points_in_tree;
+            unsigned int m_number_of_points_in_tree = 0;
 
             // build node and return its index
-            int build_node(const std::vector<unsigned int> &sub_indices, int parent_index);
+            int build_node(std::vector<unsigned int> *sub_indices, int parent_index);
 
             void split_based_on_cut(    const std::vector<unsigned int> &sub_indices, short coordinate_index,
                                         CoordinateDataType cut_value, unsigned int index_to_omit,

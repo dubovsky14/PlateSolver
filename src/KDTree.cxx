@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cmath>
 #include <map>
+#include <filesystem>
+#include <cstring>
 
 using namespace PlateSolver;
 using namespace std;
@@ -43,12 +45,14 @@ KDTree::KDTree(unsigned int n_points)   {
 
 KDTree::KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size)  {
     m_input_file = make_shared<ifstream>(kd_tree_binary_file, std::ios::binary | std::ios::out);
+    m_number_of_points_in_tree = filesystem::file_size(kd_tree_binary_file) / (sizeof(PointInKDTree) + sizeof(PointIndexType));
     m_chache_size = cache_size;
     m_input_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));
 };
 
 void KDTree::add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices) {
     m_points_in_tree.push_back(PointInKDTree(coordinates, star_indices));
+    m_number_of_points_in_tree++;
 };
 
 void KDTree::create_tree_structure()    {
@@ -56,7 +60,7 @@ void KDTree::create_tree_structure()    {
     for (unsigned int i = 0; i< m_points_in_tree.size(); i++)   {
         all_indices[i] = i;
     }
-    m_root_node_index = build_node(all_indices, -1);
+    m_root_node_index = build_node(&all_indices, -1);
 };
 
 vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points)   {
@@ -121,12 +125,12 @@ std::vector<unsigned int> KDTree::get_k_nearest_neighbors_indices(const PointCoo
 };
 
 
-int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_index) {
+int KDTree::build_node(std::vector<unsigned int> *sub_indices, int parent_index) {
     const bool has_parent = parent_index >= 0;
     short index_for_splitting = has_parent ? (m_points_in_tree[parent_index].m_index_for_splitting + 1) % 4 : 0;
 
     unsigned int this_point_index;
-    const CoordinateDataType median = get_median_and_its_index_from_sample(sub_indices, index_for_splitting, &this_point_index);
+    const CoordinateDataType median = get_median_and_its_index_from_sample(*sub_indices, index_for_splitting, &this_point_index);
 
     PointInKDTree &this_point = m_points_in_tree[this_point_index];
 
@@ -135,15 +139,16 @@ int KDTree::build_node(const std::vector<unsigned int> &sub_indices, int parent_
 
     vector<unsigned int> indices_child_left;
     vector<unsigned int> indices_child_right;
-    indices_child_left.reserve(sub_indices.size()/2);
-    indices_child_right.reserve(sub_indices.size()/2);
-    split_based_on_cut(sub_indices, index_for_splitting, median, this_point_index, &indices_child_left, &indices_child_right);
+    indices_child_left.reserve(sub_indices->size()/2);
+    indices_child_right.reserve(sub_indices->size()/2);
+    split_based_on_cut(*sub_indices, index_for_splitting, median, this_point_index, &indices_child_left, &indices_child_right);
 
+    sub_indices->clear(); // otherwise it would eat up memory
     if (indices_child_left.size())  {
-        this_point.m_index_child_left = build_node(indices_child_left, this_point_index);
+        this_point.m_index_child_left = build_node(&indices_child_left, this_point_index);
     }
     if (indices_child_right.size()) {
-        this_point.m_index_child_right = build_node(indices_child_right, this_point_index);
+        this_point.m_index_child_right = build_node(&indices_child_right, this_point_index);
     }
 
 
@@ -267,6 +272,12 @@ void KDTree::save_to_file(const std::string &output_file_address)   const  {
     }
 
     output_file.close();
+};
+
+void KDTree::get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const    {
+    const PointInKDTree &point_in_tree = get_point_in_tree(node_index);
+    memcpy(coordinates, point_in_tree.m_coordinates, sizeof(point_in_tree.m_coordinates));
+    *star_indices = point_in_tree.m_star_indices;
 };
 
 PointInKDTree KDTree::get_point_in_tree(unsigned int node_index) const   {

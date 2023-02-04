@@ -19,6 +19,10 @@ add_executable(create_hash_file "utils/create_hash_file.cxx")
 add_dependencies(create_hash_file PlateSolver)
 target_link_libraries(create_hash_file PlateSolver ${OpenCV_LIBS})
 
+add_executable(merge_index_files "utils/merge_index_files.cxx")
+add_dependencies(merge_index_files PlateSolver)
+target_link_libraries(merge_index_files PlateSolver ${OpenCV_LIBS})
+
 add_executable(plate_solve "utils/plate_solve.cxx")
 add_dependencies(plate_solve PlateSolver)
 target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})
