@@ -105,7 +105,7 @@ cd gui
 uwsgi --http-socket :9090 --wsgi-file run_localhost.py --master
 ```
 
-Side note: in order to be able to use the GUI, your csv file with positions of the stars, and your hash files have to be in the ```data``` folder. The name of the star csv file must be ```catalogue.csv``` and your index files must have the name ```index_file_<something>.bin```, where ```<something>``` might be any string, for example focal length.
+Side note: in order to be able to use the GUI, your csv file with positions of the stars, and your hash files have to be in the ```data``` folder. The name of the star csv file must be ```catalogue.csv``` and your index files must have the extension ```.kdtree```.
 
 
 Running on Raspberry Pi:

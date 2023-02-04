@@ -17,12 +17,10 @@ def convert_angle_to_string(angle_floating_point : float, degree_symbol : str = 
     result = result + str(round(angle_floating_point,1)) + "\""
     return result
 
-def get_list_of_index_files(address_of_input_files) -> list:
+def get_list_of_index_files(address_of_input_files : str) -> list:
     dir_list = os.listdir(address_of_input_files)
     result = []
     for file_name in dir_list:
-        if not file_name.startswith("index_file_"):
-            continue
         if (file_name.endswith(".kdtree")):
             result.append(file_name)
     return get_sorted_index_files(result)
