@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include <filesystem>
+#include <map>
 
 #include "../PlateSolver/KDTree.h"
 
@@ -15,6 +16,7 @@ void merge_index_files(const vector<string> &input_files, const string output_fi
         input_files_total_size += filesystem::file_size(input_file);
     }
     KDTree merged_tree (input_files_total_size/sizeof(PointInKDTree));
+    map<tuple<float, float, float, float>, char> combinations_already_added;
 
     for (const string &input_file : input_files) {
         KDTree input_tree(input_file);
@@ -24,9 +26,13 @@ void merge_index_files(const vector<string> &input_files, const string output_fi
         StarIndices     star_indices;
 
         for (unsigned long long i = 0; i < points_in_input_tree; i++) {
-            input_tree.get_point(i, coordinates_array, &star_indices);
+            input_tree.get_point(i, coordinates_array, &star_indices);\
             tuple<float, float, float, float> coordinates = make_tuple(coordinates_array[0], coordinates_array[1], coordinates_array[2], coordinates_array[3]);
+            if (combinations_already_added.find(coordinates) != combinations_already_added.end()) {
+                continue;
+            }
             merged_tree.add_point(coordinates, star_indices);
+            combinations_already_added[coordinates] = 1;
         }
     }
     merged_tree.create_tree_structure();
