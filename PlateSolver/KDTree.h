@@ -18,7 +18,7 @@ namespace PlateSolver   {
     class PointInKDTree {
         public:
             PointInKDTree();
-            PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
+            PointInKDTree(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices);
 
             PointIndexType get_child_index(const CoordinateDataType *coordinates);
 
@@ -58,7 +58,7 @@ namespace PlateSolver   {
              * @param coordinates coordinates of the point in 4-dimensional space
              * @param star_indices indices of the stars describing this point (additional data that have to be stored)
              */
-            void add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices);
+            void add_point(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices);
 
             /**
              * @brief Find all node conditions and create a tree structure for the tree

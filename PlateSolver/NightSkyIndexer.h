@@ -22,7 +22,7 @@ namespace PlateSolver   {
 
             // result is vector of tuples, tuple consists of "asterism hash tuple" (tuple of 4 floats), followed by 4 unsigned ints, corresponding to indices of the 4 hashed stars
             void index_sky_region(  float RA, float dec, float angle,
-                                    std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > *result);
+                                    std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > *result);
 
         private:
             static std::vector<std::tuple<float, float> > convert_star_coordinates_to_pixels_positions(const std::vector<Vector3D> &stars, float RA, float dec);
@@ -33,7 +33,7 @@ namespace PlateSolver   {
 
             std::shared_ptr<KDTree> m_output_kd_tree            = nullptr;
 
-            void dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector);
+            void dump_hashes_to_outfile(const std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > &result);
 
 
     };

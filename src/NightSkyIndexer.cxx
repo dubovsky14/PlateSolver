@@ -45,7 +45,7 @@ void NightSkyIndexer::focal_length_to_field_of_view(float focal_length_mm, float
 
 // result is vector of tuples, tuple consists of "asterism hash tuple" (tuple of 4 floats), followed by 4 unsigned ints, corresponding to indices of the 4 hashed stars
 void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
-                        vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > *result)   {
+                        std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > *result)   {
 
     vector<tuple<Vector3D, float, unsigned int> >  stars_around = m_star_position_handler->get_stars_around_coordinates(RA, dec, angle, true);
 
@@ -57,10 +57,6 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 
     // positions of the stars how camera sensor will see them (projection to a plane)
     vector<tuple<float, float> > stars_sensor_based_coordinates = convert_star_coordinates_to_pixels_positions(star_positions, RA, dec);
-
-
-    map<tuple<unsigned int, unsigned int, unsigned int, unsigned int>, char> combinations_already_added;
-    unsigned int this_combination[4];
 
     const unsigned int NSTARS = 6;
     unsigned int combination[4];
@@ -76,19 +72,6 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
                         break;
                     }
 
-                    // avoid having the same combination of stars multiple time in the output:
-                    this_combination[0] = get<2>(stars_around[i_star1]);
-                    this_combination[1] = get<2>(stars_around[i_star2]);
-                    this_combination[2] = get<2>(stars_around[i_star3]);
-                    this_combination[3] = get<2>(stars_around[i_star4]);
-                    sort(this_combination, this_combination+4);
-                    auto comb_tuple = tuple<unsigned int, unsigned int, unsigned int, unsigned int>(this_combination[0], this_combination[1], this_combination[2], this_combination[3]);
-                    if (combinations_already_added.find(comb_tuple) != combinations_already_added.end())    {
-                        continue;
-                    }
-                    combinations_already_added[comb_tuple] = 0;
-
-
                     tuple<float,float,float,float> asterism_hash;
                     vector<tuple<float, float> > stars_to_hash = {
                         stars_sensor_based_coordinates[i_star1],
@@ -102,14 +85,13 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
                     if (!valid_hash)    {
                         continue;
                     }
-                    result->push_back   (tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int>
-                                            (asterism_hash,
-                                            get<2>(stars_around[ combination[starA] ]),
-                                            get<2>(stars_around[ combination[starB] ]),
-                                            get<2>(stars_around[ combination[starC] ]),
-                                            get<2>(stars_around[ combination[starD] ]))
-                                        );
 
+                    tuple<unsigned int, unsigned int, unsigned int, unsigned int> indices_tuple(get<2>(stars_around[ combination[starA] ]),
+                                                                                                get<2>(stars_around[ combination[starB] ]),
+                                                                                                get<2>(stars_around[ combination[starC] ]),
+                                                                                                get<2>(stars_around[ combination[starD] ]));
+
+                    (*result)[indices_tuple] = asterism_hash;
                 }
             }
         }
@@ -129,7 +111,7 @@ vector<tuple<float, float> > NightSkyIndexer::convert_star_coordinates_to_pixels
 };
 
 void NightSkyIndexer::loop_over_night_sky(float focal_length) {
-    vector<tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > result;
+    std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > result;
     float angle_width, angle_height;
     focal_length_to_field_of_view(focal_length, &angle_width, &angle_height);
     const float FOV_angle = (min(angle_width,angle_height)*0.5);
@@ -148,8 +130,6 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
         const float RA_step_size = 24./n_steps;
         for (float right_ascension = 0; right_ascension < 24; right_ascension += RA_step_size)   {
             index_sky_region(right_ascension, declination,FOV_angle, &result);
-            dump_hash_vector_to_outfile(result);
-            result.clear();
         }
         const auto duration_from_start = chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now()-time_start);
         const float fraction_remaining = (sin(declination*M_PI/180)+1)/2;
@@ -161,22 +141,17 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
             const unsigned int seconds = time_to_end - hours*3600 - minutes*60;
             cout << "\t\testimated time to end: " << hours << ":" << minutes << ":" << seconds;
         }
-
         cout << endl;
     }
-
+    dump_hashes_to_outfile(result);
+    result.clear();
 };
 
-void NightSkyIndexer::dump_hash_vector_to_outfile(const std::vector<std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> > &hash_vector) {
-    for (const auto &x : hash_vector)   {
-        const std::tuple<float,float,float,float> hash = get<0>(x);
-        const unsigned int id_starA = get<1>(x);
-        const unsigned int id_starB = get<2>(x);
-        const unsigned int id_starC = get<3>(x);
-        const unsigned int id_starD = get<4>(x);
+void NightSkyIndexer::dump_hashes_to_outfile(const std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > &result) {
+    for (const auto &x : result)   {
+        const tuple<unsigned int, unsigned int, unsigned int, unsigned int> &indices_tuple = x.first;
+        const tuple<float,float,float,float> &hash = x.second;
 
-        std::tuple<unsigned int,unsigned int,unsigned int,unsigned int> star_id_tuple(id_starA,id_starB,id_starC,id_starD);
-        m_output_kd_tree->add_point(hash, star_id_tuple);
-
+        m_output_kd_tree->add_point(hash, indices_tuple);
     }
 };

@@ -19,7 +19,7 @@ PointInKDTree::PointInKDTree()  {
     m_star_indices = StarIndices(0,0,0,0);
 };
 
-PointInKDTree::PointInKDTree(const PointCoordinatesTuple &coordinates, StarIndices &star_indices)   {
+PointInKDTree::PointInKDTree(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices)   {
     m_coordinates[0]    = get<0>(coordinates);
     m_coordinates[1]    = get<1>(coordinates);
     m_coordinates[2]    = get<2>(coordinates);
@@ -50,7 +50,7 @@ KDTree::KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size) 
     m_input_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));
 };
 
-void KDTree::add_point(const PointCoordinatesTuple &coordinates, StarIndices &star_indices) {
+void KDTree::add_point(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices) {
     m_points_in_tree.push_back(PointInKDTree(coordinates, star_indices));
     m_number_of_points_in_tree++;
 };
