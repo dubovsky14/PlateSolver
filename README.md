@@ -15,7 +15,7 @@ If you do not have the basic C++ development tools, you will need ```gcc``` and 
 In order to install these packages on Ubuntu:
 
 ```
-sudo apt-get install python3-dev gcc cmake
+sudo apt-get install python3-dev gcc cmake build-essential python3-pip uwsgi
 ```
 
 Now you need to install OpenCV (```https://opencv.org/```) library, in order to do that on Ubuntu:
