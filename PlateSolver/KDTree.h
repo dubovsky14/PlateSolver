@@ -122,7 +122,7 @@ namespace PlateSolver   {
             static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);
 
             // for reading from disk implementation
-            std::shared_ptr<std::ifstream> m_input_file = nullptr;
+            std::unique_ptr<std::ifstream> m_input_file = nullptr;
             void clean_cache();
 
             mutable std::map<unsigned int, PointInKDTree>   m_index_to_node_map;    // cache

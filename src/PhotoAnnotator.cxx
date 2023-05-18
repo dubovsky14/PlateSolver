@@ -20,14 +20,14 @@ PhotoAnnotator::PhotoAnnotator( const std::string &star_catalogue_file_numbers,
                                 const std::string &other_catalogues_folder) {
 
     if (star_catalogue_file_names.length() != 0)    {
-        m_star_database_handler = make_shared<StarDatabaseHandler>(star_catalogue_file_numbers, star_catalogue_file_names);
+        m_star_database_handler = make_unique<StarDatabaseHandler>(star_catalogue_file_numbers, star_catalogue_file_names);
     }
     else {
-        m_star_database_handler = make_shared<StarDatabaseHandler>(star_catalogue_file_numbers);
+        m_star_database_handler = make_unique<StarDatabaseHandler>(star_catalogue_file_numbers);
     }
 
     for (const auto & entry : filesystem::directory_iterator(other_catalogues_folder)) {
-        m_deep_sky_objects_databases.push_back(make_shared<StarDatabaseHandler>(entry.path()));
+        m_deep_sky_objects_databases.push_back(make_unique<StarDatabaseHandler>(entry.path()));
     }
 
 };

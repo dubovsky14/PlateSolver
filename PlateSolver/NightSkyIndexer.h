@@ -31,7 +31,7 @@ namespace PlateSolver   {
 
             std::shared_ptr<const StarPositionHandler> m_star_position_handler = nullptr;
 
-            std::shared_ptr<KDTree> m_output_kd_tree            = nullptr;
+            std::unique_ptr<KDTree> m_output_kd_tree            = nullptr;
 
             void dump_hashes_to_outfile(const std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > &result);
 

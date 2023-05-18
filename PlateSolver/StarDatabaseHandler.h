@@ -34,7 +34,7 @@ namespace PlateSolver   {
             std::vector<std::string>    m_vector_name;
 
 
-            std::shared_ptr<std::ifstream> m_catalogue_file_names = nullptr;
+            std::unique_ptr<std::ifstream> m_catalogue_file_names = nullptr;
             unsigned int m_max_length_name = 0;
             unsigned int m_number_of_star_names = 0;
     };

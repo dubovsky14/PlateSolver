@@ -82,7 +82,7 @@ namespace PlateSolver   {
             float m_dec_center  = 0;
             float m_angular_width = 0;
             float m_angular_height = 0;
-            std::shared_ptr<RaDecToPixelCoordinatesConvertor> m_ra_dec_to_pix_convertor = nullptr;
+            std::unique_ptr<RaDecToPixelCoordinatesConvertor> m_ra_dec_to_pix_convertor = nullptr;
 
             std::vector<std::tuple<float,float> > m_coordinates_of_added_descriptions;
 

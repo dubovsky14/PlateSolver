@@ -29,7 +29,7 @@ void NightSkyIndexer::create_index_file(const string &index_file, float focal_le
         throw std::string("Unknown file extension. See README for more information.");
     }
 
-    m_output_kd_tree = make_shared<KDTree>(10000000);
+    m_output_kd_tree = make_unique<KDTree>(10000000);
 
     loop_over_night_sky(focal_length);
 

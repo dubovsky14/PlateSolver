@@ -23,10 +23,10 @@ using namespace std;
 
 PlateSolverTool::PlateSolverTool(const string &hash_file, const string &stars_catalogue)  {
     Logger::log_message(bench_mark("Going to read catalogue and declare all handlers"));
-    m_star_database_handler = make_shared<StarDatabaseHandler>(stars_catalogue);
-    m_hash_finder           = make_shared<HashFinder>(hash_file);
+    m_star_database_handler = make_unique<StarDatabaseHandler>(stars_catalogue);
+    m_hash_finder           = make_unique<HashFinder>(hash_file);
     m_star_position_handler = make_shared<StarPositionHandler>(*m_star_database_handler);
-    m_night_sky_indexer     = make_shared<NightSkyIndexer>(m_star_position_handler);
+    m_night_sky_indexer     = make_unique<NightSkyIndexer>(m_star_position_handler);
 };
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &jpg_file) {

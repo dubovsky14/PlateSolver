@@ -90,10 +90,10 @@ namespace   PlateSolver {
             static float calculate_dist2(const std::tuple<float,float,float> &star1, const std::tuple<float,float,float> &star2);
         private:
 
-            std::shared_ptr<StarDatabaseHandler>    m_star_database_handler = nullptr;
-            std::shared_ptr<HashFinder>             m_hash_finder           = nullptr;
+            std::unique_ptr<StarDatabaseHandler>    m_star_database_handler = nullptr;
+            std::unique_ptr<HashFinder>             m_hash_finder           = nullptr;
             std::shared_ptr<StarPositionHandler>    m_star_position_handler = nullptr;
-            std::shared_ptr<NightSkyIndexer>        m_night_sky_indexer     = nullptr;
+            std::unique_ptr<NightSkyIndexer>        m_night_sky_indexer     = nullptr;
 
 
             std::vector<unsigned char> m_pixels;

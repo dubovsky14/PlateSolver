@@ -26,8 +26,8 @@ namespace PlateSolver   {
                                 unsigned  int n_stars = 8);
 
         private:
-            std::shared_ptr<StarDatabaseHandler> m_star_database_handler = nullptr;
+            std::unique_ptr<StarDatabaseHandler> m_star_database_handler = nullptr;
 
-            std::vector<std::shared_ptr<StarDatabaseHandler> > m_deep_sky_objects_databases;
+            std::vector<std::unique_ptr<StarDatabaseHandler> > m_deep_sky_objects_databases;
     };
 }

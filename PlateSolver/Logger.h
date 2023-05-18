@@ -17,7 +17,7 @@ namespace PlateSolver   {
         private:
             Logger();
 
-            static std::shared_ptr<std::ofstream> m_logging_file;
+            static std::unique_ptr<std::ofstream> m_logging_file;
             static bool s_logging_on;
 
     };

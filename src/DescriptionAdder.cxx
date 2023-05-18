@@ -31,7 +31,7 @@ DescriptionAdder::DescriptionAdder(cv::Mat *image, float ra_center, float dec_ce
     m_angular_width = angular_width;
     m_angular_height = angular_width*float(m_height)/m_width;
 
-    m_ra_dec_to_pix_convertor = make_shared<RaDecToPixelCoordinatesConvertor>(ra_center, dec_center, -camera_rotation,angle_per_pixel, m_width, m_height);
+    m_ra_dec_to_pix_convertor = make_unique<RaDecToPixelCoordinatesConvertor>(ra_center, dec_center, -camera_rotation,angle_per_pixel, m_width, m_height);
 };
 
 void DescriptionAdder::add_star_description_pixel_coor(int xpos, int ypos, const std::string &label)   {

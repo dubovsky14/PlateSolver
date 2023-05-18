@@ -44,7 +44,7 @@ KDTree::KDTree(unsigned int n_points)   {
 };
 
 KDTree::KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size)  {
-    m_input_file = make_shared<ifstream>(kd_tree_binary_file, std::ios::binary | std::ios::out);
+    m_input_file = make_unique<ifstream>(kd_tree_binary_file, std::ios::binary | std::ios::out);
     m_number_of_points_in_tree = filesystem::file_size(kd_tree_binary_file) / (sizeof(PointInKDTree) + sizeof(PointIndexType));
     m_chache_size = cache_size;
     m_input_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));

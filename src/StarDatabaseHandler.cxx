@@ -17,7 +17,7 @@ StarDatabaseHandler::StarDatabaseHandler(const std::string &star_catalogue_bin_f
         throw std::string("StarDatabaseHandler::the first argument in 2-arguments constructor is supposed to be .bin file!");
     }
     load_csv_or_number_bin_file(star_catalogue_bin_file_numbers);
-    m_catalogue_file_names = make_shared<ifstream>(star_catalogue_bin_file_names, std::ios::binary | std::ios::out);
+    m_catalogue_file_names = make_unique<ifstream>(star_catalogue_bin_file_names, std::ios::binary | std::ios::out);
     m_catalogue_file_names->read(reinterpret_cast<char *>(&m_max_length_name), sizeof(m_max_length_name));
     m_number_of_star_names = m_max_length_name != 0 ?
                             (get_file_size(star_catalogue_bin_file_names)-sizeof(m_max_length_name))/m_max_length_name : 0;
