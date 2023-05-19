@@ -119,6 +119,7 @@ namespace PlateSolver   {
                                         const CoordinateDataType *query_point_array
                                         );
 
+            // add point to the vector of the nearest neighbors if it is closer than the furthest neighbor - keep only n_points points in vector
             static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);
 
             // for reading from disk implementation

@@ -83,7 +83,7 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
 
 
 std::vector<unsigned int> KDTree::get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points)  {
-    vector<tuple <unsigned int, float> > vector_index_distance;
+    vector<tuple <unsigned int, float> > vector_index_distance; // indices of n_points nearest neighbors and their distances
     map<unsigned int, char> visited_nodes;
 
     CoordinateDataType query_point_array[4];
@@ -229,17 +229,19 @@ void KDTree::scan_children_nodes (   unsigned int node_index,
     }
     (*visited_nodes)[node_index] = 1;
 
-    short split_index = get_point_in_tree(node_index).m_index_for_splitting;
+    const short split_index = get_point_in_tree(node_index).m_index_for_splitting;
     const float dist_from_splitting_plane = fabs(query_point_array[split_index] - get_point_in_tree(node_index).m_coordinates[split_index]);
 
-    const bool query_point_on_right = query_point_array[split_index] > get_point_in_tree(node_index).m_coordinates[split_index];
+    if (dist_from_splitting_plane >= get<1>(vector_index_distance->back())) {
+        return;
+    }
 
-    if (query_point_on_right || dist_from_splitting_plane < get<1>(vector_index_distance->back()))   {
+    const bool query_point_on_right = query_point_array[split_index] > get_point_in_tree(node_index).m_coordinates[split_index];
+    if (query_point_on_right)   {
         const int child_id = get_point_in_tree(node_index).m_index_child_right;
         scan_children_nodes(child_id, visited_nodes, vector_index_distance, query_point_array);
     }
-
-    if (!query_point_on_right || dist_from_splitting_plane < get<1>(vector_index_distance->back()))   {
+    else   {
         const int child_id = get_point_in_tree(node_index).m_index_child_left;
         scan_children_nodes(child_id, visited_nodes, vector_index_distance, query_point_array);
     }

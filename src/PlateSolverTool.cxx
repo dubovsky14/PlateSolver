@@ -55,6 +55,7 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const StarFind
     for (const unsigned int stars_to_consider : stars_to_consider_vector)   {
         vector<AsterismHashWithIndices> hashes_with_indices_from_photo = get_hashes_with_indices(stars, stars_to_consider, previous_n_stars);
         previous_n_stars = stars_to_consider;
+        // sort hashes by sum of indices, so that hashes with brightest stars are first
         sort(hashes_with_indices_from_photo.begin(), hashes_with_indices_from_photo.end(),
                 [](const AsterismHashWithIndices &a, const AsterismHashWithIndices &b)  {return (
                     (get<1>(a) + get<2>(a) + get<3>(a) + get<4>(a)) < (get<1>(b) + get<2>(b) + get<3>(b) + get<4>(b))
@@ -63,6 +64,8 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const StarFind
         Logger::log_message(bench_mark("Hashes extracted and sorted. Using " + to_string(stars_to_consider) + " stars"));
         const vector<AsterismHash>  hashes_from_photo = extract_hashes(hashes_with_indices_from_photo);
         std::vector<std::tuple<unsigned int, unsigned int,float> > ordering_by_distance;
+
+        // for each hash from photo, find 5 most similar hashes from kd-tree file
         const vector<vector<AsterismHashWithIndices> > similar_hashes = m_hash_finder->get_similar_hashes(hashes_from_photo,5, &ordering_by_distance);
         Logger::log_message(bench_mark("Similar hashes extracted. "));
 
@@ -103,11 +106,9 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const StarFind
                                     + " width = " + convert_to_deg_min_sec((180/M_PI)*get<3>(hypothesis_coordinates));
                 Logger::log_message(message);
             }
-
         }
         Logger::log_message(bench_mark("No correct hypothesis was found for " + to_string(stars_to_consider) + " stars, " + to_string(i_attempt) + " hashes have been tried."));
     }
-
     return tuple<float,float,float,float,float>(0,0,0,0,0);
 };
 
