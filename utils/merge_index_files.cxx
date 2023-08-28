@@ -4,6 +4,7 @@
 #include <tuple>
 #include <filesystem>
 #include <map>
+#include <stdexcept>
 
 #include "../PlateSolver/KDTree.h"
 
@@ -76,8 +77,8 @@ int main(int argc, const char **argv)   {
         merge_index_files(input_files, output_file);
 
     }
-    catch(const string &e)  {
-        cout << e << endl;
+    catch(const runtime_error &e)  {
+        cout << e.what() << endl;
         abort();
     }
 }

@@ -3,6 +3,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
 # include "../PlateSolver/PlateSolverTool.h"
 # include "../PlateSolver/PhotoAnnotator.h"
@@ -50,8 +51,8 @@ static PyObject *photoAnnotation_wrapper(PyObject *self, PyObject *args) {
 
         return Py_BuildValue("");
     }
-    catch (const string &e) {
-        const char *error = e.c_str();
+    catch (const runtime_error &e) {
+        const char *error = e.what();
         return Py_BuildValue("s", error);
     }
 
@@ -82,8 +83,8 @@ static PyObject *plateSolving_wrapper(PyObject *self, PyObject *args) {
 
         return Py_BuildValue("fffff", RA, dec, rot, width, height);
     }
-    catch (const string &e) {
-        const char *error = e.c_str();
+    catch (const runtime_error &e) {
+        const char *error = e.what();
         return Py_BuildValue("s", error);
     }
 
@@ -140,8 +141,8 @@ static PyObject *plate_solve_and_annotate_wrapper(PyObject *self, PyObject *args
 
         return Py_BuildValue("fffff", RA, dec, rot, width, height);
     }
-    catch (const string &e) {
-        const char *error = e.c_str();
+    catch (const runtime_error &e) {
+        const char *error = e.what();
         return Py_BuildValue("s", error);
     }
 

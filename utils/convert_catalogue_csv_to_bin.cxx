@@ -7,6 +7,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <stdexcept>
 
 
 using namespace std;
@@ -31,14 +32,14 @@ unsigned int get_longest_name_length(const std::string &csv_file_address)   {
                 }
             }
             catch(...)  {
-                throw std::string("Unable to read file \"" + csv_file_address + "\"");
+                throw runtime_error("Unable to read file \"" + csv_file_address + "\"");
             }
 
         }
         input_file.close();
     }
     else    {
-        throw std::string("Unable to open file \"" + csv_file_address + "\"");
+        throw runtime_error("Unable to open file \"" + csv_file_address + "\"");
     }
     return result;
 }
@@ -89,7 +90,7 @@ int main(int argc, const char **argv)   {
                     }
                 }
                 catch(...)  {
-                    throw std::string("Unable to read file \"" + csv_file_address + "\"");
+                    throw runtime_error("Unable to read file \"" + csv_file_address + "\"");
                 }
 
             }
@@ -97,13 +98,13 @@ int main(int argc, const char **argv)   {
             output_file_numbers.close();
         }
         else    {
-            throw std::string("Unable to open file \"" + csv_file_address + "\"");
+            throw runtime_error("Unable to open file \"" + csv_file_address + "\"");
         }
 
         return 0;
     }
-    catch(const string &e)  {
-        cout << e << endl;
+    catch(const runtime_error &e)  {
+        cout << e.what() << endl;
         abort();
     }
 }

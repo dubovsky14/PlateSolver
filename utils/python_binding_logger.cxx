@@ -3,6 +3,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
 #include "../PlateSolver/Logger.h"
 #include "../PlateSolver/Common.h"
@@ -24,8 +25,8 @@ static PyObject *benchmark_wrapper(PyObject *self, PyObject *args) {
         Logger::log_message(message);
         return Py_BuildValue("");
     }
-    catch (const string &e) {
-        const char *error = e.c_str();
+    catch (const runtime_error &e) {
+        const char *error = e.what();
         return Py_BuildValue("s", error);
     }
     return Py_BuildValue("");
@@ -43,8 +44,8 @@ static PyObject *log_message_wrapper(PyObject *self, PyObject *args) {
         Logger::log_message(string(char_message));
         return Py_BuildValue("");
     }
-    catch (const string &e) {
-        const char *error = e.c_str();
+    catch (const runtime_error &e) {
+        const char *error = e.what();
         return Py_BuildValue("s", error);
     }
     return Py_BuildValue("");
@@ -63,8 +64,8 @@ static PyObject *set_log_file_wrapper(PyObject *self, PyObject *args) {
         Logger::set_log_file(string(char_log_address), recreate);
         return Py_BuildValue("");
     }
-    catch (const string &e) {
-        const char *error = e.c_str();
+    catch (const runtime_error &e) {
+        const char *error = e.what();
         return Py_BuildValue("s", error);
     }
     return Py_BuildValue("");

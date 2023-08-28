@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <stdexcept>
 
 using namespace std;
 using namespace PlateSolver;
@@ -13,7 +14,7 @@ bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float > > &s
     unsigned int *index_star_A, unsigned int *index_star_B, unsigned int *index_star_C, unsigned int *index_star_D)   {
 
     if (stars.size() != 4)  {
-        throw string("Cannot calculate hash of #stars != 4");
+        throw runtime_error("Cannot calculate hash of #stars != 4");
     }
 
     // extract indices of stars A, B, C and D. For now symmetric agains A <-> B and C <-> D swap, we will solve this later

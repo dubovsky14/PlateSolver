@@ -11,6 +11,7 @@
 #include<map>
 #include<chrono>
 #include<iostream>
+#include <stdexcept>
 
 using namespace std;
 using namespace PlateSolver;
@@ -26,7 +27,7 @@ NightSkyIndexer::NightSkyIndexer(shared_ptr<const StarPositionHandler> star_posi
 
 void NightSkyIndexer::create_index_file(const string &index_file, float focal_length)  {
     if (!EndsWith(index_file, ".kdtree")) {
-        throw std::string("Unknown file extension. See README for more information.");
+        throw runtime_error("Unknown file extension. See README for more information.");
     }
 
     m_output_kd_tree = make_unique<KDTree>(10000000);

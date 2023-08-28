@@ -3,6 +3,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 using namespace PlateSolver;
@@ -43,8 +44,8 @@ int main(int argc, const char **argv)   {
 
         return 0;
     }
-    catch(const string &e)  {
-        cout << e << endl;
+    catch(const runtime_error &e)  {
+        cout << e.what() << endl;
         abort();
     }
 }

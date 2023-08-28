@@ -4,6 +4,7 @@
 #include "../PlateSolver/Common.h"
 
 #include <fstream>
+#include <stdexcept>
 
 using namespace std;
 using namespace PlateSolver;
@@ -14,7 +15,7 @@ StarDatabaseHandler::StarDatabaseHandler(const std::string &star_catalogue_file)
 
 StarDatabaseHandler::StarDatabaseHandler(const std::string &star_catalogue_bin_file_numbers, const std::string &star_catalogue_bin_file_names)   {
     if (!EndsWith(star_catalogue_bin_file_numbers, ".bin")) {
-        throw std::string("StarDatabaseHandler::the first argument in 2-arguments constructor is supposed to be .bin file!");
+        throw runtime_error("StarDatabaseHandler::the first argument in 2-arguments constructor is supposed to be .bin file!");
     }
     load_csv_or_number_bin_file(star_catalogue_bin_file_numbers);
     m_catalogue_file_names = make_unique<ifstream>(star_catalogue_bin_file_names, std::ios::binary | std::ios::out);
@@ -43,14 +44,14 @@ void StarDatabaseHandler::load_csv_or_number_bin_file(const std::string &star_ca
                     m_vector_mag .push_back( std::stod(elements.at(4))  );
                 }
                 catch(...)  {
-                    throw std::string("Unable to read file \"" + star_catalogue_file + "\"");
+                    throw runtime_error("Unable to read file \"" + star_catalogue_file + "\"");
                 }
 
             }
             input_file.close();
         }
         else    {
-            throw std::string("Unable to open file \"" + star_catalogue_file + "\"");
+            throw runtime_error("Unable to open file \"" + star_catalogue_file + "\"");
         }
     }
     else if (EndsWith(star_catalogue_file, ".bin")) {
@@ -72,14 +73,14 @@ void StarDatabaseHandler::load_csv_or_number_bin_file(const std::string &star_ca
         input_file.close();
     }
     else {
-        throw string("Unkown extension of the star catalogue type. Only .bin or .csv files are allowed");
+        throw runtime_error("Unkown extension of the star catalogue type. Only .bin or .csv files are allowed");
     }
 };
 
 
 void StarDatabaseHandler::get_star_info(unsigned int star_id, float *RA, float *dec, float *mag, std::string *name) const {
     if (star_id >= m_vector_dec.size()) {
-        throw std::string("Requested star ID exceeds the number of stars in the database.");
+        throw runtime_error("Requested star ID exceeds the number of stars in the database.");
     }
     *RA     = m_vector_RA[star_id];
     *dec    = m_vector_dec[star_id];
@@ -116,14 +117,14 @@ std::string StarDatabaseHandler::get_star_name(unsigned int star_id)    const {
 
 float StarDatabaseHandler::get_star_ra(unsigned int star_id) const  {
     if (star_id >= m_vector_RA.size()) {
-        throw std::string("Requested star ID exceeds the number of stars in the database.");
+        throw runtime_error("Requested star ID exceeds the number of stars in the database.");
     }
     return m_vector_RA[star_id];
 };
 
 float StarDatabaseHandler::get_star_dec(unsigned int star_id)   const    {
     if (star_id >= m_vector_dec.size()) {
-        throw std::string("Requested star ID exceeds the number of stars in the database.");
+        throw runtime_error("Requested star ID exceeds the number of stars in the database.");
     }
     return m_vector_dec[star_id];
 };
