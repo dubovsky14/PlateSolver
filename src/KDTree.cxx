@@ -68,13 +68,14 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
     vector<std::tuple<PointCoordinatesTuple, StarIndices> > result;
     result.reserve(indices.size());
     for (unsigned int index : indices)  {
+        const PointInKDTree point = get_point_in_tree(index);
         result.push_back (
             tuple<PointCoordinatesTuple, StarIndices>   (
-                PointCoordinatesTuple(  get_point_in_tree(index).m_coordinates[0],
-                                        get_point_in_tree(index).m_coordinates[1],
-                                        get_point_in_tree(index).m_coordinates[2],
-                                        get_point_in_tree(index).m_coordinates[3]),
-                get_point_in_tree(index).m_star_indices
+                PointCoordinatesTuple(  point.m_coordinates[0],
+                                        point.m_coordinates[1],
+                                        point.m_coordinates[2],
+                                        point.m_coordinates[3]),
+                point.m_star_indices
             )
         );
     }
@@ -84,6 +85,7 @@ vector<std::tuple<PointCoordinatesTuple, StarIndices> > KDTree::get_k_nearest_ne
 
 std::vector<unsigned int> KDTree::get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points)  {
     vector<tuple <unsigned int, float> > vector_index_distance; // indices of n_points nearest neighbors and their distances
+    vector_index_distance.reserve(n_points);
     map<unsigned int, char> visited_nodes;
 
     CoordinateDataType query_point_array[4];
