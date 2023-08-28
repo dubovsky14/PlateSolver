@@ -24,7 +24,7 @@ int main(int argc, const char **argv)   {
             std::stod(focal_length_string);
         }
         catch(...)  {
-            throw std::string("Focal length must be floating point number!");
+            throw runtime_error("Focal length must be floating point number!");
         }
 
         const string star_catalogue = argv[1];

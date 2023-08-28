@@ -63,13 +63,13 @@ int main(int argc, const char **argv)   {
 
         const bool output_file_exists = filesystem::exists(output_file);
         if (output_file_exists) {
-            throw std::string("Output file already exists!");
+            throw runtime_error("Output file already exists!");
         }
 
         for (const string &input_file : input_files) {
             const bool input_file_exists = filesystem::exists(input_file);
             if (!input_file_exists) {
-                throw std::string("Input file does not exist!");
+                throw runtime_error("Input file does not exist!");
             }
         }
 
