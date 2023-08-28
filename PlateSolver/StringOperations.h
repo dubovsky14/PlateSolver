@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <stdexcept>
 
 namespace PlateSolver {
 
@@ -33,7 +34,7 @@ namespace PlateSolver {
 
     template <class ResultType>
     ResultType ConvertStringTo(const std::string &input_string) {
-        throw std::string ("Requested type not implemented!");
+        throw std::runtime_error("Requested type not implemented!");
     };
 
     template <> inline
@@ -67,7 +68,7 @@ namespace PlateSolver {
         if      (input_upper == "TRUE")  return true;
         else if (input_upper == "FALSE") return false;
         else {
-            throw std::string("String \"" + input_string + "\" can't be converted to bool value!");
+            throw std::runtime_error("String \"" + input_string + "\" can't be converted to bool value!");
         }
     };
 
