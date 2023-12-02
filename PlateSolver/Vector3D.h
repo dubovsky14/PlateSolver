@@ -8,6 +8,8 @@ namespace PlateSolver   {
 
     class Vector3D  {
         public:
+            Vector3D() = default;
+
             // for cartesian (x,y,z), for spherical (r,theta from equator,phi)
             Vector3D(float x, float y, float z, CoordinateSystem coordinate_system = CoordinateSystem::enum_cartesian);
 
