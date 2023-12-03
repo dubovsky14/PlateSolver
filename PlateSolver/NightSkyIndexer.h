@@ -35,6 +35,9 @@ namespace PlateSolver   {
 
             void dump_hashes_to_outfile(const std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > &result);
 
+            unsigned long long int m_number_of_stars_in_fov_sum     = 0;
+            unsigned long long int m_number_of_stars_in_fov_counter = 0;
+            unsigned long long int m_number_of_pieces_with_at_least_4_stars = 0;
 
     };
 }

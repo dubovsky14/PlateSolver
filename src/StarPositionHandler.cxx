@@ -8,12 +8,12 @@ using namespace std;
 using namespace PlateSolver;
 
 StarPositionHandler::StarPositionHandler(unsigned int approximate_number_of_stars)   {
-    m_kd_tree = make_unique<KDTree_t<float, std::tuple<Vector3D, float, unsigned int>>>(3);
+    m_kd_tree = make_unique<KDTree_t<float, std::tuple<float, unsigned int>>>(3);
 };
 
 StarPositionHandler::StarPositionHandler(const StarDatabaseHandler &star_database_handler)   {
     const unsigned int number_of_stars = star_database_handler.get_number_of_stars();
-    m_kd_tree = make_unique<KDTree_t<float, std::tuple<Vector3D, float, unsigned int>>>(3);
+    m_kd_tree = make_unique<KDTree_t<float, std::tuple<float, unsigned int>>>(3);
     float RA, dec, mag;
     for (unsigned int i = 0; i < number_of_stars; i++)  {
         star_database_handler.get_star_info(i, &RA, &dec, &mag);
@@ -25,8 +25,7 @@ StarPositionHandler::StarPositionHandler(const StarDatabaseHandler &star_databas
 void StarPositionHandler::AddStar(float RA, float dec, float mag, unsigned int id)  {
     const Vector3D star_vector(1, dec*(M_PI/180), RA*(-M_PI/12), CoordinateSystem::enum_spherical);
     const float coordinates[3] = {star_vector.x(), star_vector.y(), star_vector.z()};
-    const tuple<Vector3D, float, unsigned int> star_info(
-        star_vector,
+    const tuple<float, unsigned int> star_info(
         mag,
         id
     );
@@ -48,9 +47,18 @@ std::vector<std::tuple<Vector3D, float, unsigned int> >  StarPositionHandler::ge
 
     std::vector<std::tuple<Vector3D, float, unsigned int> > result;
     for (long long int index : indices_kd_tree)   {
-        const KDTreeNode<float, std::tuple<Vector3D, float, unsigned int>> &node = m_kd_tree->get_node(index);
-        const tuple<Vector3D, float, unsigned int> &node_info = node.m_value;
-        result.push_back(node_info);
+        const KDTreeNode<float, std::tuple<float, unsigned int>> &node = m_kd_tree->get_node(index);
+        const tuple<float, unsigned int> &node_info = node.m_value;
+        const float mag = get<0>(node_info);
+        const unsigned int id = get<1>(node_info);
+        const vector<float> &coordinates = node.m_coordinates;
+        const Vector3D star_vector(coordinates[0], coordinates[1], coordinates[2], CoordinateSystem::enum_cartesian);
+        const tuple<Vector3D, float, unsigned int> star_info(
+            star_vector,
+            mag,
+            id
+        );
+        result.push_back(star_info);
     }
 
     if (sort_by_magnitude)  {

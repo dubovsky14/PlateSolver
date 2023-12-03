@@ -25,8 +25,8 @@ namespace PlateSolver   {
 
 
         private:
-            // query point are x,y,z coordinates on unite sphere, additional info is tuple of this Vector3D, magnitude and ID
-            std::unique_ptr<KDTree_t<float, std::tuple<Vector3D, float, unsigned int>>>  m_kd_tree = nullptr;
+            // query point are x,y,z coordinates on unite sphere, additional info is tuple of this magnitude and ID
+            std::unique_ptr<KDTree_t<float, std::tuple<float, unsigned int>>>  m_kd_tree = nullptr;
 
 
     };

@@ -50,6 +50,10 @@ void NightSkyIndexer::index_sky_region(  float RA, float dec, float angle,
 
     vector<tuple<Vector3D, float, unsigned int> >  stars_around = m_star_position_handler->get_stars_around_coordinates(RA, dec, angle, true);
 
+    m_number_of_stars_in_fov_sum += stars_around.size();
+    m_number_of_stars_in_fov_counter++;
+    m_number_of_pieces_with_at_least_4_stars += (stars_around.size() >= 4);
+
     vector<Vector3D> star_positions;
     star_positions.reserve(stars_around.size());
     for (const tuple<Vector3D, float, unsigned int> &star : stars_around)   {
@@ -119,6 +123,9 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     cout << "Creating index file, FOV = " << convert_to_deg_min_sec(FOV_angle*180/M_PI) << endl;
     const float step_size_in_FOVs = 0.3;
 
+    m_number_of_stars_in_fov_sum = 0;
+    m_number_of_stars_in_fov_counter = 0;
+    m_number_of_pieces_with_at_least_4_stars = 0;
 
     const auto time_start = chrono::high_resolution_clock::now();
     index_sky_region(0,90,FOV_angle, &result);
@@ -127,25 +134,18 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
         const float circumference = 2*M_PI*cos(declination*(M_PI/180));
         const int n_steps = circumference/(FOV_angle*step_size_in_FOVs);
         if (n_steps == 0)   continue;
-        cout << "declination : " << declination;
         const float RA_step_size = 24./n_steps;
         for (float right_ascension = 0; right_ascension < 24; right_ascension += RA_step_size)   {
             index_sky_region(right_ascension, declination,FOV_angle, &result);
         }
         const auto duration_from_start = chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now()-time_start);
         const float fraction_remaining = (sin(declination*M_PI/180)+1)/2;
-        if (fraction_remaining != 1)    {
-            cout << "\t\tcurrent duration = " << duration_from_start.count() << "\t\t";
-            const float time_to_end = duration_from_start.count()*fraction_remaining/(1-fraction_remaining);
-            const unsigned int hours   = time_to_end/3600;
-            const unsigned int minutes = (time_to_end - hours*3600)/60;
-            const unsigned int seconds = time_to_end - hours*3600 - minutes*60;
-            cout << "\t\testimated time to end: " << hours << ":" << minutes << ":" << seconds;
-        }
-        cout << endl;
     }
     dump_hashes_to_outfile(result);
     result.clear();
+
+    cout << "Average number of stars in FOV: " << m_number_of_stars_in_fov_sum/double(m_number_of_stars_in_fov_counter) << endl;
+    cout << "Fraction of pieces with at least 4 stars: " << m_number_of_pieces_with_at_least_4_stars/double(m_number_of_stars_in_fov_counter) << endl;
 };
 
 void NightSkyIndexer::dump_hashes_to_outfile(const std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > &result) {
