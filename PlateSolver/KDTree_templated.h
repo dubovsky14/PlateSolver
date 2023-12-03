@@ -5,11 +5,110 @@
 #include <algorithm>
 #include <tuple>
 #include <cmath>
+#include <fstream>
+#include <memory>
 
 namespace PlateSolver   {
+
+    template<typename CoordinateType, typename ValueType>
+    class KDTreeNode;
+
+    template<typename CoordinateType, typename ValueType>
+    class KDTree_t;
+
     inline double pow2(const double x) {
         return x*x;
     }
+
+
+    template<typename CoordinateType, typename ValueType>
+    class KDTreeStorageHandler  {
+        public:
+            KDTreeStorageHandler(const std::string &file_address)   {
+                m_file = std::make_unique<std::ifstream>(file_address, std::ios::binary | std::ios::out);
+                read_header();
+            };
+
+            KDTreeNode<CoordinateType, ValueType> get_node(const long long int node_index) const    {
+                if (node_index < 0 || node_index >= m_n_nodes) {
+                    throw std::runtime_error("KDTreeStorageHandler::get_node: node_index out of range.");
+                }
+
+                m_file->seekg(m_header_size + node_index * m_node_size);
+                KDTreeNode<CoordinateType, ValueType> node(m_n_dim);
+                m_file->read(reinterpret_cast<char *>(node.m_coordinates.data()), m_n_dim * sizeof(CoordinateType));
+                m_file->read(reinterpret_cast<char *>(&node.m_value), sizeof(ValueType));
+                m_file->read(reinterpret_cast<char *>(&node.m_split_axis), sizeof(int));
+                m_file->read(reinterpret_cast<char *>(&node.m_left), sizeof(long long int));
+                m_file->read(reinterpret_cast<char *>(&node.m_right), sizeof(long long int));
+
+                return node;
+            };
+
+            std::vector<KDTreeNode<CoordinateType, ValueType>> get_nodes() const    {
+                std::vector<KDTreeNode<CoordinateType, ValueType>> nodes;
+                nodes.reserve(m_n_nodes);
+                for (long long int i_node = 0; i_node < m_n_nodes; ++i_node)  {
+                    nodes.push_back(get_node(i_node));
+                }
+                return nodes;
+            };
+
+            long long int get_n_nodes() const   {
+                return m_n_nodes;
+            };
+
+            long long int get_root_node_index() const   {
+                return m_root_node_index;
+            };
+
+            static void save_tree(const std::string &file_address, const KDTree_t<CoordinateType, ValueType> &kd_tree)   {
+                const auto &nodes = kd_tree.get_nodes();
+                const long long int n_nodes = nodes.size();
+                if (n_nodes == 0)   {
+                    throw std::runtime_error("KDTreeStorageHandler::save_tree: no nodes in the tree.");
+                }
+
+                const int n_dim = nodes[0].m_coordinates.size();
+                const size_t header_size = sizeof(m_header_size) + sizeof(m_n_dim) + sizeof(m_node_size) + sizeof(m_n_nodes) + sizeof(m_root_node_index);
+                const size_t node_size = n_dim * sizeof(CoordinateType) + sizeof(ValueType) + sizeof(nodes[0].m_split_axis) + 2 * sizeof(nodes[0].m_left);
+                const long long int root_node_index = kd_tree.get_root_node_index();
+
+                std::ofstream file(file_address, std::ios::binary | std::ios::out);
+                file.write(reinterpret_cast<const char *>(&header_size), sizeof(m_header_size));
+                file.write(reinterpret_cast<const char *>(&n_dim), sizeof(m_n_dim));
+                file.write(reinterpret_cast<const char *>(&node_size), sizeof(m_node_size));
+                file.write(reinterpret_cast<const char *>(&n_nodes), sizeof(m_n_nodes));
+                file.write(reinterpret_cast<const char *>(&root_node_index), sizeof(m_root_node_index));
+
+                for (const auto &node : nodes)  {
+                    file.write(reinterpret_cast<const char *>(node.m_coordinates.data()), n_dim * sizeof(CoordinateType));
+                    file.write(reinterpret_cast<const char *>(&node.m_value),       sizeof(ValueType));
+                    file.write(reinterpret_cast<const char *>(&node.m_split_axis),  sizeof(node.m_split_axis));
+                    file.write(reinterpret_cast<const char *>(&node.m_left),        sizeof(node.m_left));
+                    file.write(reinterpret_cast<const char *>(&node.m_right),       sizeof(node.m_right));
+                }
+            };
+
+        private:
+            void read_header()  {
+                m_file->read(reinterpret_cast<char *>(&m_header_size), sizeof(m_header_size));
+                m_file->read(reinterpret_cast<char *>(&m_n_dim), sizeof(m_n_dim));
+                m_file->read(reinterpret_cast<char *>(&m_node_size), sizeof(m_node_size));
+                m_file->read(reinterpret_cast<char *>(&m_n_nodes), sizeof(m_n_nodes));
+                m_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));
+            };
+
+            std::unique_ptr<std::ifstream> m_file = nullptr;
+
+            size_t          m_header_size   = 0;
+            int             m_n_dim         = 0;
+            size_t          m_node_size     = 0;
+            long long int   m_n_nodes       = 0;
+            long long int   m_root_node_index = -1;
+
+    };
+
 
     template<typename CoordinateType, typename ValueType>
     class KDTreeNode {
@@ -52,6 +151,13 @@ namespace PlateSolver   {
                 return m_nodes.size();
             };
 
+            /**
+             * @brief Get index of the root node
+             *
+             */
+            long long int get_root_node_index() const {
+                return m_root_node_index;
+            }
 
             /**
              * @brief Get const reference to the vector of nodes
