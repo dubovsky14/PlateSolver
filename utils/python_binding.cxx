@@ -72,9 +72,9 @@ static PyObject *plateSolving_wrapper(PyObject *self, PyObject *args) {
         const string hash_file(char_hash_file);
         const string photo_address(char_photo);
 
-        PlateSolverTool plate_solver_tool(hash_file, star_catalogue);
+        PlateSolverTool plate_solver_tool(star_catalogue);
 
-        const tuple<float, float, float, float, float> result = plate_solver_tool.plate_solve(photo_address);
+        const tuple<float, float, float, float, float> result = plate_solver_tool.plate_solve(photo_address, hash_file);
         const float RA = get<0>(result);
         const float dec = get<1>(result);
         const float rot = (180 / M_PI) * get<2>(result);
@@ -120,13 +120,13 @@ static PyObject *plate_solve_and_annotate_wrapper(PyObject *self, PyObject *args
         const string other_catalogues_folder(char_other_catalogues_folder);
         const string photo_output(char_photo_output);
 
-        PlateSolverTool plate_solver_tool(hash_file, star_catalogue_numbers);
+        PlateSolverTool plate_solver_tool(star_catalogue_numbers);
 
         Logger::log_message(bench_mark("Going to read the photo."));
         cv::Mat photo = cv::imread(photo_input_address);
         Logger::log_message(bench_mark("Photo loaded."));
 
-        const tuple<float, float, float, float, float> result = plate_solver_tool.plate_solve(photo);
+        const tuple<float, float, float, float, float> result = plate_solver_tool.plate_solve(photo, hash_file);
         const float RA = get<0>(result);
         const float dec = get<1>(result);
         const float rot = (180 / M_PI) * get<2>(result);

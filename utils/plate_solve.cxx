@@ -22,9 +22,9 @@ int main(int argc, const char **argv)   {
         const string star_catalogue = argv[2];
         const string photo_address  = argv[3];
 
-        PlateSolverTool plate_solver_tool(hash_file, star_catalogue);
+        PlateSolverTool plate_solver_tool(star_catalogue);
 
-        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(photo_address);
+        const tuple<float,float,float,float,float> result = plate_solver_tool.plate_solve(photo_address, hash_file);
         const float RA      = get<0>(result);
         const float dec     = get<1>(result);
         const float rot     = (180/M_PI)*get<2>(result);

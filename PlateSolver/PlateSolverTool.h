@@ -24,26 +24,35 @@ namespace   PlateSolver {
             /**
              * @brief Construct a new Plate Solver Tool object
              *
-             * @param hash_file address of the file with asterism hashes: 3 types are supported: .txt (.csv), .bin or .kdtree
              * @param stars_catalogue address of the star catalogue - either .csv or .bin file
              */
-            PlateSolverTool(const std::string &hash_file, const std::string &stars_catalogue);
+            PlateSolverTool(const std::string &stars_catalogue);
+
+
+            /**
+             * @brief Set the hash file object
+             *
+             * @param hash_file address of the file with asterism hashes: 3 types are supported: .txt (.csv), .bin or .kdtree
+            */
+            void set_hash_file(const std::string &hash_file);
 
             /**
              * @brief Calculate celestial coordinates of the center of the photo
              *
              * @param jpg_file - address of the jpg file to plate solve
+             * @param hash_file address of the file with asterism hashes: 3 types are supported: .txt (.csv), .bin or .kdtree
              * @return std::tuple<float,float,float,float,float> :[RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]
              */
-            std::tuple<float,float,float,float,float> plate_solve(const std::string &jpg_file);
+            std::tuple<float,float,float,float,float> plate_solve(const std::string &jpg_file, const std::string &hash_file);
 
             /**
              * @brief Calculate celestial coordinates of the center of the photo
              *
              * @param photo - gray scale image as cv::Mat object
+             * @param hash_file address of the file with asterism hashes: 3 types are supported: .txt (.csv), .bin or .kdtree
              * @return std::tuple<float,float,float,float,float> :[RA, dec, rotation (zero means upwards is towards the north celestial pole), width in radians, height in radians]
              */
-            std::tuple<float,float,float,float,float> plate_solve(const cv::Mat &photo);
+            std::tuple<float,float,float,float,float> plate_solve(const cv::Mat &photo, const std::string &hash_file);
 
             /**
              * @brief Get coordinates of the picture if the hypothesis is correct
@@ -88,6 +97,7 @@ namespace   PlateSolver {
 
 
             static float calculate_dist2(const std::tuple<float,float,float> &star1, const std::tuple<float,float,float> &star2);
+
         private:
 
             std::unique_ptr<StarDatabaseHandler>    m_star_database_handler = nullptr;
