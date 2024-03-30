@@ -63,8 +63,9 @@ int main(int argc, const char **argv)   {
         ofstream output_file_numbers(output_binary_address_numbers,std::ios::binary | std::ios::out);
         shared_ptr<ofstream> output_file_names = (output_binary_address_names.length()) ? make_shared<ofstream>(output_binary_address_names,std::ios::binary | std::ios::out) : nullptr;
         const unsigned int longest_name_length = output_file_names ? get_longest_name_length(csv_file_address) : 0;
-        output_file_names->write(reinterpret_cast<const char *>(&longest_name_length), sizeof(longest_name_length));
-
+        if (output_binary_address_names)    {
+            output_file_names->write(reinterpret_cast<const char *>(&longest_name_length), sizeof(longest_name_length));
+        }
         if (input_file.is_open())    {
             while ( getline (input_file,line) )        {
                 StripString(&line);
