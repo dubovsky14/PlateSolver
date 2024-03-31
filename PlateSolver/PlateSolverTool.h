@@ -30,6 +30,14 @@ namespace   PlateSolver {
 
 
             /**
+             * @brief Construct a new Plate Solver Tool object
+             *
+             * @param star_database_handler - shared pointer to the star database handler
+             * @param star_position_handler - shared pointer to the star position handler
+             */
+            PlateSolverTool(std::shared_ptr<StarDatabaseHandler> star_database_handler, std::shared_ptr<StarPositionHandler> star_position_handler);
+
+            /**
              * @brief Set the hash file object
              *
              * @param hash_file address of the file with asterism hashes: 3 types are supported: .txt (.csv), .bin or .kdtree
@@ -100,9 +108,9 @@ namespace   PlateSolver {
 
         private:
 
-            std::unique_ptr<StarDatabaseHandler>    m_star_database_handler = nullptr;
-            std::unique_ptr<HashFinder>             m_hash_finder           = nullptr;
+            std::shared_ptr<StarDatabaseHandler>    m_star_database_handler = nullptr;
             std::shared_ptr<StarPositionHandler>    m_star_position_handler = nullptr;
+            std::unique_ptr<HashFinder>             m_hash_finder           = nullptr;
             std::unique_ptr<NightSkyIndexer>        m_night_sky_indexer     = nullptr;
 
 

@@ -20,16 +20,17 @@ PhotoAnnotator::PhotoAnnotator( const std::string &star_catalogue_file_numbers,
                                 const std::string &other_catalogues_folder) {
 
     if (star_catalogue_file_names.length() != 0)    {
-        m_star_database_handler = make_unique<StarDatabaseHandler>(star_catalogue_file_numbers, star_catalogue_file_names);
+        m_star_database_handler = make_shared<StarDatabaseHandler>(star_catalogue_file_numbers, star_catalogue_file_names);
     }
     else {
-        m_star_database_handler = make_unique<StarDatabaseHandler>(star_catalogue_file_numbers);
+        m_star_database_handler = make_shared<StarDatabaseHandler>(star_catalogue_file_numbers);
     }
+
+    m_star_position_handler = make_shared<StarPositionHandler>(*m_star_database_handler);
 
     for (const auto & entry : filesystem::directory_iterator(other_catalogues_folder)) {
         m_deep_sky_objects_databases.push_back(make_unique<StarDatabaseHandler>(entry.path()));
     }
-
 };
 
 void PhotoAnnotator::annotate_photo(const std::string &input_photo_address, const std::string &output_photo_address,
@@ -52,6 +53,6 @@ void PhotoAnnotator::annotate_photo(const cv::Mat &input_photo, const std::strin
         description_adder.add_star_description(*deep_sky_database, 8);
     }
 
-    description_adder.add_star_description(*m_star_database_handler, 8);
+    description_adder.add_star_description(*m_star_database_handler, *m_star_position_handler, 8);
     description_adder.save_image(output_photo_address);
 };

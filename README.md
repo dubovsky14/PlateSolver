@@ -68,7 +68,7 @@ to be able to read it faster. When running on laptops it's usually not a big iss
 ./bin/convert_catalogue_csv_to_bin data/catalogue.csv data/catalogue.bin
 ```
 
-Once you have the csv file with the stars positions, you can produce hash files. This process can take up to few hours, depending on the focal length:
+Once you have the csv file with the stars positions, you can produce hash files. This process can take few minutes, depending on the focal length:
 
 ```
 ./bin/create_hash_file <path to the csv file with stars info> <focal length in mm> <output file with the hashes>
