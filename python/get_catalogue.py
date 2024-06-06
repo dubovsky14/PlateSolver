@@ -7,11 +7,13 @@ from hypatie.simbad import object_type, sql2df
 from sys import argv
 
 if __name__ == "__main__":
-    if (len(argv) != 2):
-        print("The script requires exactly one input argument: The address of the output csv file!")
+    if not (len(argv) in [2,3]):
+        print("The script requires one or two input arguments: \n1) the address of the output csv file (mandatory) \n2) the maximum magnitude (optional)")
         exit(1)
 
-    max_magnitude = 14
+    max_magnitude = 10
+    if len(argv) == 3:
+        max_magnitude = float(argv[2])
     counter = 0
 
     interval_min, interval_max = -2,7
