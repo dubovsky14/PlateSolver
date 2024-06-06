@@ -57,16 +57,23 @@ Now you will need to produce the csv file with the positions of the stars.
 The following command will produce that file, downloading stars from SIMBAD database (internet connection is needed to run the script).
 
 ```
-python3 python/get_catalogue.py <address of the csv file you would like to produce>
+python3 python/get_catalogue.py <address of the csv file you would like to produce> <the maximal star magnitude>
 
 ```
+
+where the 2nd argument is optional (default is 11.0). It should be sufficient for plate solving up to 1200 mm of focal length.
+If you plan to plate-solve photos at higher focal length, please use higher magnitude, to get more stars in your catalogue.
+The script can run a few minutes (depending on the chosen maximum magnitude -> for higher magnitutes it will have to download more data).
+
 
 If you plan to run the app on Raspberry Pi, or another device with slower CPU, memory and disk, you can convert the csv file to binary file,
 to be able to read it faster. When running on laptops it's usually not a big issue:
 
 ```
-./bin/convert_catalogue_csv_to_bin data/catalogue.csv data/catalogue.bin
+./bin/convert_catalogue_csv_to_bin data/catalogue.csv data/catalogue.bin data/catalogue_names.bin
 ```
+
+where the last argument is optional. It is the address of the binary file with star names - this will be used to anotate your photos.
 
 Once you have the csv file with the stars positions, you can produce hash files. This process can take few minutes, depending on the focal length:
 
@@ -77,6 +84,8 @@ Once you have the csv file with the stars positions, you can produce hash files.
 The focal length should approximately match effective focal length of the photos that you would like to plate solve.
 Deviation up to 50% is usually fine, but larger deviations can lead to failures in the plate-solving.
 The extension of the hash file must be ```.kdtree```.
+At the end, the script prints out what was the fraction of the night sky with at least 4 stars. This is the fraction of night sky that you will be able to plate-solve.
+If the fraction is low, please rerun ```python/get_catalogue.py``` scritp for a higher magnitude to get more stars.
 
 
 How to plate-solve your photo using terminal:
@@ -102,7 +111,7 @@ The framework also contains a graphical user interface for running the tool as a
 ```
 cd gui
 
-uwsgi --http-socket :9090 --wsgi-file run_localhost.py --master
+uwsgi --http-socket :9090 --plugin python3 --wsgi-file run_localhost.py --master
 ```
 
 Side note: in order to be able to use the GUI, your csv file with positions of the stars, and your hash files have to be in the ```data``` folder. The name of the star csv file must be ```catalogue.csv``` and your index files must have the extension ```.kdtree```.

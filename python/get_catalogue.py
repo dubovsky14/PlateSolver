@@ -11,7 +11,7 @@ if __name__ == "__main__":
         print("The script requires one or two input arguments: \n1) the address of the output csv file (mandatory) \n2) the maximum magnitude (optional)")
         exit(1)
 
-    max_magnitude = 10
+    max_magnitude = 11
     if len(argv) == 3:
         max_magnitude = float(argv[2])
     counter = 0

@@ -144,8 +144,13 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     dump_hashes_to_outfile(result);
     result.clear();
 
+    const double fraction_less_then_4_stars = 1 - m_number_of_pieces_with_at_least_4_stars/double(m_number_of_stars_in_fov_counter);
+
     cout << "Average number of stars in FOV: " << m_number_of_stars_in_fov_sum/double(m_number_of_stars_in_fov_counter) << endl;
-    cout << "Fraction of pieces with at least 4 stars: " << m_number_of_pieces_with_at_least_4_stars/double(m_number_of_stars_in_fov_counter) << endl;
+    cout << "Fraction of pieces with at least 4 stars: " << fraction_less_then_4_stars << endl;
+    if (fraction_less_then_4_stars < 0.99)  {
+        cout << "WARNING: The fraction of pieces with at least 4 stars is less than 0.99. For some photos you might not be to plate solve. Please consider reruninning get_catalogue.py script for higher star magnitude to get more stars in catalogue!\n";
+    }
 };
 
 void NightSkyIndexer::dump_hashes_to_outfile(const std::map<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>, std::tuple<float,float,float,float> > &result) {
