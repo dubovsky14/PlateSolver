@@ -27,7 +27,7 @@ Checking out and compiling the code
 -----------------------------------
 
 ```
-    git clone git@github.com:dubovsky14/PlateSolver.git
+    git clone https://github.com/dubovsky14/PlateSolver.git
 
     cd PlateSolver
 
