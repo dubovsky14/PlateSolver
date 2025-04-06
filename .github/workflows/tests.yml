@@ -18,7 +18,7 @@ jobs:
               cmake ../.
               make
         name: upload_artifact
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: artifact-linux-build
           path: |
@@ -38,7 +38,7 @@ jobs:
       - run: |
             mkdir bin
             sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact-linux-build
           path: bin/.
@@ -61,7 +61,7 @@ jobs:
       - run: |
             mkdir bin
             sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact-linux-build
           path: bin/.
