@@ -139,7 +139,6 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
             index_sky_region(right_ascension, declination,FOV_angle, &result);
         }
         const auto duration_from_start = chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now()-time_start);
-        const float fraction_remaining = (sin(declination*M_PI/180)+1)/2;
     }
     dump_hashes_to_outfile(result);
     result.clear();

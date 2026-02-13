@@ -69,44 +69,112 @@ float   StarFinder::get_threshold(float part)   const   {
     return 0;
 };
 
-std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::get_clusters(float threshold)   const  {
-    vector< vector<tuple<unsigned int, unsigned int> > >  result;
-    map<tuple<unsigned int, unsigned int>, char> visited_pixels;
 
-    vector<tuple<unsigned int, unsigned int> >  this_cluster;
+std::vector< std::vector<std::tuple<unsigned int, unsigned int> > > StarFinder::get_clusters(float threshold)  const {
+    std::vector<int> cluster_indices(m_width*m_height, -1);
+    unsigned int n_clusters = 0;
+    std::map<int, int> cluster_index_mapping;
+
+    // The problem is that given pixel might not any top or left neighbor from known cluster, but as you go through the line, you might find a pixel with a neighboring cluster - we will take care of merging later
+    auto add_cluster_mapping = [&cluster_index_mapping] (int from, int to) -> void {
+        if (from < to) std::swap(from, to);
+        if (cluster_index_mapping.find(from) != cluster_index_mapping.end())    {
+            const int previosly_mapped_to = cluster_index_mapping[from];
+            if (previosly_mapped_to > to) {
+                cluster_index_mapping[from] = to;
+            }
+        }
+        else {
+            cluster_index_mapping[from] = to;
+        }
+    };
+
+    auto get_cluster_index = [&cluster_indices, &n_clusters, this, &add_cluster_mapping] (unsigned int x, unsigned int y) -> int {
+        int result = -1;
+        // check pixel on the left
+        if (x > 0) {
+            if (cluster_indices[y*m_width + x-1] != -1) {
+                result = cluster_indices[y*m_width + x-1];
+            }
+        }
+
+        // check pixels on the top
+        if (y > 0) {
+            if (x > 0) {
+                const int cluster_index = cluster_indices[(y-1)*m_width + x-1];
+                if (cluster_index != -1) {
+                    if (result != -1){
+                        add_cluster_mapping(result, cluster_index);
+                    }
+                    result = result < 0 ? cluster_index : std::min(result, cluster_index);
+                }
+            }
+            if (cluster_indices[(y-1)*m_width + x] != -1) {
+                const int cluster_index = cluster_indices[(y-1)*m_width + x];
+                if (result != -1) {
+                    add_cluster_mapping(result, cluster_index);
+                }
+                    result = result < 0 ? cluster_index : std::min(result, cluster_index);
+            }
+            if (x < (m_width - 1)) {
+                const int cluster_index = cluster_indices[(y-1)*m_width + x+1];
+                if (cluster_index != -1) {
+                    if (result != -1) {
+                        add_cluster_mapping(result, cluster_index);
+                    }
+                    result = result < 0 ? cluster_index : std::min(result, cluster_index);
+                }
+            }
+        }
+
+        if (result != -1)   return result;
+
+        // no neighboring pixels belong to a cluster, create a new cluster
+        return n_clusters++;
+    };
+
     for (unsigned int y_pos = 0; y_pos < m_height; y_pos++)    {
         for (unsigned int x_pos = 0; x_pos < m_width; x_pos++)    {
-            fill_cluster(x_pos, y_pos, &this_cluster, threshold, &visited_pixels);
-            if (this_cluster.size())    {
-                result.push_back(this_cluster);
-                this_cluster.clear();
+            if (read_pixel(x_pos, y_pos) < threshold)   continue;
+
+            const int index = get_cluster_index(x_pos, y_pos);
+            cluster_indices[y_pos*m_width + x_pos] = index;
+        }
+    }
+
+
+    // calculate final mapping of cluster indices
+    for (unsigned int i = 0; i < n_clusters; i++)    {
+        if (cluster_index_mapping.find(i) != cluster_index_mapping.end())    {
+            int mapped_to = cluster_index_mapping[i];
+            while (cluster_index_mapping.find(mapped_to) != cluster_index_mapping.end())    {
+                if (mapped_to == cluster_index_mapping[mapped_to] || mapped_to < cluster_index_mapping[mapped_to]) {
+                    break;
+                }
+                mapped_to = cluster_index_mapping[mapped_to];
+            }
+            cluster_index_mapping[i] = mapped_to;
+        }
+        else {
+            cluster_index_mapping[i] = i;
+        }
+    }
+
+    std::vector< std::vector<std::tuple<unsigned int, unsigned int> > >  result(n_clusters);
+    for (unsigned int y_pos = 0; y_pos < m_height; y_pos++)    {
+        for (unsigned int x_pos = 0; x_pos < m_width; x_pos++)    {
+            if (cluster_indices[y_pos*m_width + x_pos] != -1) {
+                const int mapped_to = cluster_index_mapping[cluster_indices[y_pos*m_width + x_pos]];
+                result[mapped_to].push_back(std::make_tuple(x_pos, y_pos));
             }
         }
     }
+
+    std::sort(result.begin(), result.end(), [](const std::vector<std::tuple<unsigned int, unsigned int> > &a, const std::vector<std::tuple<unsigned int, unsigned int> > &b) {
+        return a.size() > b.size();
+    });
+
     return result;
-};
-
-void StarFinder::fill_cluster(  unsigned int x_pos, unsigned int y_pos,
-                    std::vector<std::tuple<unsigned int, unsigned int> > *current_cluster,
-                    float threshold, std::map<std::tuple<unsigned int, unsigned int>, char> *visited_pixels)    const {
-    if (read_pixel(x_pos, y_pos) < threshold)   return;
-
-    tuple<unsigned int, unsigned int> this_pixel(x_pos,y_pos);
-    if (visited_pixels->find(this_pixel) != visited_pixels->end())    {
-        return;
-    }
-    (*visited_pixels)[this_pixel] = 0;
-    current_cluster->push_back(this_pixel);
-    for (int y_shift = -1; y_shift <= 1; y_shift++) {
-        int y_pos_new = y_pos + y_shift;
-        if (y_pos_new < 0 || (unsigned int) y_pos_new >= m_height) continue;
-        for (int x_shift = -1; x_shift <= 1; x_shift++) {
-            int x_pos_new = x_pos + x_shift;
-            if (x_pos_new < 0 || (unsigned int) x_pos_new >= m_width) continue;
-            if (x_shift == 0 && y_shift ==0)    continue;
-            fill_cluster(x_pos_new, y_pos_new, current_cluster, threshold, visited_pixels);
-        }
-    }
 };
 
 void StarFinder::calculate_center_of_cluster(   float  *x_pos, float  *y_pos,
