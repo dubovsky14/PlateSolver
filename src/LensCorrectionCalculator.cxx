@@ -68,7 +68,7 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     });
     for (int i = 0; i < m_n_coefficients; ++i) {
         coefficients.push_back(0.0);
-        limits.push_back({-0.1f, 0.1f});
+        limits.push_back({-0.1*pow(10, -2*i), 0.1*pow(10, -2*i)});
     }
 
     auto coef_vector_to_lens_correction = [sensor_half_diagonal_squared](const double *coefficients, size_t n_coefficients) -> LensCorrectionCoefficients {
@@ -93,7 +93,7 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     Fitter<double> fitter(&coefficients, limits);
     fitter.set_debug(true);
     fitter.set_gradient_step(0.0001);
-    fitter.fit_gradient(loss_function, 0.00001, 0.99, 1000);
+    fitter.fit_gradient(loss_function, 0.01, 0.99, 1000);
 
     LensCorrectionCoefficients result;
     result.c_x = coefficients[0];
