@@ -45,13 +45,18 @@ void DescriptionAdder::add_star_description_pixel_coor(int xpos, int ypos, const
     m_coordinates_of_added_descriptions.push_back(tuple<float,float>(xpos_text,ypos_text));
 
 
-    putText(*m_image, //target image
-            label, //text
-            cv::Point(xpos_text, ypos_text), //top-left position
-            cv::FONT_HERSHEY_DUPLEX,
-            m_font_size,
-            CV_RGB(118, 185, 0), //font color
-            2);
+    //putText(*m_image, //target image
+    //        label, //text
+    //        cv::Point(xpos_text, ypos_text), //top-left position
+    //        cv::FONT_HERSHEY_DUPLEX,
+    //        m_font_size,
+    //        CV_RGB(118, 185, 0), //font color
+    //        2);
+
+    // circle around that point
+    cv::circle(*m_image, cv::Point(xpos, -ypos), 6, CV_RGB(128, 0, 0), 1);
+    //cv::circle(*m_image, cv::Point(xpos_text, ypos_text), 50, CV_RGB(128, 0, 0),-1);
+
 };
 
 void DescriptionAdder::add_star_description_ra_dec(float ra, float dec, const std::string &label) {

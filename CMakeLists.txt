@@ -27,6 +27,10 @@ add_executable(plate_solve "utils/plate_solve.cxx")
 add_dependencies(plate_solve PlateSolver)
 target_link_libraries(plate_solve PlateSolver ${OpenCV_LIBS})
 
+add_executable(calculate_lens_corrections "utils/calculate_lens_corrections.cxx")
+add_dependencies(calculate_lens_corrections PlateSolver)
+target_link_libraries(calculate_lens_corrections PlateSolver ${OpenCV_LIBS})
+
 add_executable(convert_catalogue_csv_to_bin "utils/convert_catalogue_csv_to_bin.cxx")
 add_dependencies(convert_catalogue_csv_to_bin PlateSolver)
 target_link_libraries(convert_catalogue_csv_to_bin PlateSolver ${OpenCV_LIBS})

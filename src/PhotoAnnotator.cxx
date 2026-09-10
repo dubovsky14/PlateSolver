@@ -49,10 +49,11 @@ void PhotoAnnotator::annotate_photo(const cv::Mat &input_photo, const std::strin
 
     DescriptionAdder description_adder(&resized_image, RA, dec, rot, angular_width);
 
-    for (const auto &deep_sky_database : m_deep_sky_objects_databases)  {
-        description_adder.add_star_description(*deep_sky_database, 8);
-    }
+    description_adder.add_star_description(*m_star_database_handler, *m_star_position_handler, 20);
 
-    description_adder.add_star_description(*m_star_database_handler, *m_star_position_handler, 8);
+    //for (const auto &deep_sky_database : m_deep_sky_objects_databases)  {
+    //    description_adder.add_star_description(*deep_sky_database, 8);
+    //}
+
     description_adder.save_image(output_photo_address);
 };

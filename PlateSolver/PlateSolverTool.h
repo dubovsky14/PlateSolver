@@ -6,6 +6,7 @@
 #include "../PlateSolver/NightSkyIndexer.h"
 #include "../PlateSolver/StarPositionHandler.h"
 #include "../PlateSolver/StarFinder.h"
+#include "../PlateSolver/CommonClasses.h"
 
 
 #include<vector>
@@ -102,6 +103,24 @@ namespace   PlateSolver {
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,float> > &stars_from_photo,
                                         const std::tuple<float,float,float,float,float> &hypothesis_coordinates,
                                         float image_width_pixels, float image_height_pixels);
+
+
+            /**
+             * @brief Return vector of paired stars
+             *
+             * @param stars_from_photo pixel coordinates and magnitudes of the stars from the photo
+             * @param hypothesis_coordinates [RA, dec, rotation, width in radians, height in radians]
+             * @param image_width_pixels
+             * @param image_height_pixels
+             * @param tolerance_relative - relative tolerance for pairing stars, 1 = image width
+             * @return vector of paired stars
+             */
+            std::vector<std::pair<StarFromPhoto, StarFromDatabasePixelCoordinates> > get_paired_stars(
+                                        const std::vector<std::tuple<float,float,float> > &stars_from_photo,
+                                        const std::tuple<float,float,float,float,float> &hypothesis_coordinates,
+                                        float image_width_pixels, float image_height_pixels,
+                                        float tolerance_relative = 0.01) const;
+
 
 
             static float calculate_dist2(const std::tuple<float,float,float> &star1, const std::tuple<float,float,float> &star2);

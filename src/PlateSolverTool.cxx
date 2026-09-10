@@ -189,6 +189,84 @@ bool PlateSolverTool::validate_hypothesis(  const std::vector<std::tuple<float,f
     return n_stars_truth_paired > 0.6*n_stars_photo;
 };
 
+std::vector<std::pair<StarFromPhoto, StarFromDatabasePixelCoordinates>> PlateSolverTool::get_paired_stars(
+                            const std::vector<std::tuple<float,float,float> > &stars_from_photo,
+                            const std::tuple<float,float,float,float,float> &hypothesis_coordinates,
+                            float image_width_pixels, float image_height_pixels, float tolerance_relative) const    {
+
+    const float hypothesis_RA       = get<0>(hypothesis_coordinates);
+    const float hypothesis_dec      = get<1>(hypothesis_coordinates);
+    const float hypothesis_rot      = get<2>(hypothesis_coordinates);
+    const float hypothesis_im_width = get<3>(hypothesis_coordinates);
+    const float hypothesis_im_height= get<4>(hypothesis_coordinates);
+    const float radians_per_pixel   = hypothesis_im_height/image_height_pixels;
+
+    // maximal allowed distance in pixels between the position of the star (from database) and the position from photo to be considered as "matched"
+    const float maximal_allowed_deviation2 = pow2(tolerance_relative*image_width_pixels);
+
+    RaDecToPixelCoordinatesConvertor ra_dec_to_pixel( hypothesis_RA, hypothesis_dec, -hypothesis_rot,
+                                                                radians_per_pixel, image_width_pixels, image_height_pixels);
+
+
+    // get the stars that we should see in circle around the center of the image, with the radius hypothesis_im_height/2
+    const auto stars_from_database = m_star_position_handler->get_stars_around_coordinates( hypothesis_RA,
+                                                                                            hypothesis_dec,
+                                                                                            0.5*vec_size(hypothesis_im_width,hypothesis_im_height),
+                                                                                            true);
+
+    // firstly convert RA,dec to pixel coordinates and keep only those with coordinates inside the sensor
+    vector<tuple<float,float,float> > brightest_stars_from_database_pixel_coordinates;
+    brightest_stars_from_database_pixel_coordinates.reserve(stars_from_database.size());
+    for (const tuple<Vector3D, float, unsigned int> &star : stars_from_database) {
+        const tuple<float,float> pixel_coor = ra_dec_to_pixel.convert_to_pixel_coordinates(get<0>(star), ZeroZeroPoint::upper_left);
+        const float pos_x = get<0>(pixel_coor);
+        const float pos_y = get<1>(pixel_coor);
+
+        // skip stars outside of the sensor
+        if (pos_x < 0 || pos_x > image_width_pixels || pos_y > 0 || -pos_y > image_height_pixels) continue;
+
+        const float magnitude = get<1>(star);
+        brightest_stars_from_database_pixel_coordinates.push_back(tuple<float,float,float>(pos_x, pos_y, magnitude));
+    }
+
+    const unsigned int n_stars_photo = stars_from_photo.size();
+    const unsigned int n_stars_truth_to_keep = std::min<unsigned int>(n_stars_photo*1.3, brightest_stars_from_database_pixel_coordinates.size());
+
+    if (brightest_stars_from_database_pixel_coordinates.size() > n_stars_truth_to_keep)   {
+        brightest_stars_from_database_pixel_coordinates.resize(n_stars_truth_to_keep);
+    }
+
+    std::vector<std::pair<StarFromPhoto, StarFromDatabasePixelCoordinates>> result;
+    for (const tuple<float,float,float> &star_photo : stars_from_photo)  {
+        float minimal_distance_squared = std::numeric_limits<float>::max();
+        size_t closest_star_index = 0;
+        for (unsigned int i_star_truth = 0; i_star_truth < brightest_stars_from_database_pixel_coordinates.size(); i_star_truth++)  {
+            const auto &star_truth = brightest_stars_from_database_pixel_coordinates[i_star_truth];
+            const float dist2 = calculate_dist2(star_truth, star_photo);
+            if (dist2 < maximal_allowed_deviation2 && dist2 < minimal_distance_squared)   {
+                minimal_distance_squared = dist2;
+                closest_star_index = i_star_truth;
+            }
+        }
+        if (minimal_distance_squared < maximal_allowed_deviation2) {
+            StarFromPhoto star_from_photo;
+            star_from_photo.x = get<0>(star_photo);
+            star_from_photo.y = get<1>(star_photo);
+            star_from_photo.n_pixels = get<2>(star_photo);
+
+            StarFromDatabasePixelCoordinates star_from_database_pixel_coordinates;
+            const auto &closest_star = brightest_stars_from_database_pixel_coordinates[closest_star_index];
+            star_from_database_pixel_coordinates.x = get<0>(closest_star);
+            star_from_database_pixel_coordinates.y = get<1>(closest_star);
+            star_from_database_pixel_coordinates.magnitude = get<2>(closest_star);
+
+            result.emplace_back(star_from_photo, star_from_database_pixel_coordinates);
+        }
+    }
+    return result;
+};
+
+
 vector<AsterismHashWithIndices> PlateSolverTool::get_hashes_with_indices(const vector<tuple<float,float,float> > &stars, unsigned nstars, unsigned int min_star4_index)   {
     vector<AsterismHashWithIndices> result;
     unsigned int star_indices[4];
