@@ -61,10 +61,10 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     const std::vector<std::vector<double>> distance_matrix_from_database = get_star_distance_matrix(paired_stars_from_database);
 
     std::vector<double> coefficients({double(image_width/2), double(image_height/2)}); // cx, cy, k1, k2 (optional), k3 (optional)
-    const int center_deciation = 60;
+    const int center_deviation = 60;
     std::vector<std::pair<double, double>> limits({
-        {double(image_width/2 - center_deciation), double(image_width/2 + center_deciation)},
-        {double(image_height/2 - center_deciation), double(image_height/2 + center_deciation)}
+        {double(image_width/2 - center_deviation), double(image_width/2 + center_deviation)},
+        {double(image_height/2 - center_deviation), double(image_height/2 + center_deviation)}
     });
     for (int i = 0; i < m_n_coefficients; ++i) {
         coefficients.push_back(0.0);
@@ -92,8 +92,8 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
 
     Fitter<double> fitter(&coefficients, limits);
     fitter.set_debug(true);
-    fitter.set_gradient_step(0.0001);
-    fitter.fit_gradient(loss_function, 0.01, 0.99, 1000);
+    fitter.set_gradient_step(0.005);
+    fitter.fit_gradient(loss_function, 0.1, 0.99, 500);
 
     LensCorrectionCoefficients result;
     result.c_x = coefficients[0];

@@ -52,7 +52,9 @@ namespace PlateSolver {
 
                     updated_parameters = *m_parameters;
                     for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
-                        updated_parameters.at(i_param) -= learning_rate*gradient[i_param];
+                        //updated_parameters.at(i_param) -= learning_rate*gradient[i_param];
+                        updated_parameters.at(i_param) += m_deltas_for_gradient.at(i_param) * (gradient[i_param] > 0 ? -1 : +1);
+
 
                         if (updated_parameters.at(i_param) < m_limits[i_param].first) {
                             updated_parameters.at(i_param) = m_limits[i_param].first;
@@ -117,10 +119,10 @@ namespace PlateSolver {
                     }
 
                     if (value_plus == value_minus && value_plus == nominal_value)  {
-                        delta_this_parameter *= 10;
+                        delta_this_parameter *= 3;
                     }
                     else if (!((value_plus > nominal_value) ^ (value_minus > nominal_value)))  {
-                        delta_this_parameter *= 0.1;
+                        delta_this_parameter /= 3;
                     }
                 }
             };
