@@ -31,7 +31,19 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
 
     const StarFinder star_finder(photo_address);
     const float threshold = star_finder.get_threshold(0.0005);
-    const std::vector<std::tuple<float, float, float>> star_positions = star_finder.get_stars(threshold);
+    std::vector<std::tuple<float, float, float>> star_positions = star_finder.get_stars(threshold);
+
+    cout << "Detected " << star_positions.size() << " stars in the photo." << endl;
+    const int n_stars_max = std::min<int>(30, star_positions.size());
+
+    // sort by star size and keep only n_stars_max
+    std::sort(star_positions.begin(), star_positions.end(), [](const std::tuple<float, float, float> &a, const std::tuple<float, float, float> &b) {
+        return std::get<2>(a) > std::get<2>(b);
+    });
+    if (star_positions.size() > n_stars_max) {
+        star_positions.resize(n_stars_max);
+    }
+
     const int image_width = star_finder.get_width();
     const int image_height = star_finder.get_height();
     const float sensor_half_diagonal_squared = (image_width * image_width + image_height * image_height) / 4.0f;
@@ -57,6 +69,8 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     for (const auto &pair : paired_stars) {
         paired_stars_from_database.push_back({pair.second.x, pair.second.y});
     }
+
+    cout << "In total " << paired_stars.size() << " star pairs have been identified." << endl;
 
     const std::vector<std::vector<double>> distance_matrix_from_database = get_star_distance_matrix(paired_stars_from_database);
 
@@ -93,7 +107,7 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     Fitter<double> fitter(&coefficients, limits);
     fitter.set_debug(true);
     fitter.set_gradient_step(0.005);
-    fitter.fit_gradient(loss_function, 0.1, 0.99, 500);
+    fitter.fit_gradient(loss_function, 0.1, 0.99, 10000);
 
     LensCorrectionCoefficients result;
     result.c_x = coefficients[0];

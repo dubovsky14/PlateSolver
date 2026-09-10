@@ -240,6 +240,7 @@ std::vector<std::pair<StarFromPhoto, StarFromDatabasePixelCoordinates>> PlateSol
     for (const tuple<float,float,float> &star_photo : stars_from_photo)  {
         float minimal_distance_squared = std::numeric_limits<float>::max();
         size_t closest_star_index = 0;
+        int truth_stars_found = 0;
         for (unsigned int i_star_truth = 0; i_star_truth < brightest_stars_from_database_pixel_coordinates.size(); i_star_truth++)  {
             const auto &star_truth = brightest_stars_from_database_pixel_coordinates[i_star_truth];
             const float dist2 = calculate_dist2(star_truth, star_photo);
@@ -247,8 +248,11 @@ std::vector<std::pair<StarFromPhoto, StarFromDatabasePixelCoordinates>> PlateSol
                 minimal_distance_squared = dist2;
                 closest_star_index = i_star_truth;
             }
+            if (dist2 < 4*maximal_allowed_deviation2) {
+                truth_stars_found++;
+            }
         }
-        if (minimal_distance_squared < maximal_allowed_deviation2) {
+        if ((minimal_distance_squared < maximal_allowed_deviation2) && truth_stars_found == 1) {
             StarFromPhoto star_from_photo;
             star_from_photo.x = get<0>(star_photo);
             star_from_photo.y = get<1>(star_photo);

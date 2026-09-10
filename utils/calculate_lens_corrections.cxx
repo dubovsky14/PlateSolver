@@ -35,6 +35,15 @@ int main(int argc, const char **argv)   {
         cout << "\tk3 = " << lens_correction.k3 << endl;
         cout << "\tsensor_half_diagonal_squared = " << lens_correction.sensor_half_diagonal_squared << endl;
 
+        cout << endl << "Summarize string: \""
+            << "k1=" << lens_correction.k1 << ";"
+            << "k2=" << lens_correction.k2 << ";"
+            << "k3=" << lens_correction.k3 << ";"
+            << "c_x=" << lens_correction.c_x << ";"
+            << "c_y=" << lens_correction.c_y << ";"
+            << "sensor_half_diagonal_squared=" << lens_correction.sensor_half_diagonal_squared << "\""
+            << endl;
+
     }
     catch(const runtime_error &e)  {
         cout << e.what() << endl;
