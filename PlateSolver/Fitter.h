@@ -32,9 +32,9 @@ namespace PlateSolver {
                 m_limits = limits;
             };
 
-            void fit_gradient(std::function<FlaotingPointType(const FlaotingPointType *parameters)> objective_function, FlaotingPointType learning_rate = 0.1, FlaotingPointType decay = 0.999, unsigned int max_iterations = 1000) {
-                FlaotingPointType gradient[m_num_parameters];
-                FlaotingPointType second_derivative[m_num_parameters];
+            void fit_gradient(std::function<FlaotingPointType(const FlaotingPointType *parameters, int seed)> objective_function, FlaotingPointType learning_rate = 0.1, FlaotingPointType decay = 0.999, unsigned int max_iterations = 1000) {
+                std::vector<FlaotingPointType> gradient(m_num_parameters);
+                std::vector<FlaotingPointType> second_derivative(m_num_parameters);
                 m_deltas_for_gradient.clear();
                 for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
                     const FlaotingPointType delta_this_parameter = m_gradient_step*abs(m_limits[i_param].second - m_limits[i_param].first);
@@ -43,26 +43,21 @@ namespace PlateSolver {
 
 
                 std::vector<FlaotingPointType> updated_parameters = *m_parameters;
+                calculate_gradient_and_second_derivative(objective_function, gradient.data(), second_derivative.data(), 0);
+                std::vector<FlaotingPointType> accumulated_gradient = gradient;
+                const float beta = 0.5;
                 for (unsigned int i_iter = 0; i_iter < max_iterations; i_iter++) {
                     if (m_debug && (i_iter % 100 == 0)) {
                         std::cout << "Iteration " << i_iter << std::endl;
                     }
-                    calculate_gradient_and_second_derivative(objective_function, gradient, second_derivative, i_iter);
-                    const FlaotingPointType nominal_value = objective_function(m_parameters->data());
+                    calculate_gradient_and_second_derivative(objective_function, gradient.data(), second_derivative.data(), i_iter);
+                    const FlaotingPointType nominal_value = objective_function(m_parameters->data(), i_iter);
+
+                    accumulated_gradient = add_vectors(accumulated_gradient, gradient, beta, 1-beta);
 
                     updated_parameters = *m_parameters;
                     for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
-                        //updated_parameters.at(i_param) -= learning_rate*gradient[i_param];
-                        //updated_parameters.at(i_param) += m_deltas_for_gradient.at(i_param) * (gradient[i_param] > 0 ? -1 : +1);
-
-                        double shift_size = 0;
-                        if (second_derivative[i_param] < 0) {
-                            shift_size = learning_rate * gradient[i_param] / second_derivative[i_param];
-                        }
-                        else {
-                            shift_size = m_deltas_for_gradient.at(i_param) * (gradient[i_param] > 0 ? -1 : +1);
-                        }
-                        updated_parameters.at(i_param) += shift_size;
+                        updated_parameters.at(i_param) -= learning_rate * accumulated_gradient[i_param];
 
                         if (updated_parameters.at(i_param) < m_limits[i_param].first) {
                             updated_parameters.at(i_param) = m_limits[i_param].first;
@@ -71,7 +66,7 @@ namespace PlateSolver {
                             updated_parameters.at(i_param) = m_limits[i_param].second;
                         }
                     }
-                    const FlaotingPointType updated_value = objective_function(updated_parameters.data());
+                    const FlaotingPointType updated_value = objective_function(updated_parameters.data(), i_iter);
                     if (m_debug && (i_iter % 100 == 0)) {
                         std::cout << "\tUpdated value: " << updated_value << " (Nominal value: " << nominal_value << ")" << "\tParameters: ";
                         for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
@@ -94,8 +89,8 @@ namespace PlateSolver {
                 }
             };
 
-            void calculate_gradient_and_second_derivative(std::function<FlaotingPointType(const FlaotingPointType *parameters)> objective_function, FlaotingPointType *gradient, FlaotingPointType *second_derivative, unsigned int i_iter)  {
-                const FlaotingPointType nominal_value = objective_function(m_parameters->data());
+            void calculate_gradient_and_second_derivative(std::function<FlaotingPointType(const FlaotingPointType *parameters, int seed)> objective_function, FlaotingPointType *gradient, FlaotingPointType *second_derivative, unsigned int i_iter)  {
+                const FlaotingPointType nominal_value = objective_function(m_parameters->data(), i_iter);
                 for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
                     if (m_limits[i_param].second == m_limits[i_param].first)    {
                         gradient[i_param] = 0;
@@ -114,8 +109,8 @@ namespace PlateSolver {
                     parameters_plus_delta[i_param] += delta_this_parameter;
                     parameters_minus_delta[i_param] -= delta_this_parameter;
 
-                    const FlaotingPointType value_plus = objective_function(parameters_plus_delta);
-                    const FlaotingPointType value_minus = objective_function(parameters_minus_delta);
+                    const FlaotingPointType value_plus = objective_function(parameters_plus_delta, i_iter);
+                    const FlaotingPointType value_minus = objective_function(parameters_minus_delta, i_iter);
 
                     gradient[i_param] = (value_plus - value_minus) / (2*delta_this_parameter);
                     second_derivative[i_param] = (value_plus - 2*nominal_value + value_minus) / (delta_this_parameter*delta_this_parameter);
@@ -141,6 +136,22 @@ namespace PlateSolver {
 
             void set_gradient_step(FlaotingPointType step) { m_gradient_step = step; };
 
+            std::vector<FlaotingPointType> add_vectors( const std::vector<FlaotingPointType> &a,
+                                                        const std::vector<FlaotingPointType> &b,
+                                                        float coef_a = 1,
+                                                        float coef_b = 1
+                                                     ) {
+
+                if (a.size() != b.size()) {
+                    throw std::invalid_argument("Vectors must be of the same size");
+                }
+
+                std::vector<FlaotingPointType> result(a.size());
+                for (size_t i = 0; i < a.size(); ++i) {
+                    result[i] = coef_a * a[i] + coef_b * b[i];
+                }
+                return result;
+            };
         private:
             unsigned int m_num_parameters;
             std::vector<FlaotingPointType> *m_parameters = nullptr;
