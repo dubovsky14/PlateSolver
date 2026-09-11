@@ -41,8 +41,6 @@ namespace PlateSolver   {
 
             double get_total_matrix_difference(const std::vector<std::vector<double>> &matrix_first, const std::vector<std::vector<double>> &matrix_second) const;
 
-            static std::vector<bool> get_random_batch_mask(int n_elements_total, float prob);
-
             template<typename T>
             static std::vector<T> get_selected_elements(const std::vector<T> &original_vector, const std::vector<bool> &selection_mask)   {
                 std::vector<T> result;
