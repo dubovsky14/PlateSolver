@@ -71,7 +71,7 @@ namespace PlateSolver {
                 std::vector<FloatingPointType> second_derivative(m_num_parameters, 0);
                 std::vector<FloatingPointType> accumulated_gradient = gradient;
 
-                const float beta = 0.5;
+                const float beta = 0.2;
                 const size_t n_batches_per_iteration = (samples_in_data + batch_size - 1) / batch_size;
                 std::vector<FloatingPointType> updated_parameters(m_num_parameters);
                 for (size_t i_iter = 0; i_iter < max_iterations; i_iter++) {
@@ -104,9 +104,18 @@ namespace PlateSolver {
                         }
                         std::cout << std::endl;
 
+
+                        std::cout << "\tdeltas: ";
+                        for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+                            std::cout << m_deltas_for_gradient.at(i_param) << " ";
+                        }
+                        std::cout << std::endl;
+
                         std::cout << "\tloss = " << objective_function(input_data_buffer.data(), samples_in_data, m_parameters->data()) << std::endl;
 
                     }
+
+                    reoptimize_deltas(objective_function, input_data_buffer.data(), samples_in_data);
 
                     const std::vector<InputDataType> shuffled_inputs = shuffle_input_data(input_data_buffer, inputs_per_sample);
                     for (size_t i_batch = 0; i_batch < n_batches_per_iteration; i_batch++) {
@@ -191,21 +200,6 @@ namespace PlateSolver {
 
                     gradient[i_param] = (value_plus - value_minus) / (2*delta_this_parameter);
                     second_derivative[i_param] = (value_plus - 2*nominal_value + value_minus) / (delta_this_parameter*delta_this_parameter);
-
-                    //if (m_debug && (m_i_iter % 100 == 0))  {
-                    //    std::cout << "\tParameter " << i_param << " " << m_parameters->at(i_param) << " (" << nominal_value << ")"  <<
-                    //        "\t" << parameters_plus_delta[i_param] << " (" << value_plus << ")\t" <<
-                    //        "\t" << parameters_minus_delta[i_param] << " (" << value_minus << ")\t" <<
-                    //        "Gradient: " << gradient[i_param] << "\tSecond Derivative: " << second_derivative[i_param] << "\t"
-                    //        << std::endl;
-                    //}
-
-                    if (value_plus == value_minus && value_plus == nominal_value)  {
-                        delta_this_parameter *= 3;
-                    }
-                    else if (!((value_plus > nominal_value) ^ (value_minus > nominal_value)))  {
-                        delta_this_parameter /= 3;
-                    }
                 }
             };
 
@@ -277,6 +271,67 @@ namespace PlateSolver {
             }
 
             std::default_random_engine m_random_generator;
+
+            template <typename InputDataType>
+            void reoptimize_deltas(std::function<FloatingPointType(
+                                        const InputDataType *input_data_start,
+                                        size_t samples_in_data,
+                                        const FloatingPointType *parameters
+                                    )> objective_function,
+                                    const InputDataType *input_data_start,
+                                    size_t samples_in_data
+                                    )    {
+
+                const FloatingPointType nominal_value = objective_function(input_data_start, samples_in_data, m_parameters->data());
+                for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+                    while (true) {
+                        FloatingPointType parameters_plus_delta[m_num_parameters];
+                        FloatingPointType parameters_minus_delta[m_num_parameters];
+                        for (unsigned int j = 0; j < m_num_parameters; j++) {
+                            parameters_plus_delta[j] = m_parameters->at(j);
+                            parameters_minus_delta[j] = m_parameters->at(j);
+                        }
+
+                        FloatingPointType &delta_this_parameter = m_deltas_for_gradient[i_param];
+
+                        parameters_plus_delta[i_param] += delta_this_parameter;
+                        parameters_minus_delta[i_param] -= delta_this_parameter;
+
+
+                        const FloatingPointType value_plus = objective_function(input_data_start, samples_in_data, parameters_plus_delta);
+                        const FloatingPointType value_minus = objective_function(input_data_start, samples_in_data, parameters_minus_delta);
+
+
+                        if (m_debug && (m_i_iter % 100 == 0))  {
+                            std::cout << "\tParameter " << i_param << " " << m_parameters->at(i_param) << " (" << nominal_value << ")"  <<
+                                "\t" << parameters_plus_delta[i_param] << " (" << value_plus << ")\t" <<
+                                "\t" << parameters_minus_delta[i_param] << " (" << value_minus << ")\t" << std::endl;
+                        }
+
+                        if (!((value_plus > nominal_value) ^ (value_minus > nominal_value)))  {
+                            delta_this_parameter /= 3;
+                        }
+                        else if (abs((value_plus - nominal_value)/nominal_value) < 0.00001)  {
+                            delta_this_parameter *= 3;
+                        }
+                        else if (abs((value_minus - nominal_value)/nominal_value) < 0.00001)  {
+                            delta_this_parameter *= 3;
+                        }
+                        else if (abs((value_plus - nominal_value)/nominal_value) > 0.001)  {
+                            delta_this_parameter /= 3;
+                        }
+                        else if (abs((value_minus - nominal_value)/nominal_value) > 0.001)  {
+                            delta_this_parameter /= 3;
+                        }
+
+                        if (delta_this_parameter > 0.11*abs(m_limits[i_param].second - m_limits[i_param].first)) {
+                            delta_this_parameter = 0.1*abs(m_limits[i_param].second - m_limits[i_param].first);
+                        }
+
+                        break;
+                    }
+                }
+            }
 
     };
 }

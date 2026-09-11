@@ -86,7 +86,7 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
         {double(image_height/2 - center_deviation), double(image_height/2 + center_deviation)}
     });
     for (int i = 0; i < m_n_coefficients; ++i) {
-        coefficients.push_back(0.0);
+        coefficients.push_back(-0.005);
         limits.push_back({-0.1*pow(10, -2*i), 0.1*pow(10, -2*i)});
     }
 
@@ -134,14 +134,14 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     Optimizer<double> fitter(&coefficients, limits);
     fitter.set_debug(true);
     fitter.set_gradient_step(0.005);
-    fitter.set_learning_rate(0.01);
-    fitter.set_decay_rate(0.999);
+    fitter.set_learning_rate(0.1);
+    fitter.set_decay_rate(1);
     fitter.run_optimization<double>(loss_function,
                     input_data_for_training.data(),
                     4,
                     paired_stars.size(),
                     10,
-                    10000);
+                    100000);
 
     LensCorrectionCoefficients result;
     result.c_x = coefficients[0];
