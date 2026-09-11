@@ -54,6 +54,13 @@ namespace PlateSolver {
                                     size_t batch_size,
                                     unsigned int max_iterations = 1000) {
 
+                m_deltas_for_gradient.clear();
+                for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+                    const FloatingPointType delta_this_parameter = m_gradient_step*abs(m_limits[i_param].second - m_limits[i_param].first);
+                    m_deltas_for_gradient.push_back(delta_this_parameter);
+                }
+
+
                 std::vector<InputDataType> input_data_buffer(samples_in_data * inputs_per_sample);
                 for (size_t i_input = 0; i_input < samples_in_data * inputs_per_sample; i_input++) {
                     input_data_buffer[i_input] = input_data[i_input];
@@ -68,20 +75,43 @@ namespace PlateSolver {
                 const size_t n_batches_per_iteration = (samples_in_data + batch_size - 1) / batch_size;
                 std::vector<FloatingPointType> updated_parameters(m_num_parameters);
                 for (size_t i_iter = 0; i_iter < max_iterations; i_iter++) {
+                    m_i_iter = i_iter;
 
-                    std::cout << "Iteration #" << i_iter << std::endl << "\t Parameters: ";
-                    for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
-                        std::cout << m_parameters->at(i_param) << " ";
+                    if (i_iter % 100 == 0)  {
+                        std::cout << "Iteration #" << i_iter << std::endl << "\t Parameter values: ";
+                        for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+                            std::cout << m_parameters->at(i_param) << " ";
+                        }
+                        std::cout << std::endl;
+
+                        calculate_gradient_and_second_derivative<InputDataType>(
+                            objective_function,
+                            input_data_buffer.data(),
+                            samples_in_data,
+                            gradient.data(),
+                            second_derivative.data()
+                        );
+
+                        std::cout << "\tgradient: ";
+                        for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+                            std::cout << gradient.at(i_param) << " ";
+                        }
+                        std::cout << std::endl;
+
+                        std::cout << "\t2nd derivative: ";
+                        for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+                            std::cout << second_derivative.at(i_param) << " ";
+                        }
+                        std::cout << std::endl;
+
+                        std::cout << "\tloss = " << objective_function(input_data_buffer.data(), samples_in_data, m_parameters->data()) << std::endl;
+
                     }
-                    std::cout << std::endl;
-                    std::cout << "\tloss = " << objective_function(input_data_buffer.data(), samples_in_data, m_parameters->data()) << std::endl;
-
 
                     const std::vector<InputDataType> shuffled_inputs = shuffle_input_data(input_data_buffer, inputs_per_sample);
                     for (size_t i_batch = 0; i_batch < n_batches_per_iteration; i_batch++) {
                         size_t i_sample_batch_start = i_batch * batch_size;
                         size_t i_sample_batch_end = std::min(i_sample_batch_start + batch_size, samples_in_data);
-
                         const InputDataType *batch_data_start = &shuffled_inputs[i_sample_batch_start * inputs_per_sample];
                         const size_t samples_in_this_batch = i_sample_batch_end - i_sample_batch_start;
 
@@ -115,13 +145,8 @@ namespace PlateSolver {
 
                         const FloatingPointType updated_value = objective_function(batch_data_start, samples_in_this_batch, updated_parameters.data());
 
-                        if (updated_value < nominal_value) {
-                            *m_parameters = updated_parameters;
-                            m_learning_rate /= m_decay_rate;
-                        }
-                        else {
-                            m_learning_rate *= m_decay_rate;
-                        }
+                        *m_parameters = updated_parameters;
+                        m_learning_rate *= m_decay_rate;
 
                     }
                 }
@@ -142,11 +167,13 @@ namespace PlateSolver {
 
                 const FloatingPointType nominal_value = objective_function(input_data_start, samples_in_data, m_parameters->data());
                 for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
+
                     if (m_limits[i_param].second == m_limits[i_param].first)    {
                         gradient[i_param] = 0;
                         second_derivative[i_param] = 0;
                         continue;
                     }
+
                     FloatingPointType parameters_plus_delta[m_num_parameters];
                     FloatingPointType parameters_minus_delta[m_num_parameters];
                     for (unsigned int j = 0; j < m_num_parameters; j++) {
@@ -165,7 +192,7 @@ namespace PlateSolver {
                     gradient[i_param] = (value_plus - value_minus) / (2*delta_this_parameter);
                     second_derivative[i_param] = (value_plus - 2*nominal_value + value_minus) / (delta_this_parameter*delta_this_parameter);
 
-                    //if (m_debug && (i_iter % 100 == 0))  {
+                    //if (m_debug && (m_i_iter % 100 == 0))  {
                     //    std::cout << "\tParameter " << i_param << " " << m_parameters->at(i_param) << " (" << nominal_value << ")"  <<
                     //        "\t" << parameters_plus_delta[i_param] << " (" << value_plus << ")\t" <<
                     //        "\t" << parameters_minus_delta[i_param] << " (" << value_minus << ")\t" <<
@@ -223,6 +250,7 @@ namespace PlateSolver {
             };
 
             bool m_debug = false;
+            int m_i_iter = 0;
 
             FloatingPointType m_gradient_step = 1e-4;
 

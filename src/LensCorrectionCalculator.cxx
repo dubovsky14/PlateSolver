@@ -134,7 +134,8 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     Optimizer<double> fitter(&coefficients, limits);
     fitter.set_debug(true);
     fitter.set_gradient_step(0.005);
-    fitter.set_learning_rate(0.1);
+    fitter.set_learning_rate(0.01);
+    fitter.set_decay_rate(0.999);
     fitter.run_optimization<double>(loss_function,
                     input_data_for_training.data(),
                     4,
