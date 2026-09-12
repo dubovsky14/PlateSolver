@@ -68,26 +68,32 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
     std::vector<std::pair<double, double>> paired_stars_from_photo;
     paired_stars_from_photo.reserve(paired_stars.size());
     for (const auto &pair : paired_stars) {
-        paired_stars_from_photo.push_back({pair.first.x, pair.first.y});
+        paired_stars_from_photo.push_back({pair.first.x, -pair.first.y});
     }
 
     std::vector<std::pair<double, double>> paired_stars_from_database;
     paired_stars_from_database.reserve(paired_stars.size());
     for (const auto &pair : paired_stars) {
-        paired_stars_from_database.push_back({pair.second.x, pair.second.y});
+        paired_stars_from_database.push_back({pair.second.x, -pair.second.y});
     }
 
     cout << "In total " << paired_stars.size() << " star pairs have been identified." << endl;
+    for (size_t i = 0; i < paired_stars.size(); ++i) {
+        cout << "Photo: (" << paired_stars_from_photo[i].first << ", " << paired_stars_from_photo[i].second << ")"
+             << " <-> Database: (" << paired_stars_from_database[i].first << ", " << paired_stars_from_database[i].second << ")" << endl;
+    }
 
     std::vector<double> coefficients({double(image_width/2), double(image_height/2)}); // cx, cy, k1, k2 (optional), k3 (optional)
-    const int center_deviation = 60;
+    const int center_deviation = 1000;
     std::vector<std::pair<double, double>> limits({
         {double(image_width/2 - center_deviation), double(image_width/2 + center_deviation)},
         {double(image_height/2 - center_deviation), double(image_height/2 + center_deviation)}
+        //{0, image_width},
+        //{0, image_height}
     });
     for (int i = 0; i < m_n_coefficients; ++i) {
         coefficients.push_back(-0.005);
-        limits.push_back({-0.1*pow(10, -2*i), 0.1*pow(10, -2*i)});
+        limits.push_back({-0.5*pow(10, -2*i), 0.1*pow(10, -2*i)});
     }
 
 
@@ -110,7 +116,7 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
         return lens_correction;
     };
 
-    auto loss_function = [&paired_stars_from_database, &coef_vector_to_lens_correction, &paired_stars_from_photo, this](
+    auto loss_function = [&coef_vector_to_lens_correction, this](
         const double *input_data_about_stars, // (x_photo_1, y_photo_1, x_database_1, y_database1, x_photo_2,  ...
         size_t n_stars,
         const double *parameters) -> double {
@@ -125,17 +131,21 @@ LensCorrectionCoefficients LensCorrectionCalculator::calculate_corrections( cons
 
         const LensCorrectionCoefficients lens_correction = coef_vector_to_lens_correction(parameters, m_n_coefficients + 2);
         const std::vector<std::vector<double>> distance_matrix_from_photo = get_star_distance_matrix(selected_stars_from_photo, lens_correction);
-        const std::vector<std::vector<double>> distance_matrix_from_database = get_star_distance_matrix(selected_stars_from_database, lens_correction);
+        const std::vector<std::vector<double>> distance_matrix_from_database = get_star_distance_matrix(selected_stars_from_database);
 
         return get_total_matrix_difference(distance_matrix_from_photo, distance_matrix_from_database);
     };
+
+    for (size_t i_param = 0; i_param < limits.size(); ++i_param) {
+        std::cout  << "param: " << i_param << " = " << coefficients[i_param] << ": [" << limits[i_param].first << ", " << limits[i_param].second << "]" << std::endl;
+    }
 
 
     Optimizer<double> fitter(&coefficients, limits);
     fitter.set_debug(true);
     fitter.set_gradient_step(0.005);
     fitter.set_learning_rate(0.1);
-    fitter.set_decay_rate(1);
+    fitter.set_decay_rate(0.9999);
     fitter.run_optimization<double>(loss_function,
                     input_data_for_training.data(),
                     4,

@@ -77,7 +77,7 @@ namespace PlateSolver {
                 for (size_t i_iter = 0; i_iter < max_iterations; i_iter++) {
                     m_i_iter = i_iter;
 
-                    if (i_iter % 100 == 0)  {
+                    if (i_iter % 1000 == 0)  {
                         std::cout << "Iteration #" << i_iter << std::endl << "\t Parameter values: ";
                         for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
                             std::cout << m_parameters->at(i_param) << " ";
@@ -143,6 +143,7 @@ namespace PlateSolver {
                         updated_parameters = *m_parameters;
                         for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
                             updated_parameters.at(i_param) -= m_learning_rate * accumulated_gradient[i_param];
+                            //updated_parameters.at(i_param) += m_deltas_for_gradient[i_param] * (gradient[i_param] < 0 ? 1 : -1);
 
                             if (updated_parameters.at(i_param) < m_limits[i_param].first) {
                                 updated_parameters.at(i_param) = m_limits[i_param].first;
@@ -156,7 +157,6 @@ namespace PlateSolver {
 
                         *m_parameters = updated_parameters;
                         m_learning_rate *= m_decay_rate;
-
                     }
                 }
             };
@@ -230,7 +230,7 @@ namespace PlateSolver {
             std::vector<FloatingPointType> m_deltas_for_gradient;
 
             float m_learning_rate = 0.01;
-            float m_decay_rate = 0.9;
+            float m_decay_rate = 0.99;
 
             static void normalize_vector(FloatingPointType *vector, unsigned int size) {
                 double norm = 0;
@@ -302,7 +302,7 @@ namespace PlateSolver {
                         const FloatingPointType value_minus = objective_function(input_data_start, samples_in_data, parameters_minus_delta);
 
 
-                        if (m_debug && (m_i_iter % 100 == 0))  {
+                        if (m_debug && (m_i_iter % 1000 == 0))  {
                             std::cout << "\tParameter " << i_param << " " << m_parameters->at(i_param) << " (" << nominal_value << ")"  <<
                                 "\t" << parameters_plus_delta[i_param] << " (" << value_plus << ")\t" <<
                                 "\t" << parameters_minus_delta[i_param] << " (" << value_minus << ")\t" << std::endl;
