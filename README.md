@@ -150,3 +150,19 @@ fuser -k 9090/tcp
 ```
 
 This code and tutorial might be useful if you want to run in on Raspberry Pi and create a wifi access point from it: https://github.com/oblique/create_ap . However, you will have to modify the config file when you want to run it as system service. The example config file can be found in this (PlateSolver) repository: ```cat gui/create_ap/create_ap.service```
+
+
+
+Calculating lens corrections:
+------------------------
+
+This software can be used also to extract barrel distortion corrections for a photo of the night sky (these corrections can be then used in [AstroPhotoStacker](github.com/dubovsky14/AstroPhotoStacker) software).
+In order to extract the corrections, you have to provide file with star positions and file with asterism hashes (similar to plate solving described above).
+There is no GUI for lens corrections calculation, just command line interface. In order to get the corrections, run the following command:
+```
+./bin/calculate_lens_corrections <file with asterism hashes (with .kdtree extension)>  <star catalogue file>  <address of the photo to use>  <number of coefficients to use>
+```
+
+where ``` <number of coefficients to use>``` can be 1, 2 or 3. Using 1 coefficient is usually enough, and it's recommended to use the lowest number that works.
+
+**Important note from optics:** In order to get the lens corrections, use images of targets high in the sky. Avoid using photos close to the horizon, since atmosphere will deform the image substantialy and it will make lens correction calculation unreliable.
