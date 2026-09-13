@@ -42,6 +42,10 @@ namespace PlateSolver {
                 m_decay_rate = decay_rate;
             };
 
+            void set_beta(float beta) {
+                m_beta = beta;
+            };
+
             template<typename InputDataType>
             void run_optimization(  const std::function<FloatingPointType(
                                         const InputDataType *input_data_start,
@@ -68,12 +72,14 @@ namespace PlateSolver {
 
 
                 std::vector<FloatingPointType> gradient(m_num_parameters, 0);
+                std::vector<FloatingPointType> g_vector(m_num_parameters, 0); // for AdaGrad
                 std::vector<FloatingPointType> second_derivative(m_num_parameters, 0);
                 std::vector<FloatingPointType> accumulated_gradient = gradient;
 
-                const float beta = 0.2;
                 const size_t n_batches_per_iteration = (samples_in_data + batch_size - 1) / batch_size;
                 std::vector<FloatingPointType> updated_parameters(m_num_parameters);
+
+                const float beta = pow(m_beta, 1./n_batches_per_iteration);
                 for (size_t i_iter = 0; i_iter < max_iterations; i_iter++) {
                     m_i_iter = i_iter;
 
@@ -112,6 +118,7 @@ namespace PlateSolver {
                         std::cout << std::endl;
 
                         std::cout << "\tloss = " << objective_function(input_data_buffer.data(), samples_in_data, m_parameters->data()) << std::endl;
+                        std::cout << "\tLearning rate: " << m_learning_rate << std::endl;
 
                     }
 
@@ -123,12 +130,6 @@ namespace PlateSolver {
                         size_t i_sample_batch_end = std::min(i_sample_batch_start + batch_size, samples_in_data);
                         const InputDataType *batch_data_start = &shuffled_inputs[i_sample_batch_start * inputs_per_sample];
                         const size_t samples_in_this_batch = i_sample_batch_end - i_sample_batch_start;
-
-                        const FloatingPointType nominal_value = objective_function(
-                            batch_data_start,
-                            samples_in_this_batch,
-                            m_parameters->data()
-                        );
 
                         calculate_gradient_and_second_derivative<InputDataType>(
                             objective_function,
@@ -142,7 +143,12 @@ namespace PlateSolver {
 
                         updated_parameters = *m_parameters;
                         for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
-                            updated_parameters.at(i_param) -= m_learning_rate * accumulated_gradient[i_param];
+                            //g_vector[i_param] += gradient[i_param] * gradient[i_param]; // AdaGrad accumulation
+
+                            g_vector[i_param] = beta * g_vector[i_param] + (1-beta) * gradient[i_param] * gradient[i_param]; // RMSProp accumulation
+
+                            updated_parameters.at(i_param) -= m_learning_rate * accumulated_gradient[i_param] / (std::sqrt(g_vector[i_param]) + 1e-8);
+
                             //updated_parameters.at(i_param) += m_deltas_for_gradient[i_param] * (gradient[i_param] < 0 ? 1 : -1);
 
                             if (updated_parameters.at(i_param) < m_limits[i_param].first) {
@@ -153,11 +159,18 @@ namespace PlateSolver {
                             }
                         }
 
+                        const FloatingPointType previous_value = objective_function(batch_data_start, samples_in_this_batch, m_parameters->data());
                         const FloatingPointType updated_value = objective_function(batch_data_start, samples_in_this_batch, updated_parameters.data());
 
-                        *m_parameters = updated_parameters;
-                        m_learning_rate *= m_decay_rate;
+                        if (updated_value < previous_value) {
+                            *m_parameters = updated_parameters;
+                            m_learning_rate /= m_decay_rate;
+                        }
+                        else {
+                            m_learning_rate *= m_decay_rate;
+                        }
                     }
+
                 }
             };
 
@@ -230,7 +243,8 @@ namespace PlateSolver {
             std::vector<FloatingPointType> m_deltas_for_gradient;
 
             float m_learning_rate = 0.01;
-            float m_decay_rate = 0.99;
+            float m_decay_rate = 0.999;
+            float m_beta = 0.9;
 
             static void normalize_vector(FloatingPointType *vector, unsigned int size) {
                 double norm = 0;
@@ -326,6 +340,9 @@ namespace PlateSolver {
 
                         if (delta_this_parameter > 0.11*abs(m_limits[i_param].second - m_limits[i_param].first)) {
                             delta_this_parameter = 0.1*abs(m_limits[i_param].second - m_limits[i_param].first);
+                        }
+                        else if (delta_this_parameter < 1.e-10*abs(m_limits[i_param].second - m_limits[i_param].first)) {
+                            delta_this_parameter = 1.e-10*abs(m_limits[i_param].second - m_limits[i_param].first);
                         }
 
                         break;
