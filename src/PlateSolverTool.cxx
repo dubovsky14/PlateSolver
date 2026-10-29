@@ -45,13 +45,59 @@ tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const string &
     Logger::log_message(bench_mark("Going to load the image " + jpg_file));
     StarFinder star_finder(jpg_file);
     Logger::log_message(bench_mark("Image loaded " + jpg_file));
-    return plate_solve(star_finder);
+    tuple<float,float,float,float,float> result = plate_solve(star_finder);
+    if (get<4>(result) > 0) {
+        return result;
+    }
+
+    // maybe we cannot plate solve because of barrel distortion, let's try to take only center of the image
+    vector<float> crop_factors({2,4});
+
+    cv::Mat original_image = cv::imread(jpg_file);
+    for (float crop_factor : crop_factors) {
+        cout << "Trying crop factor: " << crop_factor << endl;
+        int crop_width = original_image.cols / crop_factor;
+        int crop_height = original_image.rows / crop_factor;
+        int x_offset = (original_image.cols - crop_width) / 2;
+        int y_offset = (original_image.rows - crop_height) / 2;
+        cv::Rect crop_region(x_offset, y_offset, crop_width, crop_height);
+        cv::Mat cropped_image = original_image(crop_region);
+        result = plate_solve(StarFinder(cropped_image));
+        if (get<4>(result) > 0) {
+            get<3>(result) *= crop_factor;
+            get<4>(result) *= crop_factor;
+            return result;
+        }
+    }
+
+    return result;
 };
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const cv::Mat &photo, const std::string &hash_file) {
     set_hash_file(hash_file);
     StarFinder star_finder(photo);
-    return plate_solve(star_finder);
+    tuple<float,float,float,float,float> result = plate_solve(star_finder);
+    if (get<4>(result) > 0) {
+        return result;
+    }
+    else {
+        vector<float> crop_factors({2,4});
+        for (float crop_factor : crop_factors) {
+            int crop_width = photo.cols / crop_factor;
+            int crop_height = photo.rows / crop_factor;
+            int x_offset = (photo.cols - crop_width) / 2;
+            int y_offset = (photo.rows - crop_height) / 2;
+            cv::Rect crop_region(x_offset, y_offset, crop_width, crop_height);
+            cv::Mat cropped_image = photo(crop_region);
+            result = plate_solve(StarFinder(cropped_image));
+            if (get<4>(result) > 0) {
+                get<3>(result) *= crop_factor;
+                get<4>(result) *= crop_factor;
+                return result;
+            }
+        }
+    }
+    return result;
 };
 
 tuple<float,float,float,float,float> PlateSolverTool::plate_solve(const StarFinder &star_finder) {
