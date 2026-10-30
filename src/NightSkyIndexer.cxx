@@ -143,7 +143,7 @@ void NightSkyIndexer::loop_over_night_sky(float focal_length) {
     dump_hashes_to_outfile(result);
     result.clear();
 
-    const double fraction_less_then_4_stars = 1 - m_number_of_pieces_with_at_least_4_stars/double(m_number_of_stars_in_fov_counter);
+    const double fraction_less_then_4_stars = m_number_of_pieces_with_at_least_4_stars/double(m_number_of_stars_in_fov_counter);
 
     cout << "Average number of stars in FOV: " << m_number_of_stars_in_fov_sum/double(m_number_of_stars_in_fov_counter) << endl;
     cout << "Fraction of pieces with at least 4 stars: " << fraction_less_then_4_stars << endl;
